@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1440" height="400" viewBox="0 0 1440 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Light blue background -->
+  <rect width="1440" height="400" fill="#F0F8FF"/>
+  
+  <!-- Abstract city skyline in the background -->
+  <path d="M0,300 L80,300 L100,280 L120,300 L150,300 L170,270 L190,300 L220,300 L240,260 L260,300 L290,300 L310,280 L330,300 L360,300 L380,260 L400,300 L430,300 L450,270 L470,300 L500,300 L520,250 L540,300 L570,300 L590,270 L610,300 L640,300 L660,260 L680,300 L710,300 L730,280 L750,300 L780,300 L800,240 L820,300 L850,300 L870,270 L890,300 L920,300 L940,260 L960,300 L990,300 L1010,280 L1030,300 L1060,300 L1080,270 L1100,300 L1130,300 L1150,260 L1170,300 L1200,300 L1220,250 L1240,300 L1270,300 L1290,270 L1310,300 L1340,300 L1360,260 L1380,300 L1410,300 L1440,300 L1440,400 L0,400 Z" fill="#E1F1FF" opacity="0.7"/>
+
+  <!-- Decorative elements - clouds -->
+  <circle cx="200" cy="100" r="20" fill="white" opacity="0.8"/>
+  <circle cx="220" cy="95" r="25" fill="white" opacity="0.8"/>
+  <circle cx="240" cy="105" r="15" fill="white" opacity="0.8"/>
+  
+  <circle cx="800" cy="70" r="25" fill="white" opacity="0.8"/>
+  <circle cx="830" cy="75" r="20" fill="white" opacity="0.8"/>
+  <circle cx="860" cy="65" r="30" fill="white" opacity="0.8"/>
+  
+  <circle cx="1200" cy="120" r="20" fill="white" opacity="0.8"/>
+  <circle cx="1230" cy="115" r="30" fill="white" opacity="0.8"/>
+  <circle cx="1250" cy="125" r="15" fill="white" opacity="0.8"/>
+  
+  <!-- Road/path element -->
+  <path d="M-50,350 C150,320 350,380 600,340 C850,300 1050,360 1300,330 C1400,320 1500,340 1600,350" stroke="#D0E6F9" stroke-width="10" opacity="0.6"/>
+</svg>

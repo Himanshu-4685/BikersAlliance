@@ -1,0 +1,319 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Brand Model
+model Brand {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?   @db.Text
+  logoUrl     String?
+  country     String?
+  established Int?      // Year established
+  website     String?
+  models      Model[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([slug])
+}
+
+// Bike Model
+model Model {
+  id              String     @id @default(cuid())
+  name            String
+  slug            String     @unique
+  description     String?    @db.Text
+  brandId         String
+  brand           Brand      @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  categoryId      String
+  category        Category   @relation(fields: [categoryId], references: [id])
+  launchDate      DateTime?
+  discontinued    Boolean    @default(false)
+  variants        Variant[]
+  images          Image[]    @relation("ModelImages")
+  reviews         Review[]
+  comparisons     Comparison[] @relation("ComparisonModels")
+  popularityScore Float?     // For ranking models in listings
+  isElectric      Boolean    @default(false)
+  isUpcoming      Boolean    @default(false)
+  isFeatured      Boolean    @default(false)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  
+  @@unique([name, brandId])
+  @@index([slug])
+  @@index([brandId])
+  @@index([categoryId])
+  @@index([isElectric])
+  @@index([isUpcoming])
+  @@index([isFeatured])
+}
+
+// Model Variant
+model Variant {
+  id              String   @id @default(cuid())
+  name            String
+  modelId         String
+  model           Model    @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  year            Int?     // Manufacturing year
+  specifications  Json     // All specs stored as JSON
+  colors          Color[]
+  prices          Price[]
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([name, modelId])
+  @@index([modelId])
+}
+
+// Available Colors for a Variant
+model Color {
+  id          String   @id @default(cuid())
+  name        String
+  hexCode     String?
+  imageUrl    String?
+  variantId   String
+  variant     Variant  @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([variantId])
+}
+
+// Price information by city/state
+model Price {
+  id          String   @id @default(cuid())
+  variantId   String
+  variant     Variant  @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  cityId      String
+  city        City     @relation(fields: [cityId], references: [id])
+  exShowroom  Decimal  @db.Decimal(10, 2)
+  onRoad      Decimal? @db.Decimal(10, 2)
+  rto         Decimal? @db.Decimal(10, 2)
+  insurance   Decimal? @db.Decimal(10, 2)
+  others      Decimal? @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([variantId, cityId])
+  @@index([variantId])
+  @@index([cityId])
+}
+
+// Bike Categories
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?  @db.Text
+  imageUrl    String?
+  models      Model[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+}
+
+// City Model for prices and dealers
+model City {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  stateId     String
+  state       State     @relation(fields: [stateId], references: [id])
+  prices      Price[]
+  dealers     Dealer[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([name, stateId])
+  @@index([slug])
+  @@index([stateId])
+}
+
+// State Model
+model State {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  cities      City[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+}
+
+// Dealer Model
+model Dealer {
+  id          String       @id @default(cuid())
+  name        String
+  address     String       @db.Text
+  cityId      String
+  city        City         @relation(fields: [cityId], references: [id])
+  pincode     String?
+  phone       String?
+  email       String?
+  website     String?
+  latitude    Float?
+  longitude   Float?
+  brandIds    String[]     // Array of brand IDs the dealer represents
+  testRides   TestRide[]
+  isVerified  Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([cityId])
+}
+
+// Test Ride Requests
+model TestRide {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  dealerId    String
+  dealer      Dealer   @relation(fields: [dealerId], references: [id])
+  modelId     String?  // Optional specific model
+  preferredDate DateTime
+  status      String   @default("PENDING") // PENDING, CONFIRMED, COMPLETED, CANCELLED
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([dealerId])
+  @@index([status])
+}
+
+// Image Model
+model Image {
+  id          String   @id @default(cuid())
+  url         String
+  altText     String?
+  sortOrder   Int      @default(0)
+  modelId     String
+  model       Model    @relation("ModelImages", fields: [modelId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([modelId])
+}
+
+// Review Model
+model Review {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  modelId     String
+  model       Model    @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  title       String
+  content     String   @db.Text
+  rating      Float    // 1 to 5 stars
+  pros        String?  @db.Text
+  cons        String?  @db.Text
+  isVerified  Boolean  @default(false)
+  isApproved  Boolean  @default(false)
+  upvotes     Int      @default(0)
+  downvotes   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([modelId])
+  @@index([rating])
+  @@index([isApproved])
+}
+
+// Bike Comparisons
+model Comparison {
+  id          String   @id @default(cuid())
+  title       String?
+  slug        String   @unique
+  models      Model[]  @relation("ComparisonModels")
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  viewCount   Int      @default(0)
+  isPublic    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([slug])
+}
+
+// Articles/News
+model Article {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  summary     String   @db.Text
+  content     String   @db.Text
+  coverImage  String?
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  categoryId  String
+  category    ArticleCategory @relation(fields: [categoryId], references: [id])
+  tags        String[]
+  viewCount   Int      @default(0)
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([categoryId])
+  @@index([slug])
+  @@index([isPublished])
+}
+
+// Article Categories
+model ArticleCategory {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?   @db.Text
+  articles    Article[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([slug])
+}
+
+// User Model
+model User {
+  id               String       @id @default(cuid())
+  name             String?
+  email            String       @unique
+  emailVerified    DateTime?
+  password         String?
+  image            String?
+  role             Role         @default(USER)
+  wishlist         String[]     // Array of model IDs
+  savedComparisons Comparison[]
+  reviews          Review[]
+  articles         Article[]
+  testRides        TestRide[]
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([email])
+  @@index([role])
+}
+
+// User Role Enum
+enum Role {
+  USER
+  DEALER
+  ADMIN
+  SUPERADMIN
+}
