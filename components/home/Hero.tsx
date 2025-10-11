@@ -15,7 +15,7 @@ export default function Hero() {
           {/* Hero Background */}
           <div className="absolute inset-0 z-0">
             <Image 
-              src="/images/hero/TVS XL100.avif" 
+              src="/images/hero/kawa.jpg" 
               alt="Featured Motorcycle"
               fill
               className="object-cover"

@@ -5,6 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { FiMenu, FiX, FiUser, FiHeart, FiSearch, FiChevronDown } from 'react-icons/fi';
+import { useAuth } from '@/context/AuthContext.supabase';
+import UserProfile from '@/components/auth/UserProfile';
 
 // Navigation items with dropdowns
 const navItems = [
@@ -111,6 +113,7 @@ const navItems = [
 ];
 
 export default function Header() {
+  const { user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({});
@@ -186,7 +189,7 @@ export default function Header() {
             {/* Logo */}
             <Link href="/" className="flex items-center">
               <Image 
-                src="/logo.svg" 
+                src="/logo.png" 
                 alt="BikersAlliance" 
                 width={180} 
                 height={40} 
@@ -372,12 +375,16 @@ export default function Header() {
                 </svg>
               </Link>
               
-              <Link
-                href="/login"
-                className="flex items-center px-5 py-1.5 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary-600"
-              >
-                Login
-              </Link>
+              {user ? (
+                <UserProfile />
+              ) : (
+                <Link
+                  href="/login"
+                  className="flex items-center px-5 py-1.5 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary-600"
+                >
+                  Login
+                </Link>
+              )}
             </div>
           </nav>
           
@@ -496,13 +503,25 @@ export default function Header() {
               )}
             </div>
           ))}
-          <Link
-            href="/login"
-            className="block px-3 py-2 mt-4 text-base font-medium text-center text-white bg-primary rounded-md"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Login / Register
-          </Link>
+          {user ? (
+            <div className="mt-4 flex justify-center">
+              <Link 
+                href="/dashboard" 
+                className="block px-3 py-2 text-base font-medium text-center text-white bg-primary rounded-md"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                My Dashboard
+              </Link>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="block px-3 py-2 mt-4 text-base font-medium text-center text-white bg-primary rounded-md"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Login / Register
+            </Link>
+          )}
         </nav>
       )}
     </header>

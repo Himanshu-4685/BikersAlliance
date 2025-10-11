@@ -3,7 +3,7 @@ import { Inter, Montserrat } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import { AuthProvider } from '@/context/AuthContext';
+import { AuthProvider } from '@/context/AuthContext.supabase';
 
 // Load fonts
 const inter = Inter({ 

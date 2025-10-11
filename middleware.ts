@@ -1,19 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-
-// Simple authentication check (replace with your actual authentication logic)
-async function getSession(request: NextRequest) {
-  // You can implement your own session verification logic here
-  // For example using cookies, JWT, or headers
-  const sessionCookie = request.cookies.get('auth-token');
-  
-  // Return a simple session object or null if no session exists
-  return sessionCookie ? { user: { id: 'user-id' } } : null;
-}
+import { createServerClient } from '@supabase/ssr';
 
 export async function middleware(request: NextRequest) {
-  // Get session using the new method
-  const session = await getSession(request);
   const pathname = request.nextUrl.pathname;
   
   // Protected routes that require authentication
@@ -29,6 +18,49 @@ export async function middleware(request: NextRequest) {
   // Auth routes that should redirect to dashboard if already logged in
   const authRoutes = ['/login', '/register', '/forgot-password'];
   
+  // Create a Supabase client
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  
+  // Create response
+  const res = NextResponse.next();
+  
+  // Create a Supabase client with the Request and Response
+  const supabase = createServerClient(supabaseUrl, supabaseKey, {
+    cookies: {
+      get(name) {
+        return request.cookies.get(name)?.value;
+      },
+      set(name, value, options) {
+        request.cookies.set({
+          name,
+          value,
+          ...options,
+        });
+        res.cookies.set({
+          name,
+          value,
+          ...options,
+        });
+      },
+      remove(name, options) {
+        request.cookies.set({
+          name,
+          value: '',
+          ...options,
+        });
+        res.cookies.set({
+          name,
+          value: '',
+          ...options,
+        });
+      },
+    },
+  });
+  
+  // Check if user is authenticated
+  const { data: { session } } = await supabase.auth.getSession();
+
   // Redirect from protected routes to login if not authenticated
   if (protectedRoutes.some(route => pathname.startsWith(route)) && !session) {
     const redirectUrl = new URL('/login', request.url);
@@ -42,7 +74,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
   
-  return NextResponse.next();
+  // Return the response with updated cookies
+  return res;
 }
 
 export const config = {

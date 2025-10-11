@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 import { FcGoogle } from 'react-icons/fc';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/context/AuthContext.supabase';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');

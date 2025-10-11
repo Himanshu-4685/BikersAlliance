@@ -23,13 +23,18 @@ export default function Footer() {
           {/* Column 1: About */}
           <div>
             <Link href="/" className="inline-block mb-4">
-              <Image 
-                src="/logo.svg" 
-                alt="BikersAlliance" 
-                width={180} 
-                height={40} 
-                className="w-auto h-10 brightness-0 invert"
-              />
+             <Image 
+                             src="/logo.png" 
+                             alt="BikersAlliance" 
+                             width={180} 
+                             height={40} 
+                             className="w-auto h-8 md:h-10"
+                             priority
+                             onError={(e) => {
+                               // Fallback to text if image fails to load
+                               e.currentTarget.src = "/logo-fallback.svg";
+                             }}
+                             />
             </Link>
             <p className="mb-4 text-sm text-gray-300">
               BikersAlliance is India's premier motorcycle marketplace, offering

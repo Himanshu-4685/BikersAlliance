@@ -13,7 +13,7 @@ import {
   FiChevronRight, 
   FiLogOut 
 } from 'react-icons/fi';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/context/AuthContext.supabase';
 
 export default function DashboardPage() {
   const { user, isLoading, logout } = useAuth();
@@ -46,7 +46,7 @@ export default function DashboardPage() {
   }
 
   // Format user's name or email for display
-  const displayName = user.user_metadata?.full_name || 
+  const displayName = user.fullName || 
                       user.email?.split('@')[0] || 
                       'User';
                       
