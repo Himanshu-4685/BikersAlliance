@@ -2,32 +2,34 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getBrands, Brand } from '@/utils/api/brands';
 
-// Brand data
-const brands = [
-  { id: 'honda', name: 'Honda', logo: '/images/brands/honda.avif' },
-  { id: 'hero', name: 'Hero', logo: '/images/brands/hero.avif' },
-  { id: 'bajaj', name: 'Bajaj', logo: '/images/brands/bajaj.avif' },
-  { id: 'tvs', name: 'TVS', logo: '/images/brands/tvs.avif' },
-  { id: 'yamaha', name: 'Yamaha', logo: '/images/brands/yamaha.avif' },
-  { id: 'suzuki', name: 'Suzuki', logo: '/images/brands/suzuki.avif' },
-  { id: 'royal-enfield', name: 'Royal Enfield', logo: '/images/brands/royal-enfield.avif' },
-  { id: 'ktm', name: 'KTM', logo: '/images/brands/ktm.avif' },
-  { id: 'bmw', name: 'BMW', logo: '/images/brands/bmw.avif' },
-  { id: 'jawa-motorcycles', name: 'Jawa', logo: '/images/brands/jawa-motorcycles.avif' },
-  { id: 'harley-davidson', name: 'Harley Davidson', logo: '/images/brands/harley-davidson.avif' },
-  { id: 'kawasaki', name: 'Kawasaki', logo: '/images/brands/kawasaki.avif' },
-  { id: 'husqvarna', name: 'Husqvarna', logo: '/images/brands/husqvarna.avif' },
-  { id: 'ola-electric', name: 'Ola Electric', logo: '/images/brands/ola-electric.avif' },
-  { id: 'ather', name: 'Ather', logo: '/images/brands/ather.avif' }, // Not found in brand-images, using .png as fallback
-  // Adding more brands from your brand-images folder
-  { id: 'aprilia', name: 'Aprilia', logo: '/images/brands/aprilia.avif' },
-  { id: 'ducati', name: 'Ducati', logo: '/images/brands/ducati.avif' },
-  { id: 'triumph', name: 'Triumph', logo: '/images/brands/triumph.avif' },
-  { id: 'benelli', name: 'Benelli', logo: '/images/brands/benelli.avif' },
-  { id: 'revolt', name: 'Revolt', logo: '/images/brands/revolt.avif' },
+// Fallback brand data (in case database is unavailable)
+const fallbackBrands = [
+  { brand_id: 'honda', brand_name: 'Honda', logo_url: '/images/brands/honda.avif' },
+  { brand_id: 'hero', brand_name: 'Hero', logo_url: '/images/brands/hero.avif' },
+  { brand_id: 'bajaj', brand_name: 'Bajaj', logo_url: '/images/brands/bajaj.avif' },
+  { brand_id: 'tvs', brand_name: 'TVS', logo_url: '/images/brands/tvs.avif' },
+  { brand_id: 'yamaha', brand_name: 'Yamaha', logo_url: '/images/brands/yamaha.avif' },
+  { brand_id: 'suzuki', brand_name: 'Suzuki', logo_url: '/images/brands/suzuki.avif' },
 ];
+
+// Helper function to convert brand name to slug for URL and image path
+function brandNameToSlug(brandName: string): string {
+  return brandName
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except spaces and hyphens
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+    .trim();
+}
+
+// Helper function to get fallback image path
+function getFallbackImagePath(brandName: string): string {
+  const slug = brandNameToSlug(brandName);
+  return `/brand-images/${slug}.avif`;
+}
 
 // Categories for the tabs
 const categories = [
@@ -41,6 +43,46 @@ const categories = [
 
 export default function BrandList() {
   const [activeTab, setActiveTab] = useState('brand');
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch brands from database on component mount
+  useEffect(() => {
+    async function fetchBrands() {
+      const timeoutId = setTimeout(() => {
+        console.log('🏍️ BrandList: Fetch timeout, using fallback brands');
+        setLoading(false);
+        setError('Connection timeout');
+        setBrands(fallbackBrands);
+      }, 5000); // 5 second timeout
+
+      try {
+        console.log('🏍️ BrandList: Starting to fetch brands...');
+        setLoading(true);
+        setError(null);
+        
+        const fetchedBrands = await getBrands();
+        console.log('🏍️ BrandList: Fetched brands:', fetchedBrands.length);
+        
+        clearTimeout(timeoutId);
+        setBrands(fetchedBrands);
+      } catch (err) {
+        console.error('🏍️ BrandList: Failed to fetch brands:', err);
+        clearTimeout(timeoutId);
+        setError(err instanceof Error ? err.message : 'Failed to load brands');
+        
+        // Use fallback brands if database fetch fails
+        console.log('🏍️ BrandList: Using fallback brands');
+        setBrands(fallbackBrands);
+      } finally {
+        setLoading(false);
+        console.log('🏍️ BrandList: Finished loading');
+      }
+    }
+
+    fetchBrands();
+  }, []);
   
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
@@ -66,32 +108,67 @@ export default function BrandList() {
       {/* Brands Grid */}
       {activeTab === 'brand' && (
         <div>
-          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-11 gap-4 mb-4">
-            {brands.slice(0, 22).map((brand) => (
-              <Link
-                href={`/brands/${brand.id}`}
-                key={brand.id}
-                className="flex flex-col items-center p-3 transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group"
-              >
-                <div className="relative w-12 h-12 mb-2">
-                  <Image
-                    src={brand.logo}
-                    alt={brand.name}
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-                <span className="text-xs text-center text-gray-700 group-hover:text-primary">
-                  {brand.name}
-                </span>
-              </Link>
-            ))}
-          </div>
-          <div className="mt-4 text-center">
-            <Link href="/brands" className="text-sm text-primary hover:underline">
-              View All Brands
-            </Link>
-          </div>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex flex-col items-center gap-3">
+                <Image
+                  src="/images/Loading/loading-red.svg"
+                  alt="Loading..."
+                  width={40}
+                  height={40}
+                />
+                <div className="text-gray-500 text-sm">Loading brands...</div>
+              </div>
+            </div>
+          ) : error ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-red-500">Error: {error}</div>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-11 gap-4 mb-4">
+                {brands.slice(0, 22).map((brand) => {
+                  const brandSlug = brandNameToSlug(brand.brand_name);
+                  // Use database logo_url if available, otherwise use local brand images
+                  const imageUrl = brand.logo_url && brand.logo_url.trim() !== '' 
+                    ? brand.logo_url 
+                    : getFallbackImagePath(brand.brand_name);
+                  
+                  return (
+                    <Link
+                      href={`/brands/${brandSlug}`}
+                      key={brand.brand_id}
+                      className="flex flex-col items-center p-3 transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group"
+                    >
+                      <div className="relative w-12 h-12 mb-2">
+                        <Image
+                          src={imageUrl}
+                          alt={brand.brand_name}
+                          fill
+                          className="object-contain"
+                          onError={(e) => {
+                            // Fallback to default image if brand image fails to load
+                            const target = e.target as HTMLImageElement;
+                            if (target.src !== '/logo-fallback.svg') {
+                              target.src = '/logo-fallback.svg';
+                            }
+                          }}
+                        />
+                      </div>
+                      <span className="text-xs text-center text-gray-700 group-hover:text-primary">
+                        {brand.brand_name}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+              <div className="mt-4 text-center">
+                <Link href="/brands" className="text-sm text-primary hover:underline">
+                  View All Brands ({brands.length} total)
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       )}
       

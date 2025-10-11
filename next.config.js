@@ -2,7 +2,28 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['localhost', 'bikersalliance.com', 'cdn.bikersalliance.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'localhost',
+      },
+      {
+        protocol: 'https',
+        hostname: 'bikersalliance.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.bikersalliance.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'csvzysxiuuzcsmpknehi.supabase.co',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+      },
+    ],
     formats: ['image/avif', 'image/webp']
   },
   experimental: {

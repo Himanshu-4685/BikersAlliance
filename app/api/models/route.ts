@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
-import prisma from '@/lib/prisma';
-import { successResponse, errorResponse, notFoundResponse } from '@/lib/api-response';
+import { createServerClient } from '@/lib/supabase-server';
+import { successResponse, errorResponse } from '@/lib/api-response';
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,150 +9,67 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(url.searchParams.get('limit') || '20');
     const offset = parseInt(url.searchParams.get('offset') || '0');
     const brandId = url.searchParams.get('brandId');
-    const categoryId = url.searchParams.get('categoryId');
-    const isElectric = url.searchParams.get('isElectric') === 'true';
-    const isUpcoming = url.searchParams.get('isUpcoming') === 'true';
-    const isFeatured = url.searchParams.get('isFeatured') === 'true';
-    const sortBy = url.searchParams.get('sortBy') || 'popularity'; // popularity, priceAsc, priceDesc, newest
     const search = url.searchParams.get('search');
 
+    // Initialize Supabase client
+    const supabase = createServerClient();
+
     // Build the query
-    const where: any = {};
-    
+    let query = supabase
+      .from('models')
+      .select(`
+        model_id, model_name, brand_id
+      `);
+
     // Add filters based on query parameters
-    if (brandId) where.brandId = brandId;
-    if (categoryId) where.categoryId = categoryId;
-    if (url.searchParams.has('isElectric')) where.isElectric = isElectric;
-    if (url.searchParams.has('isUpcoming')) where.isUpcoming = isUpcoming;
-    if (url.searchParams.has('isFeatured')) where.isFeatured = isFeatured;
-    
+    if (brandId) query = query.eq('brand_id', brandId);
+
     // Search filter
     if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-        { brand: { name: { contains: search, mode: 'insensitive' } } },
-      ];
+      query = query.ilike('model_name', `%${search}%`);
     }
 
-    // Sorting logic
-    let orderBy: any = {};
-    switch (sortBy) {
-      case 'priceAsc':
-        orderBy = { variants: { _count: 'asc' } }; // This is a simplification
-        break;
-      case 'priceDesc':
-        orderBy = { variants: { _count: 'desc' } }; // This is a simplification
-        break;
-      case 'newest':
-        orderBy = { launchDate: 'desc' };
-        break;
-      case 'popularity':
-      default:
-        orderBy = { popularityScore: 'desc' };
+    // Sorting by model name
+    query = query.order('model_name', { ascending: true });
+
+    // Apply pagination
+    query = query.range(offset, offset + limit - 1);
+
+    // Execute the query
+    const { data: models, error } = await query;
+
+    if (error) {
+      throw error;
     }
-
-    // Fetch the models with pagination
-    const models = await prisma.model.findMany({
-      where,
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        description: true,
-        isElectric: true,
-        isUpcoming: true,
-        isFeatured: true,
-        brand: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            logoUrl: true,
-          },
-        },
-        category: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
-        },
-        variants: {
-          select: {
-            id: true,
-            name: true,
-            prices: {
-              select: {
-                exShowroom: true,
-              },
-              take: 1, // Just get one price for display
-            },
-          },
-          take: 1, // Just get base variant for listing
-        },
-        images: {
-          select: {
-            id: true,
-            url: true,
-          },
-          take: 1, // Just get one image for listing
-          orderBy: {
-            sortOrder: 'asc',
-          },
-        },
-        _count: {
-          select: {
-            reviews: true,
-          },
-        },
-      },
-      orderBy,
-      skip: offset,
-      take: Math.min(limit, 50), // Limit maximum to 50
-    });
-
-    // Calculate average ratings
-    const modelIds = models.map((model) => model.id);
-    const ratings = await prisma.review.groupBy({
-      by: ['modelId'],
-      where: {
-        modelId: {
-          in: modelIds,
-        },
-        isApproved: true,
-      },
-      _avg: {
-        rating: true,
-      },
-    });
-
-    // Create a map of model ID to average rating
-    const ratingMap = new Map();
-    ratings.forEach((rating) => {
-      ratingMap.set(rating.modelId, rating._avg.rating);
-    });
-
-    // Add average rating to models
-    const modelsWithRatings = models.map((model) => ({
-      ...model,
-      avgRating: ratingMap.get(model.id) || null,
-    }));
 
     // Get total count for pagination
-    const totalCount = await prisma.model.count({ where });
+    const { count: totalCount, error: countError } = await supabase
+      .from('models')
+      .select('*', { count: 'exact', head: true });
+
+    if (countError) {
+      throw countError;
+    }
+
+    // Format the response
+    const formattedModels = (models || []).map((model: any) => ({
+      id: model.model_id,
+      name: model.model_name,
+      slug: model.model_name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'),
+      brandId: model.brand_id,
+    }));
 
     // Return the response
     return successResponse({
-      models: modelsWithRatings,
+      models: formattedModels,
       pagination: {
-        totalCount,
+        total: totalCount || 0,
         offset,
         limit,
-        hasMore: offset + models.length < totalCount,
-      },
+        totalPages: Math.ceil((totalCount || 0) / limit)
+      }
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching models:', error);
     return errorResponse('Failed to fetch models', 500);
   }

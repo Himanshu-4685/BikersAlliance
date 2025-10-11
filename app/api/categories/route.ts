@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import prisma from '@/lib/prisma';
+import { createServerClient } from '@/lib/supabase-server';
 import { successResponse, errorResponse } from '@/lib/api-response';
 
 export async function GET(request: NextRequest) {
@@ -9,47 +9,47 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(url.searchParams.get('limit') || '50');
     const offset = parseInt(url.searchParams.get('offset') || '0');
 
+    // Initialize Supabase client
+    const supabase = createServerClient();
+
     // Fetch the categories with pagination
-    const categories = await prisma.category.findMany({
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        _count: {
-          select: {
-            models: true, // Count of models for each category
-          },
-        },
-      },
-      orderBy: {
-        name: 'asc',
-      },
-      skip: offset,
-      take: Math.min(limit, 100), // Limit maximum to 100
-    });
+    const { data: categories, error } = await supabase
+      .from('categories')
+      .select('category_id, category_name')
+      .order('category_name', { ascending: true })
+      .range(offset, offset + Math.min(limit, 100) - 1);
+
+    if (error) {
+      throw error;
+    }
 
     // Get total count for pagination
-    const totalCount = await prisma.category.count();
+    const { count: totalCount, error: countError } = await supabase
+      .from('categories')
+      .select('*', { count: 'exact', head: true });
+
+    if (countError) {
+      throw countError;
+    }
 
     // Format the response
-    const formattedCategories = categories.map(category => ({
-      id: category.id,
-      name: category.name,
-      slug: category.slug,
-      count: category._count.models
+    const formattedCategories = (categories || []).map((category: any) => ({
+      id: category.category_id,
+      name: category.category_name,
+      slug: category.category_name?.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-') || '',
+      count: 0 // Note: You'll need to implement a separate count query for this
     }));
 
     // Return the response
     return successResponse({
       categories: formattedCategories,
       pagination: {
-        totalCount,
+        totalCount: totalCount || 0,
         offset,
         limit,
-        hasMore: offset + categories.length < totalCount,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching categories:', error);
     return errorResponse('Failed to fetch categories', 500);
   }
