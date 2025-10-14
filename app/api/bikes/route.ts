@@ -9,6 +9,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
 
     // Parse filter parameters
+    const search = searchParams.get('search');
     const brand = searchParams.get('brand');
     const minPrice = searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined;
     const maxPrice = searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined;
@@ -33,6 +34,11 @@ export async function GET(request: Request) {
         models!inner(model_name),
         brands!inner(brand_name)
       `);
+
+    // Apply search filter
+    if (search) {
+      query = query.or(`variant_name.ilike.%${search}%,models.model_name.ilike.%${search}%,brands.brand_name.ilike.%${search}%`);
+    }
 
     // Apply brand filter
     if (brand) {

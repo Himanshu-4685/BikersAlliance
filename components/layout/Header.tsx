@@ -3,10 +3,13 @@
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { FiMenu, FiX, FiUser, FiHeart, FiSearch, FiChevronDown } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext.supabase';
 import UserProfile from '@/components/auth/UserProfile';
+import SearchSuggestions from '@/components/common/SearchSuggestions';
+import SearchBar from '@/components/common/SearchBar';
+import { SearchSuggestion } from '@/utils/api/search';
 
 // Navigation items with dropdowns
 const navItems = [
@@ -114,8 +117,8 @@ const navItems = [
 
 export default function Header() {
   const { user } = useAuth();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({});
   const [openSubDropdowns, setOpenSubDropdowns] = useState<Record<string, number | null>>({});
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
@@ -174,11 +177,7 @@ export default function Header() {
     }, 200);
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Implement search functionality
-    console.log('Searching for:', searchQuery);
-  };
+
   
   return (
     <header className="sticky top-0 z-50 bg-white shadow-md">
@@ -204,23 +203,7 @@ export default function Header() {
             
             {/* Search Bar - visible on desktop, hidden on mobile */}
             <div className="hidden md:flex flex-1 mx-8">
-              <form onSubmit={handleSearch} className="w-full max-w-2xl">
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search Bikes or Scooters eg. YZF R15 V3, Activa 6G"
-                    className="w-full py-2 pl-4 pr-12 text-sm text-gray-900 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
-                  />
-                  <button
-                    type="submit"
-                    className="absolute inset-y-0 right-0 flex items-center px-4"
-                  >
-                    <FiSearch className="w-4 h-4 text-gray-500" />
-                  </button>
-                </div>
-              </form>
+              <SearchBar />
             </div>
             
             {/* Action Buttons */}

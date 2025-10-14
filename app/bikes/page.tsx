@@ -63,6 +63,7 @@ export default function BikesPage() {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   
   // Get current filters from URL
+  const currentSearch = searchParams.get('search');
   const currentBrand = searchParams.get('brand');
   const currentCategory = searchParams.get('category');
   const currentMinPrice = searchParams.get('minPrice');
@@ -82,6 +83,7 @@ export default function BikesPage() {
       // Construct query parameters
       const params = new URLSearchParams();
       
+      if (currentSearch) params.append('search', currentSearch);
       if (currentBrand) params.append('brand', currentBrand);
       if (currentCategory) params.append('category', currentCategory);
       if (currentMinPrice) params.append('minPrice', currentMinPrice);
@@ -113,6 +115,7 @@ export default function BikesPage() {
     
     fetchBikes();
   }, [
+    currentSearch,
     currentBrand,
     currentCategory,
     currentMinPrice,
@@ -176,12 +179,18 @@ export default function BikesPage() {
             <span className="text-gray-900">Bikes</span>
           </div>
           <h1 className="mt-4 text-3xl font-bold text-gray-900">
-            {currentCategory ? `${currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1)} Bikes` : 
+            {currentSearch ? `Search Results for "${currentSearch}"` :
+             currentCategory ? `${currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1)} Bikes` : 
              currentBrand ? `${currentBrand.charAt(0).toUpperCase() + currentBrand.slice(1)} Bikes` : 
              'All Bikes'}
           </h1>
           <p className="mt-2 text-gray-600">
             {pagination.total} {pagination.total === 1 ? 'bike' : 'bikes'} found
+            {currentSearch && (
+              <span className="ml-2 text-sm">
+                for <strong>"{currentSearch}"</strong>
+              </span>
+            )}
           </p>
         </div>
       </div>
