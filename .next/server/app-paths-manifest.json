@@ -1,6 +1,9 @@
 {
   "/not-found": "app/not-found.js",
+  "/page": "app/page.js",
+  "/bikes/[slug]/page": "app/bikes/[slug]/page.js",
+  "/bikes/page": "app/bikes/page.js",
+  "/used-bikes/page": "app/used-bikes/page.js",
   "/login/page": "app/login/page.js",
-  "/register/page": "app/register/page.js",
-  "/page": "app/page.js"
+  "/used-bikes/[slug]/page": "app/used-bikes/[slug]/page.js"
 }
