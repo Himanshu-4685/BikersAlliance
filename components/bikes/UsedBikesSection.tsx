@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { UsedBikeCity } from '@/components/bikes/DealersSection';
 import Image from 'next/image';

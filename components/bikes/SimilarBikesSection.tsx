@@ -6,12 +6,13 @@ interface SimilarBike {
   id: string;
   name: string;
   slug: string;
-  brand: {
+  brand?: {
     name: string;
   };
-  images: {
+  images?: {
     url: string;
   }[];
+  image?: string;
   price?: number;
 }
 
@@ -41,9 +42,9 @@ export default function SimilarBikesSection({
           >
             {/* Bike Image */}
             <div className="relative h-40 bg-gray-100">
-              {bike.images && bike.images.length > 0 ? (
+              {(bike.images && bike.images.length > 0) || bike.image ? (
                 <Image
-                  src={bike.images[0].url}
+                  src={bike.images && bike.images.length > 0 ? bike.images[0].url : bike.image!}
                   alt={bike.name}
                   fill
                   className="object-cover"
@@ -59,7 +60,7 @@ export default function SimilarBikesSection({
             <div className="p-3">
               {/* Bike Name */}
               <h3 className="font-medium">{bike.name}</h3>
-              <p className="text-sm text-gray-500">{bike.brand.name}</p>
+              {bike.brand && <p className="text-sm text-gray-500">{bike.brand.name}</p>}
               
               {/* Price */}
               <p className="mt-2 font-semibold">

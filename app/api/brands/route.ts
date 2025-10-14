@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Transform the data to match the expected format
-    const formattedBrands = brands.map(brand => ({
+    const formattedBrands = (brands || []).map((brand: any) => ({
       id: brand.brand_id,
       name: brand.brand_name,
       slug: brand.brand_name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'),
