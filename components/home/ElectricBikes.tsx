@@ -10,7 +10,7 @@ const electricBikes = [
   {
     id: 'ola-s1-pro',
     name: 'Ola S1 Pro',
-    image: '/images/bikes/ola-s1-pro.jpg',
+    image: '/demo.avif',
     price: '1,30,000',
     range: '181 Km',
     chargingTime: '6.5 Hrs',
@@ -19,7 +19,7 @@ const electricBikes = [
   {
     id: 'ather-450x',
     name: 'Ather 450X',
-    image: '/images/bikes/ather-450x.jpg',
+    image: '/demo.avif',
     price: '1,40,000',
     range: '146 Km',
     chargingTime: '5.5 Hrs',
@@ -28,7 +28,7 @@ const electricBikes = [
   {
     id: 'tvs-iqube',
     name: 'TVS iQube',
-    image: '/images/bikes/tvs-iqube.jpg',
+    image: '/demo.avif',
     price: '99,130',
     range: '100 Km',
     chargingTime: '4.5 Hrs',
@@ -37,7 +37,7 @@ const electricBikes = [
   {
     id: 'bajaj-chetak',
     name: 'Bajaj Chetak',
-    image: '/images/bikes/bajaj-chetak.jpg',
+    image: '/demo.avif',
     price: '1,22,000',
     range: '95 Km',
     chargingTime: '5 Hrs',
@@ -46,7 +46,7 @@ const electricBikes = [
   {
     id: 'revolt-rv400',
     name: 'Revolt RV400',
-    image: '/images/bikes/revolt-rv400.jpg',
+    image: '/demo.avif',
     price: '1,25,000',
     range: '150 Km',
     chargingTime: '4.5 Hrs',

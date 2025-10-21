@@ -10,31 +10,31 @@ const stories = [
   {
     id: 'top-adventure-bikes-under-2-lakhs',
     title: 'Top Adventure Bikes Under 2 Lakhs',
-    image: '/images/stories/adventure-bikes.jpg',
+    image: '/demo.avif',
     date: 'May 12, 2023'
   },
   {
     id: 'best-sports-bikes-in-india',
     title: 'Best Sports Bikes in India',
-    image: '/images/stories/sports-bikes.jpg',
+    image: '/demo.avif',
     date: 'May 10, 2023'
   },
   {
     id: 'upcoming-bikes-in-2023',
     title: 'Upcoming Bikes in 2023',
-    image: '/images/stories/upcoming-bikes.jpg',
+    image: '/demo.avif',
     date: 'May 8, 2023'
   },
   {
     id: 'best-mileage-bikes-in-india',
     title: 'Best Mileage Bikes in India',
-    image: '/images/stories/mileage-bikes.jpg',
+    image: '/demo.avif',
     date: 'May 5, 2023'
   },
   {
     id: 'new-electric-bikes-launching-soon',
     title: 'New Electric Bikes Launching Soon',
-    image: '/images/stories/electric-bikes.jpg',
+    image: '/demo.avif',
     date: 'May 3, 2023'
   }
 ];

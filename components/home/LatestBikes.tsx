@@ -10,7 +10,7 @@ const latestBikes = [
   {
     id: 'royal-enfield-hunter-350',
     name: 'Royal Enfield Hunter 350',
-    image: '/images/bikes/royal-enfield-hunter-350.jpg',
+    image: '/demo.avif',
     price: '1,49,900',
     specs: {
       engine: '349.34 cc',
@@ -21,7 +21,7 @@ const latestBikes = [
   {
     id: 'tvs-ronin',
     name: 'TVS Ronin',
-    image: '/images/bikes/tvs-ronin.jpg',
+    image: '/demo.avif',
     price: '1,49,000',
     specs: {
       engine: '225.9 cc',
@@ -32,7 +32,7 @@ const latestBikes = [
   {
     id: 'yamaha-r15-v4',
     name: 'Yamaha R15 V4',
-    image: '/images/bikes/yamaha-r15-v4.jpg',
+    image: '/demo.avif',
     price: '1,78,900',
     specs: {
       engine: '155 cc',
@@ -43,7 +43,7 @@ const latestBikes = [
   {
     id: 'bajaj-pulsar-n160',
     name: 'Bajaj Pulsar N160',
-    image: '/images/bikes/bajaj-pulsar-n160.jpg',
+    image: '/demo.avif',
     price: '1,28,000',
     specs: {
       engine: '160 cc',

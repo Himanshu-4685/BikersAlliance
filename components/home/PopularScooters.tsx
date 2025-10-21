@@ -10,7 +10,7 @@ const popularScooters = [
   {
     id: 'honda-activa-6g',
     name: 'Honda Activa 6G',
-    image: '/images/scooters/honda-activa-6g.jpg',
+    image: '/demo.avif',
     price: '75,347',
     specs: {
       engine: '109.51 cc',
@@ -21,7 +21,7 @@ const popularScooters = [
   {
     id: 'tvs-jupiter',
     name: 'TVS Jupiter',
-    image: '/images/scooters/tvs-jupiter.jpg',
+    image: '/demo.avif',
     price: '72,853',
     specs: {
       engine: '109.7 cc',
@@ -32,7 +32,7 @@ const popularScooters = [
   {
     id: 'suzuki-access-125',
     name: 'Suzuki Access 125',
-    image: '/images/scooters/suzuki-access-125.jpg',
+    image: '/demo.avif',
     price: '79,899',
     specs: {
       engine: '124 cc',
@@ -43,7 +43,7 @@ const popularScooters = [
   {
     id: 'honda-dio',
     name: 'Honda Dio',
-    image: '/images/scooters/honda-dio.jpg',
+    image: '/demo.avif',
     price: '70,211',
     specs: {
       engine: '109.51 cc',

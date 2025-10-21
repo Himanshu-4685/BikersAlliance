@@ -1,6 +1,4 @@
 {
   "/not-found": "app/not-found.js",
-  "/bikes/[slug]/page": "app/bikes/[slug]/page.js",
-  "/api/models/[slug]/route": "app/api/models/[slug]/route.js",
   "/page": "app/page.js"
 }
