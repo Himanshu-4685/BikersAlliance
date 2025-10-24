@@ -49,7 +49,7 @@ export async function GET(request: Request) {
       case 'cruiser':
         // Cruiser bikes: mid to high price range
         query = query
-          .gte('on_road_price', 150000) // Above 1.5L
+          .gte('on_road_price', 200000) // Above 1.5L
           .order('on_road_price', { ascending: true });
         break;
       
@@ -61,10 +61,64 @@ export async function GET(request: Request) {
         break;
       
       case 'electric':
-        // Electric bikes: look for specific terms
-        query = query
-          .or('specs.engine_type.ilike.%electric%,variant_name.ilike.%electric%,models.model_name.ilike.%electric%')
-          .order('on_road_price', { ascending: true });
+        // Electric bikes: Search for bikes where body_type contains 'electric'
+        console.log('Searching for electric bikes in body_type field...');
+        
+        const { data: electricBikes, error: electricError } = await supabase
+          .from('variants')
+          .select(`
+            variant_id,
+            variant_name,
+            on_road_price,
+            url,
+            brands!inner(brand_name, logo_url),
+            models!inner(model_name),
+            specs!inner(engine_type, displacement, peak_power, city_mileage, body_type),
+            images!left(url)
+          `)
+          .ilike('specs.body_type', '%electric%')
+          .not('on_road_price', 'is', null)
+          .order('on_road_price', { ascending: true })
+          .limit(12);
+
+        if (electricError) {
+          console.error('Electric bikes query error:', electricError);
+          return errorResponse('Failed to fetch electric bikes', 500);
+        }
+
+        console.log(`Electric bikes found: ${electricBikes?.length || 0}`);
+        
+        if (electricBikes && electricBikes.length > 0) {
+          const formattedElectricBikes = electricBikes.map((bike: any) => {
+            console.log('Processing electric bike:', bike.variant_name, 'Body type:', bike.specs?.body_type);
+            
+            const brandSlug = bike.brands?.brand_name?.toLowerCase().replace(/\s+/g, '-') || '';
+            const modelSlug = bike.models?.model_name?.toLowerCase().replace(/\s+/g, '-') || '';
+            const variantUrl = brandSlug && modelSlug ? `${brandSlug}-${modelSlug}` : bike.variant_id;
+            
+            return {
+              variant_id: bike.variant_id,
+              variant_name: bike.variant_name,
+              on_road_price: bike.on_road_price,
+              variant_url: variantUrl,
+              brand_name: bike.brands?.brand_name,
+              brand_logo: bike.brands?.logo_url,
+              model_name: bike.models?.model_name,
+              engine_type: bike.specs?.engine_type || 'Electric',
+              displacement: bike.specs?.displacement,
+              peak_power: bike.specs?.peak_power,
+              city_mileage: bike.specs?.city_mileage,
+              bike_style: bike.specs?.body_type || 'Electric',
+              image_url: bike.images?.[0]?.url || '/demo.avif'
+            };
+          });
+          
+          return successResponse({ bikes: formattedElectricBikes });
+        } else {
+          console.log('No electric bikes found with body_type containing "electric"');
+          return successResponse({ bikes: [] });
+        }
+        // This break is intentionally after the return statements above
         break;
       
       default:

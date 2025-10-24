@@ -1,4 +1,6 @@
 {
+  "/not-found": "app/not-found.js",
+  "/page": "app/page.js",
   "/api/bikes/category/route": "app/api/bikes/category/route.js",
-  "/page": "app/page.js"
+  "/api/bikes/scooters/route": "app/api/bikes/scooters/route.js"
 }

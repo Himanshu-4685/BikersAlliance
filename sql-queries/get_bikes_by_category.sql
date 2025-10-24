@@ -45,6 +45,31 @@ BEGIN
     WHERE s.city_mileage IS NOT NULL
     ORDER BY s.city_mileage DESC
     LIMIT 10;
+  -- For electric category, use specific electric bike filter  
+  ELSIF category_name = 'electric' THEN
+    RETURN QUERY
+    SELECT
+      v.variant_id::text,
+      v.variant_name,
+      v.on_road_price,
+      v.url AS variant_url,
+      b.brand_name,
+      b.logo_url AS brand_logo,
+      m.model_name,
+      s.engine_type,
+      s.displacement,
+      s.peak_power,
+      s.city_mileage,
+      s.body_type AS bike_style,
+      COALESCE(i.url, '/demo.avif') AS image_url
+    FROM public.variants v
+    INNER JOIN public.brands b ON v.brand_id = b.brand_id
+    INNER JOIN public.specs s ON v.variant_id = s.variant_id
+    LEFT JOIN public.images i ON v.variant_id = i.variant_id
+    WHERE LOWER(s.body_type) LIKE '%electric%'
+      AND v.on_road_price IS NOT NULL
+    ORDER BY v.on_road_price ASC
+    LIMIT 12;
   ELSE
     -- For other categories, filter by body type
     RETURN QUERY
