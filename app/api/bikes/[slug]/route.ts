@@ -96,53 +96,106 @@ export async function GET(
 ) {
   try {
     const { slug } = params;
+    console.log('API: Received request for slug:', slug);
     
     if (!slug) {
       return errorResponse('Bike slug is required', 400);
     }
-    
+
     const supabase = createServerClient();
     
     // Get Supabase URL for image construction
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
     
-    // Parse slug to extract brand and model
-    const slugParts = slug.split('-');
-    const brandName = slugParts[0];
-    const modelName = slugParts.slice(1).join('-');
-    
-    // Fetch bike details with comprehensive data
-    const { data: variants, error } = await supabase
-      .from('variants')
-      .select(`
-        variant_id,
-        variant_name,
-        on_road_price,
-        ex_showroom_price,
-        specifications,
-        models!inner(
-          model_id,
-          model_name,
-          description,
-          launch_date,
-          category_id,
-          brands!inner(
-            brand_id,
-            brand_name,
-            logo_url
-          ),
-          categories(
+    let variants: Variant[] | null = null;
+    let error: any = null;
+
+    // Check if slug is a UUID (variant ID) or a regular slug
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+    console.log('API: Is UUID?', isUUID);
+
+    if (isUUID) {
+      console.log('API: Fetching by variant ID');
+      // Handle variant ID lookup
+      const result = await supabase
+        .from('variants')
+        .select(`
+          variant_id,
+          variant_name,
+          on_road_price,
+          ex_showroom_price,
+          specifications,
+          models!inner(
+            model_id,
+            model_name,
+            description,
+            launch_date,
             category_id,
-            category_name,
-            category_type
+            brands!inner(
+              brand_id,
+              brand_name,
+              logo_url
+            ),
+            categories(
+              category_id,
+              category_name,
+              category_type
+            )
           )
-        )
-      `)
-      .ilike('models.brands.brand_name', `%${brandName}%`)
-      .ilike('models.model_name', `%${modelName}%`)
-      .order('on_road_price') as { data: Variant[] | null; error: any };
-    
+        `)
+        .eq('variant_id', slug);
+      
+      variants = result.data;
+      error = result.error;
+    } else {
+      console.log('API: Fetching by slug');
+      // Handle regular slug lookup
+      // Parse slug to extract brand and model
+      const slugParts = slug.split('-');
+      const brandName = slugParts[0];
+      const modelName = slugParts.slice(1).join('-');
+      
+      console.log('API: Brand:', brandName, 'Model:', modelName);
+      
+      // Fetch bike details with comprehensive data
+      const result = await supabase
+        .from('variants')
+        .select(`
+          variant_id,
+          variant_name,
+          on_road_price,
+          ex_showroom_price,
+          specifications,
+          models!inner(
+            model_id,
+            model_name,
+            description,
+            launch_date,
+            category_id,
+            brands!inner(
+              brand_id,
+              brand_name,
+              logo_url
+            ),
+            categories(
+              category_id,
+              category_name,
+              category_type
+            )
+          )
+        `)
+        .ilike('models.brands.brand_name', `%${brandName}%`)
+        .ilike('models.model_name', `%${modelName}%`)
+        .order('on_road_price') as { data: Variant[] | null; error: any };
+      
+      variants = result.data;
+      error = result.error;
+    }
+
+    console.log('API: Database result - variants count:', variants?.length || 0);
     if (error) {
+      console.error('API: Database error:', error);
+    }    if (error) {
       console.error('Error fetching bike details:', error);
       return errorResponse('Failed to fetch bike details', 500);
     }
@@ -217,34 +270,37 @@ export async function GET(
       category: category ? {
         id: category.category_id,
         name: category.category_name,
-        type: category.category_type
+        slug: category.category_name.toLowerCase().replace(/\s+/g, '-')
       } : null,
       variants: formattedVariants,
-      similarBikes: formattedSimilarBikes,
+      similarModels: formattedSimilarBikes,
       images: formattedVariants.map(variant => ({
         id: variant.id,
         url: variant.imageUrl,
-        defaultUrl: variant.defaultImageUrl,
         alt: `${brand.brand_name} ${model.model_name} ${variant.name}`
       })),
-      // Get all unique specifications from all variants
+      // Flatten specifications into array format
       specifications: formattedVariants.reduce((allSpecs, variant) => {
         Object.entries(variant.specifications).forEach(([category, specs]) => {
-          if (!allSpecs[category]) {
-            allSpecs[category] = [];
-          }
           (specs as Array<{ name: string; value: string }>).forEach(spec => {
-            if (!allSpecs[category].find(s => s.name === spec.name)) {
-              allSpecs[category].push(spec);
+            const specId = `${spec.name.toLowerCase().replace(/\s+/g, '-')}-${category}`;
+            if (!allSpecs.find(s => s.id === specId)) {
+              allSpecs.push({
+                id: specId,
+                name: spec.name,
+                value: spec.value
+              });
             }
           });
         });
         return allSpecs;
-      }, {} as Record<string, Array<{ name: string; value: string }>>),
+      }, [] as Array<{ id: string; name: string; value: string }>),
+      features: [], // TODO: Add features data when available
       rating: {
-        average: null, // TODO: Implement reviews system
+        average: 0,
         count: 0
-      }
+      },
+      reviews: []
     };
     
     return successResponse(bikeDetails);

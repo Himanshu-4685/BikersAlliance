@@ -92,11 +92,14 @@ export default function BikeDetailsPage() {
   useEffect(() => {
     const fetchBikeDetails = async () => {
       try {
-        const response = await fetch(`/api/models/${slug}`);
+        console.log('Fetching bike details for slug:', slug);
+        const response = await fetch(`/api/bikes/${slug}`);
         const result = await response.json();
         
+        console.log('API Response:', result);
+        
         if (result.success) {
-          setBike(result.data.model);
+          setBike(result.data);
         } else {
           console.error('Failed to fetch bike details:', result.error);
           notFound();
