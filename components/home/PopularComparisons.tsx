@@ -3,7 +3,9 @@
 import { useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { useComparison } from '@/context/ComparisonContext';
 
 // Popular Comparisons Data
 const comparisons = [
@@ -11,14 +13,20 @@ const comparisons = [
     id: 'hero-splendor-plus-vs-honda-shine',
     bikes: [
       {
+        id: 'hero-splendor-plus',
         name: 'Hero Splendor Plus',
-        image: '/images/bikes/hero-splendor-plus.jpg',
-        price: '72,650'
+        image: '/demo.avif',
+        price: 72650,
+        slug: 'hero-splendor-plus',
+        brand: { name: 'Hero', slug: 'hero' }
       },
       {
+        id: 'honda-shine',
         name: 'Honda Shine',
-        image: '/images/bikes/honda-shine.jpg',
-        price: '78,687'
+        image: '/demo.avif',
+        price: 78687,
+        slug: 'honda-shine',
+        brand: { name: 'Honda', slug: 'honda' }
       }
     ]
   },
@@ -26,14 +34,20 @@ const comparisons = [
     id: 'royal-enfield-classic-350-vs-jawa-42',
     bikes: [
       {
+        id: 're-classic-350',
         name: 'Royal Enfield Classic 350',
-        image: '/images/bikes/royal-enfield-classic-350.jpg',
-        price: '1,90,292'
+        image: '/demo.avif',
+        price: 190292,
+        slug: 're-classic-350',
+        brand: { name: 'Royal Enfield', slug: 'royal-enfield' }
       },
       {
+        id: 'jawa-42',
         name: 'Jawa 42',
-        image: '/images/bikes/jawa-42.jpg',
-        price: '1,98,142'
+        image: '/demo.avif',
+        price: 198142,
+        slug: 'jawa-42',
+        brand: { name: 'Jawa', slug: 'jawa' }
       }
     ]
   },
@@ -41,14 +55,20 @@ const comparisons = [
     id: 'bajaj-pulsar-150-vs-yamaha-fz-s-v3',
     bikes: [
       {
+        id: 'bajaj-pulsar-150',
         name: 'Bajaj Pulsar 150',
-        image: '/images/bikes/bajaj-pulsar-150.jpg',
-        price: '1,07,494'
+        image: '/demo.avif',
+        price: 107494,
+        slug: 'bajaj-pulsar-150',
+        brand: { name: 'Bajaj', slug: 'bajaj' }
       },
       {
+        id: 'yamaha-fz-s-v3',
         name: 'Yamaha FZ S V3',
-        image: '/images/bikes/yamaha-fz-s-v3.jpg',
-        price: '1,20,900'
+        image: '/demo.avif',
+        price: 120900,
+        slug: 'yamaha-fz-s-v3',
+        brand: { name: 'Yamaha', slug: 'yamaha' }
       }
     ]
   },
@@ -56,14 +76,20 @@ const comparisons = [
     id: 'tvs-raider-vs-hero-glamour',
     bikes: [
       {
+        id: 'tvs-raider',
         name: 'TVS Raider',
-        image: '/images/bikes/tvs-raider.jpg',
-        price: '95,219'
+        image: '/demo.avif',
+        price: 95219,
+        slug: 'tvs-raider',
+        brand: { name: 'TVS', slug: 'tvs' }
       },
       {
+        id: 'hero-glamour',
         name: 'Hero Glamour',
-        image: '/images/bikes/hero-glamour.jpg',
-        price: '82,348'
+        image: '/demo.avif',
+        price: 82348,
+        slug: 'hero-glamour',
+        brand: { name: 'Hero', slug: 'hero' }
       }
     ]
   }
@@ -71,6 +97,8 @@ const comparisons = [
 
 export default function PopularComparisons() {
   const sliderRef = useRef<HTMLDivElement>(null);
+  const { addToComparison, clearComparison } = useComparison();
+  const router = useRouter();
   
   const scrollLeft = () => {
     if (sliderRef.current) {
@@ -83,6 +111,19 @@ export default function PopularComparisons() {
       sliderRef.current.scrollBy({ left: 300, behavior: 'smooth' });
     }
   };
+
+  const handleCompareClick = (comparison: typeof comparisons[0]) => {
+    // Clear existing comparison first
+    clearComparison();
+    
+    // Add both bikes to comparison
+    comparison.bikes.forEach(bike => {
+      addToComparison(bike);
+    });
+    
+    // Navigate to compare page
+    router.push('/compare');
+  };
   
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
@@ -91,7 +132,7 @@ export default function PopularComparisons() {
         <h2 className="text-2xl text-gray-900" style={{ fontFamily: 'Lato, sans-serif, Arial', fontSize: '23px', fontWeight: 500 }}>
           <b>Popular Comparisons</b>
         </h2>
-        <Link href="/compare-bikes" className="px-4 py-2 text-sm text-primary border border-primary rounded-md hover:bg-primary hover:text-white transition-colors">
+        <Link href="/compare" className="px-4 py-2 text-sm text-primary border border-primary rounded-md hover:bg-primary hover:text-white transition-colors">
           Compare Bikes
         </Link>
       </div>
@@ -137,7 +178,7 @@ export default function PopularComparisons() {
                       <h4 className="mb-1 text-sm font-medium text-center text-gray-900">
                         {bike.name}
                       </h4>
-                      <p className="text-sm text-gray-700">₹ {bike.price}</p>
+                      <p className="text-sm text-gray-700">₹ {bike.price.toLocaleString('en-IN')}</p>
                     </div>
                   ))}
                 </div>
@@ -150,12 +191,12 @@ export default function PopularComparisons() {
                 </div>
                 
                 {/* CTA */}
-                <Link 
-                  href={`/compare/${comparison.id}`} 
+                <button 
+                  onClick={() => handleCompareClick(comparison)}
                   className="block w-full px-4 py-2 text-sm font-medium text-center text-white transition-colors bg-primary rounded-md hover:bg-primary-600"
                 >
                   Compare Bikes
-                </Link>
+                </button>
               </div>
             </div>
           </div>

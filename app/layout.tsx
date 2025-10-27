@@ -4,6 +4,8 @@ import './globals.css';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { AuthProvider } from '@/context/AuthContext.supabase';
+import { ComparisonProvider } from '@/context/ComparisonContext';
+import ComparisonBar from '@/components/comparison/ComparisonBar';
 
 // Load fonts
 const inter = Inter({ 
@@ -55,9 +57,12 @@ export default function RootLayout({
       </head>
       <body>
         <AuthProvider>
-          <Header />
-          <main>{children}</main>
-          <Footer />
+          <ComparisonProvider>
+            <Header />
+            <main>{children}</main>
+            <Footer />
+            <ComparisonBar />
+          </ComparisonProvider>
         </AuthProvider>
       </body>
     </html>

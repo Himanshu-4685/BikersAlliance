@@ -11,6 +11,7 @@ export async function GET(request: Request) {
     // Parse filter parameters
     const search = searchParams.get('search');
     const brand = searchParams.get('brand');
+    const model = searchParams.get('model'); // Add model filter
     const minPrice = searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined;
     const maxPrice = searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined;
     const sortBy = searchParams.get('sortBy') || 'price';
@@ -51,6 +52,32 @@ export async function GET(request: Request) {
         
       if (brandData) {
         query = query.eq('brand_id', (brandData as any).brand_id);
+      }
+    }
+
+    // Apply model filter
+    if (model) {
+      console.log('Filtering by model:', model);
+      // Filter by model_id directly if it's a UUID or number, otherwise filter by model name
+      if (model.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i) || !isNaN(Number(model))) {
+        // It's a UUID or number, filter by model_id
+        console.log('Filtering by model_id:', model);
+        query = query.eq('model_id', model);
+      } else {
+        // It's a model name, look up model by name
+        console.log('Looking up model by name:', model);
+        const { data: modelData } = await supabase
+          .from('models')
+          .select('model_id')
+          .eq('model_name', model)
+          .single();
+          
+        if (modelData) {
+          console.log('Found model ID:', (modelData as any).model_id);
+          query = query.eq('model_id', (modelData as any).model_id);
+        } else {
+          console.log('Model not found:', model);
+        }
       }
     }
 
