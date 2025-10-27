@@ -1,10 +1,8 @@
 {
-  "/page": "app/page.js",
-  "/api/compare/route": "app/api/compare/route.js",
-  "/api/bikes/scooters/route": "app/api/bikes/scooters/route.js",
+  "/not-found": "app/not-found.js",
+  "/brands/[slug]/page": "app/brands/[slug]/page.js",
   "/api/bikes/category/route": "app/api/bikes/category/route.js",
-  "/api/brands/route": "app/api/brands/route.js",
-  "/compare/page": "app/compare/page.js",
-  "/api/models/route": "app/api/models/route.js",
-  "/api/bikes/route": "app/api/bikes/route.js"
+  "/page": "app/page.js",
+  "/api/brands/[slug]/route": "app/api/brands/[slug]/route.js",
+  "/api/bikes/scooters/route": "app/api/bikes/scooters/route.js"
 }

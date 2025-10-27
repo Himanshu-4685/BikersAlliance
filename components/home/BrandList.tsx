@@ -18,11 +18,12 @@ const fallbackBrands = [
 // Helper function to convert brand name to slug for URL and image path
 function brandNameToSlug(brandName: string): string {
   return brandName
+    .trim() // Trim whitespace/newlines first
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except spaces and hyphens
     .replace(/\s+/g, '-') // Replace spaces with hyphens
     .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
-    .trim();
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
 }
 
 // Helper function to get fallback image path

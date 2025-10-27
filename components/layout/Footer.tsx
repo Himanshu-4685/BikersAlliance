@@ -126,8 +126,8 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/dealers" className="text-sm text-gray-300 hover:text-white">
-                  Dealer Locator
+                <Link href="/showrooms" className="text-sm text-gray-300 hover:text-white">
+                  Showrooms
                 </Link>
               </li>
               <li>

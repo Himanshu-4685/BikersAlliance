@@ -32,16 +32,32 @@ export async function GET(request: NextRequest) {
       throw countError;
     }
 
-    // Transform the data to match the expected format
-    const formattedBrands = (brands || []).map((brand: any) => ({
-      id: brand.brand_id,
-      name: brand.brand_name,
-      slug: brand.brand_name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'),
-      logoUrl: brand.logo_url,
-      country: brand.country,
-      _count: {
-        models: 0 // Note: You'll need to implement a separate count query if needed
-      }
+    // Transform the data to match the expected format with actual model counts
+    const formattedBrands = await Promise.all((brands || []).map(async (brand: any) => {
+      // Get model count for each brand
+      const { count: modelCount } = await supabase
+        .from('models')
+        .select('*', { count: 'exact', head: true })
+        .eq('brand_id', brand.brand_id);
+
+      // Clean brand name and generate proper slug
+      const cleanBrandName = brand.brand_name.trim();
+      const slug = cleanBrandName.toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '') // Remove special characters
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .replace(/-+/g, '-') // Replace multiple hyphens with single
+        .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+
+      return {
+        id: brand.brand_id,
+        name: cleanBrandName,
+        slug: slug,
+        logoUrl: brand.logo_url,
+        country: brand.country,
+        _count: {
+          models: modelCount || 0
+        }
+      };
     }));
 
     // Return the response
