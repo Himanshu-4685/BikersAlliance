@@ -72,6 +72,10 @@ export async function GET(
           peak_power,
           city_mileage,
           engine_type
+        ),
+        images(
+          url,
+          alt_text
         )
       `)
       .eq('brand_id', brand.brand_id);
@@ -116,6 +120,11 @@ export async function GET(
         .replace(/\s+/g, '-')
         .trim();
       
+      // Get the first image URL from the images array, or use default
+      const imageUrl = variant.images && variant.images.length > 0 
+        ? variant.images[0].url 
+        : `/images/bikes/${variantSlug || 'default'}.avif`;
+      
       return {
         variant_id: variant.variant_id,
         variant_name: variant.variant_name,
@@ -129,7 +138,8 @@ export async function GET(
         displacement: variant.specs?.displacement || 'N/A',
         peak_power: variant.specs?.peak_power || 'N/A',
         city_mileage: variant.specs?.city_mileage || 'N/A',
-        image_url: `/images/bikes/${variantSlug || 'default'}.avif`,
+        image_url: imageUrl,
+        images: variant.images || [], // Include all images for the variant
       };
     });
 

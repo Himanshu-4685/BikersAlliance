@@ -1,267 +1,35 @@
 {
   "pages": {
-    "/_not-found": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/app/_not-found-55354a05656fd818.js"
+    "/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/page.js"
     ],
     "/layout": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/739-db218589aa88dd5a.js",
-      "static/chunks/326-7bd7ec6039e4e3f6.js",
-      "static/chunks/413-fa8a3e75d8b2a7b2.js",
-      "static/chunks/450-d6023667c566c1a8.js",
-      "static/chunks/719-768e46f69b116419.js",
-      "static/css/987243ac9a7b7525.css",
-      "static/chunks/app/layout-1737ae71c828caa1.js"
-    ],
-    "/auth/callback/page": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/app/auth/callback/page-f06e02c22fe738ff.js"
-    ],
-    "/bikes/[slug]/page": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/739-db218589aa88dd5a.js",
-      "static/chunks/326-7bd7ec6039e4e3f6.js",
-      "static/chunks/413-fa8a3e75d8b2a7b2.js",
-      "static/chunks/app/bikes/[slug]/page-214cd5facc858c22.js"
-    ],
-    "/brands/page": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/739-db218589aa88dd5a.js",
-      "static/chunks/326-7bd7ec6039e4e3f6.js",
-      "static/chunks/413-fa8a3e75d8b2a7b2.js",
-      "static/chunks/app/brands/page-c39a87d18973b6a1.js"
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/layout.css",
+      "static/chunks/app/layout.js"
     ],
     "/brands/loading": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/413-fa8a3e75d8b2a7b2.js",
-      "static/chunks/app/brands/loading-44ef1a0fe4b3477a.js"
-    ],
-    "/compare/page": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/739-db218589aa88dd5a.js",
-      "static/chunks/326-7bd7ec6039e4e3f6.js",
-      "static/chunks/413-fa8a3e75d8b2a7b2.js",
-      "static/chunks/app/compare/page-154d375825266f68.js"
-    ],
-    "/bikes/page": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/739-db218589aa88dd5a.js",
-      "static/chunks/326-7bd7ec6039e4e3f6.js",
-      "static/chunks/413-fa8a3e75d8b2a7b2.js",
-      "static/chunks/app/bikes/page-3090ecaefba4e8fa.js"
-    ],
-    "/finance/offers/page": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/739-db218589aa88dd5a.js",
-      "static/chunks/326-7bd7ec6039e4e3f6.js",
-      "static/chunks/app/finance/offers/page-d6399743f45d596c.js"
-    ],
-    "/brands/[slug]/page": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/739-db218589aa88dd5a.js",
-      "static/chunks/326-7bd7ec6039e4e3f6.js",
-      "static/chunks/413-fa8a3e75d8b2a7b2.js",
-      "static/chunks/app/brands/[slug]/page-b6108f2518fa8bd8.js"
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/brands/loading.js"
     ],
     "/brands/[slug]/loading": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/413-fa8a3e75d8b2a7b2.js",
-      "static/chunks/app/brands/[slug]/loading-5a8098a4cd8e4db4.js"
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/brands/[slug]/loading.js"
     ],
-    "/login/page": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/98916abf-f8d6236c47c67e93.js",
-      "static/chunks/739-db218589aa88dd5a.js",
-      "static/chunks/326-7bd7ec6039e4e3f6.js",
-      "static/chunks/413-fa8a3e75d8b2a7b2.js",
-      "static/chunks/450-d6023667c566c1a8.js",
-      "static/chunks/app/login/page-c438c8f8d5a1b7e9.js"
+    "/brands/[slug]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/brands/[slug]/page.js"
     ],
-    "/page": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/739-db218589aa88dd5a.js",
-      "static/chunks/326-7bd7ec6039e4e3f6.js",
-      "static/chunks/413-fa8a3e75d8b2a7b2.js",
-      "static/chunks/450-d6023667c566c1a8.js",
-      "static/chunks/app/page-e7aac0befb483899.js"
-    ],
-    "/register/page": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/98916abf-f8d6236c47c67e93.js",
-      "static/chunks/739-db218589aa88dd5a.js",
-      "static/chunks/326-7bd7ec6039e4e3f6.js",
-      "static/chunks/413-fa8a3e75d8b2a7b2.js",
-      "static/chunks/450-d6023667c566c1a8.js",
-      "static/chunks/app/register/page-e90f9511fbc9d4a2.js"
-    ],
-    "/dashboard/page": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/739-db218589aa88dd5a.js",
-      "static/chunks/326-7bd7ec6039e4e3f6.js",
-      "static/chunks/413-fa8a3e75d8b2a7b2.js",
-      "static/chunks/450-d6023667c566c1a8.js",
-      "static/chunks/app/dashboard/page-27f05e366e8d021d.js"
-    ],
-    "/bikes/offers/page": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/739-db218589aa88dd5a.js",
-      "static/chunks/326-7bd7ec6039e4e3f6.js",
-      "static/chunks/413-fa8a3e75d8b2a7b2.js",
-      "static/chunks/app/bikes/offers/page-726fcaf67084b5ed.js"
-    ],
-    "/showrooms/[slug]/page": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/739-db218589aa88dd5a.js",
-      "static/chunks/326-7bd7ec6039e4e3f6.js",
-      "static/chunks/413-fa8a3e75d8b2a7b2.js",
-      "static/chunks/app/showrooms/[slug]/page-8e0fbff487149c5e.js"
-    ],
-    "/supabase-example/page": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/450-d6023667c566c1a8.js",
-      "static/chunks/app/supabase-example/page-3a5de008febfc574.js"
-    ],
-    "/used-bikes/[slug]/page": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/326-7bd7ec6039e4e3f6.js",
-      "static/chunks/app/used-bikes/[slug]/page-683d8db4ac5ea48d.js"
-    ],
-    "/showrooms/page": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/739-db218589aa88dd5a.js",
-      "static/chunks/326-7bd7ec6039e4e3f6.js",
-      "static/chunks/413-fa8a3e75d8b2a7b2.js",
-      "static/chunks/app/showrooms/page-7e3ba699acc8de20.js"
-    ],
-    "/used-bikes/page": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/326-7bd7ec6039e4e3f6.js",
-      "static/chunks/app/used-bikes/page-40c9ff96e481025d.js"
-    ],
-    "/finance/emi-calculator/page": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/739-db218589aa88dd5a.js",
-      "static/chunks/app/finance/emi-calculator/page-6dafa2b93e157385.js"
-    ],
-    "/finance/emi-calculator/layout": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/app/finance/emi-calculator/layout-9335b1456ee155d6.js"
-    ],
-    "/tools/fuel-calculator/page": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/739-db218589aa88dd5a.js",
-      "static/chunks/326-7bd7ec6039e4e3f6.js",
-      "static/chunks/app/tools/fuel-calculator/page-11a270be4f43492c.js"
-    ],
-    "/tools/fuel-calculator/layout": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/app/tools/fuel-calculator/layout-0c2b765f15794bb2.js"
-    ],
-    "/sell-bike/page": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/739-db218589aa88dd5a.js",
-      "static/chunks/app/sell-bike/page-bbdeedea1032eab9.js"
-    ],
-    "/sell-bike/layout": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/app/sell-bike/layout-8804948341a785e2.js"
-    ],
-    "/electric/charging-stations/page": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/739-db218589aa88dd5a.js",
-      "static/chunks/app/electric/charging-stations/page-fd9cf25ee9169ad4.js"
-    ],
-    "/electric/charging-stations/layout": [
-      "static/chunks/webpack-c0834b3d4e6bcd0e.js",
-      "static/chunks/fd9d1056-7286f97f87ef6ea7.js",
-      "static/chunks/472-b175470df73cd163.js",
-      "static/chunks/main-app-a8dc44a8852b1fa6.js",
-      "static/chunks/app/electric/charging-stations/layout-749517d706c11776.js"
+    "/not-found": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/not-found.js"
     ]
   }
 }
