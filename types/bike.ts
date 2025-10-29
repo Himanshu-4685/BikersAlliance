@@ -33,3 +33,52 @@ export interface Bike {
 export interface BikesApiResponse {
   bikes: BikeFromDB[];
 }
+
+// Body Type structure
+export interface BodyType {
+  name: string;
+  slug: string;
+  count: number;
+}
+
+// Body Type API Response
+export interface BodyTypesApiResponse {
+  bodyTypes: BodyType[];
+  total: number;
+}
+
+// Body Type Bikes API Response
+export interface BodyTypeBikesApiResponse {
+  bikes: FormattedBike[];
+  bodyType: {
+    name: string;
+    slug: string;
+  };
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+// Enhanced bike structure for body type pages
+export interface FormattedBike {
+  id: string;
+  name: string;
+  slug: string;
+  brand: {
+    name: string;
+    logo: string | null;
+  };
+  model: string;
+  image: string | null;
+  price: number | null;
+  specs: {
+    bodyType: string;
+    engine: string;
+    displacement: string;
+    power: string;
+    mileage: string;
+  };
+}
