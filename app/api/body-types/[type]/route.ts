@@ -23,8 +23,35 @@ export async function GET(
     const limit = Number(searchParams.get('limit')) || 12;
     const offset = (page - 1) * limit;
 
-    // Convert slug back to body type name
-    const bodyTypeName = bodyType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    // Convert slug back to body type name with proper mapping
+    const getBodyTypeFromSlug = (slug: string): string => {
+      const mappings: { [key: string]: string } = {
+        'super': 'Super Bikes',
+        'super-sports': 'Super Bikes',
+        'sports': 'Sports Bikes',
+        'cruiser': 'Cruiser Bikes',
+        'sports-naked': 'Sports Naked Bikes',
+        'cafe-racer': 'Cafe Racer Bikes',
+        'dirt': 'Dirt Bikes',
+        'off-road': 'Off Road Bikes',
+        'adventure': 'Adventure Tourer Bikes',
+        'adventure-tourer': 'Adventure Tourer Bikes',
+        'sports-tourer': 'Sports Tourer Bikes',
+        'commuter': 'Commuter Bikes',
+        'scooter': 'Scooters',
+        'electric': 'Electric Bikes'
+      };
+      
+      // First check if we have a direct mapping
+      if (mappings[slug]) {
+        return mappings[slug];
+      }
+      
+      // If no direct mapping, convert slug to title case as fallback
+      return slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    };
+
+    const bodyTypeName = getBodyTypeFromSlug(bodyType);
 
     const supabase = createServerClient();
 
@@ -48,7 +75,7 @@ export async function GET(
         ),
         images(url, alt_text)
       `)
-      .eq('specs.body_type', bodyTypeName);
+      .ilike('specs.body_type', `%${bodyTypeName}%`);
 
     // Apply search filter
     if (search) {
@@ -84,8 +111,8 @@ export async function GET(
     // Get total count for pagination
     let countQuery = supabase
       .from('variants')
-      .select('variant_id', { count: 'exact', head: true })
-      .eq('specs.body_type', bodyTypeName);
+      .select('variant_id, specs!inner(body_type)', { count: 'exact', head: true })
+      .ilike('specs.body_type', `%${bodyTypeName}%`);
 
     if (search) {
       countQuery = countQuery.or(`variant_name.ilike.%${search}%,models.model_name.ilike.%${search}%,brands.brand_name.ilike.%${search}%`);

@@ -11,35 +11,35 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/bikes/type/[type]/page": [
+    "/bikes/displacement/[displacement]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/bikes/type/[type]/page.js"
+      "static/chunks/app/bikes/displacement/[displacement]/page.js"
     ],
-    "/bikes/[slug]/page": [
+    "/bikes/budget/[budget]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/bikes/[slug]/page.js"
+      "static/chunks/app/bikes/budget/[budget]/page.js"
     ],
-    "/brands/loading": [
+    "/compare/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/brands/loading.js"
+      "static/chunks/app/compare/page.js"
     ],
-    "/brands/[slug]/page": [
+    "/about/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/brands/[slug]/page.js"
+      "static/chunks/app/about/page.js"
     ],
-    "/brands/[slug]/loading": [
+    "/about/error": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/brands/[slug]/loading.js"
+      "static/chunks/app/about/error.js"
     ],
-    "/not-found": [
+    "/about/loading": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/not-found.js"
+      "static/chunks/app/about/loading.js"
     ]
   }
 }

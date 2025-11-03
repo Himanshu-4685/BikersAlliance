@@ -37,7 +37,7 @@ export async function GET(
       'off road': 'Off Road Bikes',
       'off-road': 'Off Road Bikes',
       'naked': 'Naked Bikes',
-      'super': 'Super Sports Bikes',
+      'super': 'Super Bikes',
       'touring': 'Tourer Bikes',
       'tourer': 'Tourer Bikes',
       'sports naked': 'Sports Naked Bikes',
