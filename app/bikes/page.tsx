@@ -11,6 +11,7 @@ import BrandFilter from '@/components/filters/BrandFilter';
 import CategoryFilter from '@/components/filters/CategoryFilter';
 import PriceFilter from '@/components/filters/PriceFilter';
 import EngineFilter from '@/components/filters/EngineFilter';
+import EngineTypeFilter from '@/components/filters/EngineTypeFilter';
 import MileageFilter from '@/components/filters/MileageFilter';
 import SortSelector from '@/components/filters/SortSelector';
 
@@ -66,6 +67,7 @@ export default function BikesPage() {
   const currentSearch = searchParams.get('search');
   const currentBrand = searchParams.get('brand');
   const currentCategory = searchParams.get('category');
+  const currentEngineType = searchParams.get('engineType');
   const currentMinPrice = searchParams.get('minPrice');
   const currentMaxPrice = searchParams.get('maxPrice');
   const currentMinEngineCapacity = searchParams.get('minEngineCapacity');
@@ -86,6 +88,7 @@ export default function BikesPage() {
       if (currentSearch) params.append('search', currentSearch);
       if (currentBrand) params.append('brand', currentBrand);
       if (currentCategory) params.append('category', currentCategory);
+      if (currentEngineType) params.append('engineType', currentEngineType);
       if (currentMinPrice) params.append('minPrice', currentMinPrice);
       if (currentMaxPrice) params.append('maxPrice', currentMaxPrice);
       if (currentMinEngineCapacity) params.append('minEngineCapacity', currentMinEngineCapacity);
@@ -118,6 +121,7 @@ export default function BikesPage() {
     currentSearch,
     currentBrand,
     currentCategory,
+    currentEngineType,
     currentMinPrice,
     currentMaxPrice,
     currentMinEngineCapacity,
@@ -159,6 +163,7 @@ export default function BikesPage() {
   const hasActiveFilters = Boolean(
     currentBrand ||
     currentCategory ||
+    currentEngineType ||
     currentMinPrice ||
     currentMaxPrice ||
     currentMinEngineCapacity ||
@@ -244,6 +249,12 @@ export default function BikesPage() {
                   onChange={(category) => updateFilters({ category })}
                 />
                 
+                {/* Engine Type Filter */}
+                <EngineTypeFilter 
+                  selectedEngineType={currentEngineType || ''} 
+                  onChange={(engineType) => updateFilters({ engineType })}
+                />
+                
                 {/* Price Filter */}
                 <PriceFilter 
                   minPrice={currentMinPrice ? parseInt(currentMinPrice) : undefined}
@@ -304,6 +315,15 @@ export default function BikesPage() {
                     selectedCategory={currentCategory || ''} 
                     onChange={(category) => {
                       updateFilters({ category });
+                      setShowMobileFilters(false);
+                    }}
+                  />
+                  
+                  {/* Engine Type Filter */}
+                  <EngineTypeFilter 
+                    selectedEngineType={currentEngineType || ''} 
+                    onChange={(engineType) => {
+                      updateFilters({ engineType });
                       setShowMobileFilters(false);
                     }}
                   />

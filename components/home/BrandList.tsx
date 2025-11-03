@@ -542,18 +542,6 @@ export default function BrandList() {
               <div className="text-xs text-gray-600">Electric</div>
             </div>
           </Link>
-          <Link href="/bikes/engine/fuel-injection" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
-            <div className="text-center">
-              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">FI</div>
-              <div className="text-xs text-gray-600">Fuel Injection</div>
-            </div>
-          </Link>
-          <Link href="/bikes/engine/carburetor" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
-            <div className="text-center">
-              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">CARB</div>
-              <div className="text-xs text-gray-600">Carburetor</div>
-            </div>
-          </Link>
           <Link href="/bikes/engine/single-cylinder" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
             <div className="text-center">
               <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">1-CYL</div>

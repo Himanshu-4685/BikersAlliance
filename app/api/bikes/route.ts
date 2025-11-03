@@ -12,6 +12,7 @@ export async function GET(request: Request) {
     const search = searchParams.get('search');
     const brand = searchParams.get('brand');
     const model = searchParams.get('model'); // Add model filter
+    const engineType = searchParams.get('engineType');
     const minPrice = searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined;
     const maxPrice = searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined;
     const sortBy = searchParams.get('sortBy') || 'price';
@@ -33,7 +34,8 @@ export async function GET(request: Request) {
         model_id,
         brand_id,
         models!inner(model_name),
-        brands!inner(brand_name)
+        brands!inner(brand_name),
+        specs!inner(engine_type)
       `);
 
     // Apply search filter
@@ -87,6 +89,23 @@ export async function GET(request: Request) {
     }
     if (maxPrice !== undefined) {
       query = query.lte('on_road_price', maxPrice);
+    }
+
+    // Engine type filter
+    if (engineType) {
+      // Map the engine type slug to the pattern to search for
+      const engineTypeMapping: { [key: string]: string } = {
+        '4-stroke': '4-stroke',
+        '2-stroke': '2-stroke',
+        'electric': 'Electric',
+        'single-cylinder': 'Single cylinder',
+        'multi-cylinder': 'Multi'
+      };
+      
+      const searchPattern = engineTypeMapping[engineType];
+      if (searchPattern) {
+        query = query.ilike('specs.engine_type', `%${searchPattern}%`);
+      }
     }
 
     // Sorting
