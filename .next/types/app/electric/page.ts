@@ -1,8 +1,8 @@
-// File: C:\Users\himan\Desktop\bikersalliance\Bike-website-main\BikersAlliance\app\bikes\engine\[engineType]\page.tsx
-import * as entry from '../../../../../../app/bikes/engine/[engineType]/page.js'
+// File: C:\Users\himan\Desktop\bikersalliance\Bike-website-main\BikersAlliance\app\electric\page.tsx
+import * as entry from '../../../../app/electric/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
-type TEntry = typeof import('../../../../../../app/bikes/engine/[engineType]/page.js')
+type TEntry = typeof import('../../../../app/electric/page.js')
 
 // Check that the entry is a valid entry
 checkFields<Diff<{

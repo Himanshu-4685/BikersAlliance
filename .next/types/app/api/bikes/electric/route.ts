@@ -1,8 +1,8 @@
-// File: C:\Users\himan\Desktop\bikersalliance\Bike-website-main\BikersAlliance\app\api\bikes\engine\[engineType]\route.ts
-import * as entry from '../../../../../../../app/api/bikes/engine/[engineType]/route.js'
+// File: C:\Users\himan\Desktop\bikersalliance\Bike-website-main\BikersAlliance\app\api\bikes\electric\route.ts
+import * as entry from '../../../../../../app/api/bikes/electric/route.js'
 import type { NextRequest } from 'next/server.js'
 
-type TEntry = typeof import('../../../../../../../app/api/bikes/engine/[engineType]/route.js')
+type TEntry = typeof import('../../../../../../app/api/bikes/electric/route.js')
 
 // Check that the entry is a valid entry
 checkFields<Diff<{

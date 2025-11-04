@@ -681,6 +681,9 @@ video {
 .left-1\/2 {
   left: 50%;
 }
+.left-2 {
+  left: 0.5rem;
+}
 .left-3 {
   left: 0.75rem;
 }
@@ -699,6 +702,9 @@ video {
 .right-1 {
   right: 0.25rem;
 }
+.right-2 {
+  right: 0.5rem;
+}
 .right-3 {
   right: 0.75rem;
 }
@@ -716,6 +722,9 @@ video {
 }
 .top-1\/2 {
   top: 50%;
+}
+.top-2 {
+  top: 0.5rem;
 }
 .top-24 {
   top: 6rem;
@@ -1958,6 +1967,9 @@ video {
 .text-right {
   text-align: right;
 }
+.font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
 .text-2xl {
   font-size: 1.5rem;
   line-height: 2rem;
@@ -2683,6 +2695,10 @@ video {
     margin-right: 2rem;
   }
 
+  .sm\:w-80 {
+    width: 20rem;
+  }
+
   .sm\:grid-cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2899,6 +2915,14 @@ video {
 
   .lg\:flex-row {
     flex-direction: row;
+  }
+
+  .lg\:items-center {
+    align-items: center;
+  }
+
+  .lg\:justify-between {
+    justify-content: space-between;
   }
 
   .lg\:p-12 {

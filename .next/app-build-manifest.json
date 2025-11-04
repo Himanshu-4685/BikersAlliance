@@ -11,10 +11,20 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/bikes/engine/[engineType]/page": [
+    "/electric/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/bikes/engine/[engineType]/page.js"
+      "static/chunks/app/electric/page.js"
+    ],
+    "/electric/error": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/electric/error.js"
+    ],
+    "/electric/loading": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/electric/loading.js"
     ]
   }
 }

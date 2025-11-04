@@ -1,8 +1,7 @@
 {
   "/page": "app/page.js",
   "/api/bikes/category/route": "app/api/bikes/category/route.js",
+  "/api/bikes/electric/route": "app/api/bikes/electric/route.js",
   "/api/bikes/scooters/route": "app/api/bikes/scooters/route.js",
-  "/bikes/engine/[engineType]/page": "app/bikes/engine/[engineType]/page.js",
-  "/api/bikes/engine/[engineType]/route": "app/api/bikes/engine/[engineType]/route.js",
-  "/api/brands/route": "app/api/brands/route.js"
+  "/electric/page": "app/electric/page.js"
 }

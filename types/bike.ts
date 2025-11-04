@@ -15,6 +15,23 @@ export interface BikeFromDB {
   image_url: string;
 }
 
+// Electric bike specific structure for UI components
+export interface ElectricBike {
+  variant_id: string;
+  variant_name: string;
+  on_road_price: number;
+  variant_url: string;
+  brand_name: string;
+  brand_logo: string;
+  model_name: string;
+  engine_type: string;
+  displacement: number;
+  peak_power: number;
+  city_mileage: number;
+  bike_style: string;
+  image_url: string;
+}
+
 // Formatted bike structure for UI components
 export interface Bike {
   id: string;
