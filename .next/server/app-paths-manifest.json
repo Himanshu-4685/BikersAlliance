@@ -1,7 +1,11 @@
 {
+  "/not-found": "app/not-found.js",
   "/page": "app/page.js",
   "/api/bikes/category/route": "app/api/bikes/category/route.js",
-  "/api/bikes/electric/route": "app/api/bikes/electric/route.js",
+  "/news/page": "app/news/page.js",
   "/api/bikes/scooters/route": "app/api/bikes/scooters/route.js",
-  "/electric/page": "app/electric/page.js"
+  "/api/bikes/electric/route": "app/api/bikes/electric/route.js",
+  "/news/top-stories/page": "app/news/top-stories/page.js",
+  "/videos/page": "app/videos/page.js",
+  "/web-stories/page": "app/web-stories/page.js"
 }
