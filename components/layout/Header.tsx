@@ -15,7 +15,7 @@ import { SearchSuggestion } from '@/utils/api/search';
 const navItems = [
   { 
     label: 'BIKES', 
-    href: '/bikes',
+    href: '/bikes/all',
     hasDropdown: true,
     dropdownItems: [
       { label: 'New Bikes', href: '/bikes/new' },
@@ -91,6 +91,7 @@ const navItems = [
     dropdownItems: [
       { label: 'Finance Discount Offers', href: '/finance/offers' },
       { label: 'EMI Calculator', href: '/finance/emi-calculator' },
+      { label: 'Loan Eligibility', href: '/finance/eligibility' },
     ]
   },
   { 

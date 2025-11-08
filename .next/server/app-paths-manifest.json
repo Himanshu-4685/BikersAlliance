@@ -1,11 +1,9 @@
 {
-  "/not-found": "app/not-found.js",
-  "/page": "app/page.js",
+  "/api/hero-images/route": "app/api/hero-images/route.js",
   "/api/bikes/category/route": "app/api/bikes/category/route.js",
-  "/news/page": "app/news/page.js",
-  "/api/bikes/scooters/route": "app/api/bikes/scooters/route.js",
   "/api/bikes/electric/route": "app/api/bikes/electric/route.js",
-  "/news/top-stories/page": "app/news/top-stories/page.js",
-  "/videos/page": "app/videos/page.js",
-  "/web-stories/page": "app/web-stories/page.js"
+  "/page": "app/page.js",
+  "/api/bikes/scooters/route": "app/api/bikes/scooters/route.js",
+  "/finance/eligibility/page": "app/finance/eligibility/page.js",
+  "/finance/page": "app/finance/page.js"
 }

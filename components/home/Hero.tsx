@@ -1,27 +1,162 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { FiSearch } from 'react-icons/fi';
+import { FiSearch, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { createClient } from '@/utils/supabase/client';
 
 export default function Hero() {
   const [bikeType, setBikeType] = useState('new');
   const [searchBy, setSearchBy] = useState('budget');
+  const [currentImage, setCurrentImage] = useState(0);
+  const [heroImages, setHeroImages] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch hero images from API
+  useEffect(() => {
+    const fetchHeroImages = async () => {
+      try {
+        console.log('Fetching hero images from API...');
+        
+        const response = await fetch('/api/hero-images');
+        const data = await response.json();
+        
+        console.log('API Response:', data);
+        
+        if (data.success && data.images && data.images.length > 0) {
+          console.log(`Successfully loaded ${data.count} hero images:`, data.images);
+          setHeroImages(data.images);
+        } else {
+          console.error('API could not fetch hero images:', data.error || 'Unknown error');
+          
+          // Fallback: Use known working URLs if API fails
+          console.log('Using fallback images...');
+          const fallbackImages = [
+            'https://csvzysxiuuzcsmpknehi.supabase.co/storage/v1/object/public/Bikeralliance/Image/hero_section/Ampere-Magnus-Grand.avif',
+            'https://csvzysxiuuzcsmpknehi.supabase.co/storage/v1/object/public/Bikeralliance/Image/hero_section/Hero-Destini-110_Desktop_1686x548px.avif',
+            'https://csvzysxiuuzcsmpknehi.supabase.co/storage/v1/object/public/Bikeralliance/Image/hero_section/kawa.jpg',
+            'https://csvzysxiuuzcsmpknehi.supabase.co/storage/v1/object/public/Bikeralliance/Image/hero_section/TVS XL100.avif',
+            'https://csvzysxiuuzcsmpknehi.supabase.co/storage/v1/object/public/Bikeralliance/Image/hero_section/Ultraviolette-X47-Crossover_Desktop_1686x548px.avif'
+          ];
+          setHeroImages(fallbackImages);
+        }
+      } catch (error) {
+        console.error('Error fetching hero images:', error);
+        
+        // Fallback on any error
+        console.log('Using fallback images due to error...');
+        const fallbackImages = [
+          'https://csvzysxiuuzcsmpknehi.supabase.co/storage/v1/object/public/Bikeralliance/Image/hero_section/Ampere-Magnus-Grand.avif',
+          'https://csvzysxiuuzcsmpknehi.supabase.co/storage/v1/object/public/Bikeralliance/Image/hero_section/Hero-Destini-110_Desktop.avif',
+          'https://csvzysxiuuzcsmpknehi.supabase.co/storage/v1/object/public/Bikeralliance/Image/hero_section/kawa.jpg',
+          'https://csvzysxiuuzcsmpknehi.supabase.co/storage/v1/object/public/Bikeralliance/Image/hero_section/TVS XL100.avif',
+          'https://csvzysxiuuzcsmpknehi.supabase.co/storage/v1/object/public/Bikeralliance/Image/hero_section/Ultraviolette-X47-Crossover_Desktop_1686x548px.avif'
+        ];
+        setHeroImages(fallbackImages);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchHeroImages();
+  }, []);
+
+  // Auto-slide functionality
+  useEffect(() => {
+    if (heroImages.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentImage((prev) => (prev + 1) % heroImages.length);
+      }, 5000); // Change image every 5 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [heroImages.length]);
+
+  // Navigation functions
+  const nextImage = () => {
+    setCurrentImage((prev) => (prev + 1) % heroImages.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImage((prev) => (prev - 1 + heroImages.length) % heroImages.length);
+  };
+
+  const goToImage = (index: number) => {
+    setCurrentImage(index);
+  };
   
   return (
     <section className="relative h-[500px] bg-gray-50">
       <div className="container h-full">
         <div className="relative w-full h-full rounded-lg overflow-hidden">
-          {/* Hero Background */}
+          {/* Hero Background Carousel */}
           <div className="absolute inset-0 z-0">
-            <Image 
-              src="/images/hero/kawa.jpg" 
-              alt="Featured Motorcycle"
-              fill
-              className="object-cover"
-              style={{ objectPosition: 'center right' }}
-              priority
-            />
+            {isLoading ? (
+              // Loading fallback
+              <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+            ) : heroImages.length > 0 ? (
+              // Carousel Images
+              <>
+                {heroImages.map((imageUrl, index) => (
+                  <Image
+                    key={index}
+                    src={imageUrl}
+                    alt={`Hero Image ${index + 1}`}
+                    fill
+                    className={`object-cover transition-opacity duration-1000 ${
+                      index === currentImage ? 'opacity-100' : 'opacity-0'
+                    }`}
+                    style={{ objectPosition: 'center' }}
+                    priority={index === 0}
+                  />
+                ))}
+                
+                {/* Navigation Arrows */}
+                {heroImages.length > 1 && (
+                  <>
+                    <button
+                      onClick={prevImage}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full transition-all duration-300"
+                    >
+                      <FiChevronLeft className="w-6 h-6" />
+                    </button>
+                    <button
+                      onClick={nextImage}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full transition-all duration-300"
+                    >
+                      <FiChevronRight className="w-6 h-6" />
+                    </button>
+                  </>
+                )}
+                
+                {/* Dots Indicator */}
+                {heroImages.length > 1 && (
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex space-x-2">
+                    {heroImages.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => goToImage(index)}
+                        className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                          index === currentImage
+                            ? 'bg-white'
+                            : 'bg-white/50 hover:bg-white/75'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              // Fallback image
+              <Image 
+                src="/images/hero/kawa.jpg" 
+                alt="Featured Motorcycle"
+                fill
+                className="object-cover"
+                style={{ objectPosition: 'center right' }}
+                priority
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-transparent" />
           </div>
           
