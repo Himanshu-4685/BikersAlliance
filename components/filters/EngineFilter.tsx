@@ -4,41 +4,41 @@ import { useState, useEffect } from 'react';
 
 // Types
 interface EngineFilterProps {
-  minEngineCapacity?: number;
-  maxEngineCapacity?: number;
+  minDisplacement?: number;
+  maxDisplacement?: number;
   onChange: (min?: number, max?: number) => void;
 }
 
-export default function EngineFilter({ minEngineCapacity, maxEngineCapacity, onChange }: EngineFilterProps) {
-  const [localMin, setLocalMin] = useState<number | undefined>(minEngineCapacity);
-  const [localMax, setLocalMax] = useState<number | undefined>(maxEngineCapacity);
+export default function EngineFilter({ minDisplacement, maxDisplacement, onChange }: EngineFilterProps) {
+  const [localMin, setLocalMin] = useState<number | undefined>(minDisplacement);
+  const [localMax, setLocalMax] = useState<number | undefined>(maxDisplacement);
   
   // Update local state when props change
   useEffect(() => {
-    setLocalMin(minEngineCapacity);
-  }, [minEngineCapacity]);
+    setLocalMin(minDisplacement);
+  }, [minDisplacement]);
   
   useEffect(() => {
-    setLocalMax(maxEngineCapacity);
-  }, [maxEngineCapacity]);
+    setLocalMax(maxDisplacement);
+  }, [maxDisplacement]);
   
-  // Handle engine capacity range change
+  // Handle displacement range change
   const handleApply = () => {
     onChange(localMin, localMax);
   };
   
   return (
     <div className="filter-group">
-      <h3 className="mb-3 text-sm font-medium text-gray-700">Engine Capacity (cc)</h3>
+      <h3 className="mb-3 text-sm font-medium text-gray-700">Displacement (cc)</h3>
       
       <div className="grid grid-cols-2 gap-2 mb-3">
         <div>
-          <label htmlFor="min-engine" className="sr-only">
-            Min Engine Capacity
+          <label htmlFor="min-displacement" className="sr-only">
+            Min Displacement
           </label>
           <input
             type="number"
-            id="min-engine"
+            id="min-displacement"
             min="0"
             placeholder="Min CC"
             value={localMin || ''}
@@ -48,12 +48,12 @@ export default function EngineFilter({ minEngineCapacity, maxEngineCapacity, onC
         </div>
         
         <div>
-          <label htmlFor="max-engine" className="sr-only">
-            Max Engine Capacity
+          <label htmlFor="max-displacement" className="sr-only">
+            Max Displacement
           </label>
           <input
             type="number"
-            id="max-engine"
+            id="max-displacement"
             min="0"
             placeholder="Max CC"
             value={localMax || ''}

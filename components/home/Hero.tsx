@@ -1,16 +1,103 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { FiSearch, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { createClient } from '@/utils/supabase/client';
 
+// Types for brands and models
+interface Brand {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl?: string;
+}
+
+interface Model {
+  id: string;
+  name: string;
+  slug: string;
+  brandId: string;
+}
+
 export default function Hero() {
+  const router = useRouter();
   const [bikeType, setBikeType] = useState('new');
   const [searchBy, setSearchBy] = useState('budget');
   const [currentImage, setCurrentImage] = useState(0);
   const [heroImages, setHeroImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Form state
+  const [selectedBrand, setSelectedBrand] = useState('');
+  const [selectedModel, setSelectedModel] = useState('');
+  const [selectedBudget, setSelectedBudget] = useState('');
+  const [selectedType, setSelectedType] = useState('');
+  
+  // Data state
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [models, setModels] = useState<Model[]>([]);
+  const [brandsLoading, setBrandsLoading] = useState(false);
+  const [modelsLoading, setModelsLoading] = useState(false);
+
+  // Fetch brands on component mount
+  useEffect(() => {
+    const fetchBrands = async () => {
+      setBrandsLoading(true);
+      try {
+        const response = await fetch('/api/brands?limit=100');
+        const result = await response.json();
+        
+        if (result.success && result.data?.brands) {
+          setBrands(result.data.brands);
+        } else {
+          console.error('Failed to fetch brands:', result.error);
+        }
+      } catch (error) {
+        console.error('Error fetching brands:', error);
+      } finally {
+        setBrandsLoading(false);
+      }
+    };
+    
+    fetchBrands();
+  }, []);
+
+  // Fetch models when brand is selected
+  useEffect(() => {
+    const fetchModels = async () => {
+      if (!selectedBrand) {
+        setModels([]);
+        setSelectedModel('');
+        return;
+      }
+      
+      setModelsLoading(true);
+      try {
+        // Find the selected brand to get its ID
+        const brand = brands.find(b => b.slug === selectedBrand);
+        if (!brand) return;
+        
+        const response = await fetch(`/api/models?brandId=${brand.id}&limit=100`);
+        const result = await response.json();
+        
+        if (result.success && result.data?.models) {
+          setModels(result.data.models);
+        } else {
+          console.error('Failed to fetch models:', result.error);
+          setModels([]);
+        }
+      } catch (error) {
+        console.error('Error fetching models:', error);
+        setModels([]);
+      } finally {
+        setModelsLoading(false);
+      }
+    };
+    
+    fetchModels();
+  }, [selectedBrand, brands]);
 
   // Fetch hero images from API
   useEffect(() => {
@@ -83,6 +170,60 @@ export default function Hero() {
 
   const goToImage = (index: number) => {
     setCurrentImage(index);
+  };
+
+  // Handle form submission
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const params = new URLSearchParams();
+    
+    if (searchBy === 'brand') {
+      if (selectedBrand) {
+        // Find the brand name from slug
+        const brand = brands.find(b => b.slug === selectedBrand);
+        if (brand) {
+          params.append('brand', brand.name);
+        }
+      }
+      
+      if (selectedModel) {
+        // Find the model name from slug  
+        const model = models.find(m => m.slug === selectedModel);
+        if (model) {
+          params.append('model', model.name);
+        }
+      }
+    } else {
+      // Budget search
+      if (selectedBudget) {
+        const budgetRanges: { [key: string]: { min?: number; max?: number } } = {
+          'under-50000': { max: 50000 },
+          '50000-100000': { min: 50000, max: 100000 },
+          '100000-150000': { min: 100000, max: 150000 },
+          'above-150000': { min: 150000 }
+        };
+        
+        const range = budgetRanges[selectedBudget];
+        if (range) {
+          if (range.min) params.append('minPrice', range.min.toString());
+          if (range.max) params.append('maxPrice', range.max.toString());
+        }
+      }
+      
+      if (selectedType) {
+        params.append('bodyType', selectedType);
+      }
+    }
+    
+    // Navigate to all bikes page with filters
+    const url = `/bikes/all${params.toString() ? '?' + params.toString() : ''}`;
+    router.push(url);
+  };
+
+  // Handle Advanced Search navigation
+  const handleAdvancedSearch = () => {
+    router.push('/bikes/all');
   };
   
   return (
@@ -245,31 +386,56 @@ export default function Hero() {
             </div>
 
             {/* Form Selects */}
-            <form>
+            <form onSubmit={handleFormSubmit}>
               <div className="space-y-3">
                 {searchBy === 'brand' ? (
                   <>
                     <div>
-                      <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#D02F2F] focus:border-[#D02F2F] text-gray-500">
-                        <option value="">Select Brand</option>
-                        <option value="honda">Honda</option>
-                        <option value="hero">Hero</option>
-                        <option value="bajaj">Bajaj</option>
-                        <option value="tvs">TVS</option>
-                        <option value="royal-enfield">Royal Enfield</option>
+                      <select 
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#D02F2F] focus:border-[#D02F2F] text-gray-500"
+                        value={selectedBrand}
+                        onChange={(e) => setSelectedBrand(e.target.value)}
+                        disabled={brandsLoading}
+                      >
+                        <option value="">
+                          {brandsLoading ? 'Loading brands...' : 'Select Brand'}
+                        </option>
+                        {brands.map((brand) => (
+                          <option key={brand.id} value={brand.slug}>
+                            {brand.name}
+                          </option>
+                        ))}
                       </select>
                     </div>
                     
                     <div>
-                      <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#D02F2F] focus:border-[#D02F2F] text-gray-500">
-                        <option value="">Select Model</option>
+                      <select 
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#D02F2F] focus:border-[#D02F2F] text-gray-500"
+                        value={selectedModel}
+                        onChange={(e) => setSelectedModel(e.target.value)}
+                        disabled={modelsLoading || !selectedBrand}
+                      >
+                        <option value="">
+                          {modelsLoading ? 'Loading models...' : 
+                           !selectedBrand ? 'Select Brand First' : 
+                           'Select Model'}
+                        </option>
+                        {models.map((model) => (
+                          <option key={model.id} value={model.slug}>
+                            {model.name}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </>
                 ) : (
                   <>
                     <div>
-                      <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 text-gray-500">
+                      <select 
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 text-gray-500"
+                        value={selectedBudget}
+                        onChange={(e) => setSelectedBudget(e.target.value)}
+                      >
                         <option value="">Select Budget</option>
                         <option value="under-50000">Under ₹50,000</option>
                         <option value="50000-100000">₹50,000 - ₹1 Lakh</option>
@@ -279,13 +445,24 @@ export default function Hero() {
                     </div>
                     
                     <div>
-                      <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 text-gray-500">
+                      <select 
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 text-gray-500"
+                        value={selectedType}
+                        onChange={(e) => setSelectedType(e.target.value)}
+                      >
                         <option value="">Select Type</option>
-                        <option value="standard">Standard</option>
+                        <option value="commuter">Commuter</option>
                         <option value="sports">Sports</option>
                         <option value="cruiser">Cruiser</option>
                         <option value="adventure">Adventure</option>
                         <option value="scooter">Scooter</option>
+                        <option value="off-road">Off-Road</option>
+                        <option value="electric">Electric</option>
+                        <option value="moped">Moped</option>
+                        <option value="naked">Naked</option>
+                        <option value="touring">Touring</option>
+                        <option value="street">Street</option>
+                        <option value="roadster">Roadster</option>
                       </select>
                     </div>
                   </>
@@ -295,6 +472,7 @@ export default function Hero() {
                 <button
                   type="submit"
                   className="w-full py-2.5 px-4 bg-[#D02F2F] text-white rounded-md font-medium hover:bg-[#B82929] transition duration-150"
+                  disabled={searchBy === 'brand' ? !selectedBrand : (!selectedBudget && !selectedType)}
                 >
                   Search
                 </button>
@@ -302,9 +480,13 @@ export default function Hero() {
               
               {/* Advanced Search Link */}
               <div className="mt-3 text-right">
-                <a href="#" className="text-gray-500 text-sm hover:text-[#D02F2F]">
+                <button
+                  type="button"
+                  onClick={handleAdvancedSearch}
+                  className="text-gray-500 text-sm hover:text-[#D02F2F] bg-transparent border-0 p-0"
+                >
                   Advanced Search →
-                </a>
+                </button>
               </div>
             </form>
           </div>

@@ -8,7 +8,7 @@ import { FiChevronRight, FiFilter, FiX } from 'react-icons/fi';
 
 // Filter components
 import BrandFilter from '@/components/filters/BrandFilter';
-import CategoryFilter from '@/components/filters/CategoryFilter';
+import BodyTypeFilter from '@/components/filters/BodyTypeFilter';
 import PriceFilter from '@/components/filters/PriceFilter';
 import EngineFilter from '@/components/filters/EngineFilter';
 import EngineTypeFilter from '@/components/filters/EngineTypeFilter';
@@ -37,6 +37,8 @@ interface Bike {
     mileage?: string;
     power?: string;
     torque?: string;
+    displacement?: string;
+    engineType?: string;
   };
 }
 
@@ -64,11 +66,11 @@ export default function AllBikesPage() {
   
   // Get current filters from URL
   const currentBrand = searchParams.get('brand');
-  const currentCategory = searchParams.get('category');
+  const currentBodyType = searchParams.get('bodyType');
   const currentMinPrice = searchParams.get('minPrice');
   const currentMaxPrice = searchParams.get('maxPrice');
-  const currentMinEngineCapacity = searchParams.get('minEngineCapacity');
-  const currentMaxEngineCapacity = searchParams.get('maxEngineCapacity');
+  const currentMinDisplacement = searchParams.get('minDisplacement');
+  const currentMaxDisplacement = searchParams.get('maxDisplacement');
   const currentMinMileage = searchParams.get('minMileage');
   const currentSortBy = searchParams.get('sortBy') || 'price';
   const currentPage = Number(searchParams.get('page')) || 1;
@@ -81,11 +83,11 @@ export default function AllBikesPage() {
       
       // Add filters to params
       if (currentBrand) params.append('brand', currentBrand);
-      if (currentCategory) params.append('category', currentCategory);
+      if (currentBodyType) params.append('bodyType', currentBodyType);
       if (currentMinPrice) params.append('minPrice', currentMinPrice);
       if (currentMaxPrice) params.append('maxPrice', currentMaxPrice);
-      if (currentMinEngineCapacity) params.append('minEngineCapacity', currentMinEngineCapacity);
-      if (currentMaxEngineCapacity) params.append('maxEngineCapacity', currentMaxEngineCapacity);
+      if (currentMinDisplacement) params.append('minDisplacement', currentMinDisplacement);
+      if (currentMaxDisplacement) params.append('maxDisplacement', currentMaxDisplacement);
       if (currentMinMileage) params.append('minMileage', currentMinMileage);
       params.append('sortBy', currentSortBy);
       params.append('page', currentPage.toString());
@@ -115,8 +117,8 @@ export default function AllBikesPage() {
   // Fetch bikes on component mount and when filters change
   useEffect(() => {
     fetchBikes();
-  }, [currentBrand, currentCategory, currentMinPrice, currentMaxPrice, 
-      currentMinEngineCapacity, currentMaxEngineCapacity, currentMinMileage, 
+  }, [currentBrand, currentBodyType, currentMinPrice, currentMaxPrice, 
+      currentMinDisplacement, currentMaxDisplacement, currentMinMileage, 
       currentSortBy, currentPage]);
 
   // Update URL with new filter
@@ -160,8 +162,8 @@ export default function AllBikesPage() {
   };
 
   // Check if any filters are active
-  const hasActiveFilters = currentBrand || currentCategory || currentMinPrice || 
-    currentMaxPrice || currentMinEngineCapacity || currentMaxEngineCapacity || 
+  const hasActiveFilters = currentBrand || currentBodyType || currentMinPrice || 
+    currentMaxPrice || currentMinDisplacement || currentMaxDisplacement || 
     currentMinMileage;
 
   return (
@@ -235,9 +237,9 @@ export default function AllBikesPage() {
                   onChange={(brand) => updateFilter('brand', brand)}
                 />
                 
-                <CategoryFilter
-                  selectedCategory={currentCategory || ''}
-                  onChange={(category) => updateFilter('category', category)}
+                <BodyTypeFilter
+                  selectedBodyType={currentBodyType || ''}
+                  onChange={(bodyType) => updateFilter('bodyType', bodyType)}
                 />
                 
                 <PriceFilter
@@ -250,11 +252,11 @@ export default function AllBikesPage() {
                 />
                 
                 <EngineFilter
-                  minEngineCapacity={currentMinEngineCapacity ? Number(currentMinEngineCapacity) : undefined}
-                  maxEngineCapacity={currentMaxEngineCapacity ? Number(currentMaxEngineCapacity) : undefined}
+                  minDisplacement={currentMinDisplacement ? Number(currentMinDisplacement) : undefined}
+                  maxDisplacement={currentMaxDisplacement ? Number(currentMaxDisplacement) : undefined}
                   onChange={(min, max) => {
-                    updateFilter('minEngineCapacity', min?.toString() || null);
-                    updateFilter('maxEngineCapacity', max?.toString() || null);
+                    updateFilter('minDisplacement', min?.toString() || null);
+                    updateFilter('maxDisplacement', max?.toString() || null);
                   }}
                 />
                 
@@ -343,23 +345,21 @@ export default function AllBikesPage() {
                           </div>
                         )}
                         
-                        {/* Specs */}
-                        {bike.specs && (
-                          <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-gray-500">
-                            {bike.specs.engine && (
-                              <div>
-                                <div className="font-medium">Engine</div>
-                                <div>{bike.specs.engine}</div>
-                              </div>
-                            )}
-                            {bike.specs.mileage && (
-                              <div>
-                                <div className="font-medium">Mileage</div>
-                                <div>{bike.specs.mileage}</div>
-                              </div>
-                            )}
+                        {/* Specs - Display Engine, Mileage, Power like spotlight section */}
+                        <div className="grid grid-cols-3 gap-2 pt-3 mt-3 text-xs text-gray-500 border-t border-gray-100">
+                          <div>
+                            <div className="font-medium">Engine</div>
+                            <div>{bike.specs?.engine || bike.specs?.displacement || 'N/A'}</div>
                           </div>
-                        )}
+                          <div>
+                            <div className="font-medium">Mileage</div>
+                            <div>{bike.specs?.mileage || 'N/A'}</div>
+                          </div>
+                          <div>
+                            <div className="font-medium">Power</div>
+                            <div>{bike.specs?.power || 'N/A'}</div>
+                          </div>
+                        </div>
                       </div>
                     </Link>
                   ))}

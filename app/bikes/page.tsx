@@ -70,8 +70,8 @@ export default function BikesPage() {
   const currentEngineType = searchParams.get('engineType');
   const currentMinPrice = searchParams.get('minPrice');
   const currentMaxPrice = searchParams.get('maxPrice');
-  const currentMinEngineCapacity = searchParams.get('minEngineCapacity');
-  const currentMaxEngineCapacity = searchParams.get('maxEngineCapacity');
+  const currentMinDisplacement = searchParams.get('minDisplacement');
+  const currentMaxDisplacement = searchParams.get('maxDisplacement');
   const currentMinMileage = searchParams.get('minMileage');
   const currentSortBy = searchParams.get('sortBy') || 'price';
   const currentSortOrder = searchParams.get('sortOrder') || 'asc';
@@ -91,8 +91,8 @@ export default function BikesPage() {
       if (currentEngineType) params.append('engineType', currentEngineType);
       if (currentMinPrice) params.append('minPrice', currentMinPrice);
       if (currentMaxPrice) params.append('maxPrice', currentMaxPrice);
-      if (currentMinEngineCapacity) params.append('minEngineCapacity', currentMinEngineCapacity);
-      if (currentMaxEngineCapacity) params.append('maxEngineCapacity', currentMaxEngineCapacity);
+      if (currentMinDisplacement) params.append('minDisplacement', currentMinDisplacement);
+      if (currentMaxDisplacement) params.append('maxDisplacement', currentMaxDisplacement);
       if (currentMinMileage) params.append('minMileage', currentMinMileage);
       params.append('sortBy', currentSortBy);
       params.append('sortOrder', currentSortOrder);
@@ -124,8 +124,8 @@ export default function BikesPage() {
     currentEngineType,
     currentMinPrice,
     currentMaxPrice,
-    currentMinEngineCapacity,
-    currentMaxEngineCapacity,
+    currentMinDisplacement,
+    currentMaxDisplacement,
     currentMinMileage,
     currentSortBy,
     currentSortOrder,
@@ -166,8 +166,8 @@ export default function BikesPage() {
     currentEngineType ||
     currentMinPrice ||
     currentMaxPrice ||
-    currentMinEngineCapacity ||
-    currentMaxEngineCapacity ||
+    currentMinDisplacement ||
+    currentMaxDisplacement ||
     currentMinMileage ||
     (currentSortBy && currentSortBy !== 'price') ||
     (currentSortOrder && currentSortOrder !== 'asc')
@@ -265,13 +265,13 @@ export default function BikesPage() {
                   })}
                 />
                 
-                {/* Engine Capacity Filter */}
+                {/* Displacement Filter */}
                 <EngineFilter 
-                  minEngineCapacity={currentMinEngineCapacity ? parseInt(currentMinEngineCapacity) : undefined}
-                  maxEngineCapacity={currentMaxEngineCapacity ? parseInt(currentMaxEngineCapacity) : undefined}
+                  minDisplacement={currentMinDisplacement ? parseInt(currentMinDisplacement) : undefined}
+                  maxDisplacement={currentMaxDisplacement ? parseInt(currentMaxDisplacement) : undefined}
                   onChange={(min, max) => updateFilters({ 
-                    minEngineCapacity: min?.toString() || null, 
-                    maxEngineCapacity: max?.toString() || null 
+                    minDisplacement: min?.toString() || null, 
+                    maxDisplacement: max?.toString() || null 
                   })}
                 />
                 
@@ -341,14 +341,14 @@ export default function BikesPage() {
                     }}
                   />
                   
-                  {/* Engine Capacity Filter */}
+                  {/* Displacement Filter */}
                   <EngineFilter 
-                    minEngineCapacity={currentMinEngineCapacity ? parseInt(currentMinEngineCapacity) : undefined}
-                    maxEngineCapacity={currentMaxEngineCapacity ? parseInt(currentMaxEngineCapacity) : undefined}
+                    minDisplacement={currentMinDisplacement ? parseInt(currentMinDisplacement) : undefined}
+                    maxDisplacement={currentMaxDisplacement ? parseInt(currentMaxDisplacement) : undefined}
                     onChange={(min, max) => {
                       updateFilters({ 
-                        minEngineCapacity: min?.toString() || null, 
-                        maxEngineCapacity: max?.toString() || null 
+                        minDisplacement: min?.toString() || null, 
+                        maxDisplacement: max?.toString() || null 
                       });
                       setShowMobileFilters(false);
                     }}

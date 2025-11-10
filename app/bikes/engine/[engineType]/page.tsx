@@ -284,8 +284,8 @@ export default function EngineTypeFilterPage() {
               {/* Displacement Filter */}
               <div className="mb-6">
                 <EngineFilter
-                  minEngineCapacity={minDisplacement}
-                  maxEngineCapacity={maxDisplacement}
+                  minDisplacement={minDisplacement}
+                  maxDisplacement={maxDisplacement}
                   onChange={(min, max) => {
                     setMinDisplacement(min);
                     setMaxDisplacement(max);

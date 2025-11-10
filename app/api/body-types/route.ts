@@ -50,16 +50,13 @@ export async function GET(request: Request) {
     // Sort by name
     bodyTypeData.sort((a, b) => a.name.localeCompare(b.name));
 
-    return NextResponse.json({
+    return successResponse({
       bodyTypes: bodyTypeData,
       total: bodyTypeData.length
     });
 
   } catch (error) {
     console.error('Error fetching body types:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch body types' },
-      { status: 500 }
-    );
+    return errorResponse('Failed to fetch body types', 500);
   }
 }

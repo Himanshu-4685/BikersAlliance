@@ -56,8 +56,8 @@ export default function ScootersPage() {
   const currentBrand = searchParams.get('brand');
   const currentMinPrice = searchParams.get('minPrice');
   const currentMaxPrice = searchParams.get('maxPrice');
-  const currentMinEngineCapacity = searchParams.get('minEngineCapacity');
-  const currentMaxEngineCapacity = searchParams.get('maxEngineCapacity');
+  const currentMinDisplacement = searchParams.get('minDisplacement');
+  const currentMaxDisplacement = searchParams.get('maxDisplacement');
   const currentMinMileage = searchParams.get('minMileage');
   const currentSortBy = searchParams.get('sortBy') || 'price';
   const currentPage = Number(searchParams.get('page')) || 1;
@@ -99,11 +99,11 @@ export default function ScootersPage() {
           );
         }
         
-        if (currentMinEngineCapacity && currentMaxEngineCapacity) {
+        if (currentMinDisplacement && currentMaxDisplacement) {
           filteredScooters = filteredScooters.filter((scooter: Scooter) => {
             const displacement = parseInt(scooter.displacement || '0');
-            return displacement >= Number(currentMinEngineCapacity) && 
-                   displacement <= Number(currentMaxEngineCapacity);
+            return displacement >= Number(currentMinDisplacement) && 
+                   displacement <= Number(currentMaxDisplacement);
           });
         }
         
@@ -138,7 +138,7 @@ export default function ScootersPage() {
   useEffect(() => {
     fetchScooters();
   }, [currentBrand, currentMinPrice, currentMaxPrice, 
-      currentMinEngineCapacity, currentMaxEngineCapacity, currentMinMileage, 
+      currentMinDisplacement, currentMaxDisplacement, currentMinMileage, 
       currentSortBy, currentPage]);
 
   // Update URL with new filter
@@ -183,7 +183,7 @@ export default function ScootersPage() {
 
   // Check if any filters are active
   const hasActiveFilters = currentBrand || currentMinPrice || 
-    currentMaxPrice || currentMinEngineCapacity || currentMaxEngineCapacity || 
+    currentMaxPrice || currentMinDisplacement || currentMaxDisplacement || 
     currentMinMileage;
 
   return (
@@ -266,11 +266,11 @@ export default function ScootersPage() {
                 />
                 
                 <EngineFilter
-                  minEngineCapacity={currentMinEngineCapacity ? Number(currentMinEngineCapacity) : undefined}
-                  maxEngineCapacity={currentMaxEngineCapacity ? Number(currentMaxEngineCapacity) : undefined}
+                  minDisplacement={currentMinDisplacement ? Number(currentMinDisplacement) : undefined}
+                  maxDisplacement={currentMaxDisplacement ? Number(currentMaxDisplacement) : undefined}
                   onChange={(min, max) => {
-                    updateFilter('minEngineCapacity', min?.toString() || null);
-                    updateFilter('maxEngineCapacity', max?.toString() || null);
+                    updateFilter('minDisplacement', min?.toString() || null);
+                    updateFilter('maxDisplacement', max?.toString() || null);
                   }}
                 />
                 
