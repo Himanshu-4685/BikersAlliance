@@ -243,14 +243,38 @@ export async function GET(request: Request) {
       return stringValue;
     };
 
+    // Helper function to clean duplicate brand/model names
+    const cleanBikeName = (modelName: string, variantName: string, brandName: string): string => {
+      if (!modelName || !variantName) return 'Unknown';
+      
+      // If variant name already contains the full model name, just use variant name
+      if (variantName.toLowerCase().includes(modelName.toLowerCase())) {
+        return variantName;
+      }
+      
+      // If variant name starts with brand name and model already has brand name, remove brand from variant
+      if (brandName && variantName.toLowerCase().startsWith(brandName.toLowerCase()) && 
+          modelName.toLowerCase().includes(brandName.toLowerCase())) {
+        const cleanVariantName = variantName.replace(new RegExp(`^${brandName}\\s*`, 'i'), '').trim();
+        return `${modelName} ${cleanVariantName}`;
+      }
+      
+      // Default: combine model and variant
+      return `${modelName} ${variantName}`;
+    };
+
     // Format the response to match expected "bikes" structure
     const formattedBikes = (variants || []).map((variant: any) => {
       const isElectric = variant.specs?.engine_type === 'electric' || variant.specs?.body_type?.toLowerCase().includes('electric');
+      const brandName = variant.brands?.brand_name || 'Unknown';
+      const modelName = variant.models?.model_name || 'Unknown';
+      const variantName = variant.variant_name || '';
+      const cleanName = cleanBikeName(modelName, variantName, brandName);
       
       return {
         id: variant.variant_id,
-        name: `${variant.models?.model_name || 'Unknown'} ${variant.variant_name}`,
-        slug: `${variant.models?.model_name || 'unknown'}-${variant.variant_name}`.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'),
+        name: cleanName,
+        slug: cleanName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'),
         price: variant.on_road_price,
         image: variant.images?.[0]?.url || '/demo.avif',
         brand: {

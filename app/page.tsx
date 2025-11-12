@@ -3,7 +3,7 @@ import Hero from '@/components/home/Hero';
 import BrandList from '@/components/home/BrandList';
 import FeaturedBikes from '@/components/home/FeaturedBikes';
 import PopularScooters from '@/components/home/PopularScooters';
-import UpcomingBikes from '@/components/home/UpcomingBikes';
+import DynamicBikeStatus from '@/components/home/DynamicBikeStatus';
 import LatestBikes from '@/components/home/LatestBikes';
 import PopularComparisons from '@/components/home/PopularComparisons';
 import ElectricBikes from '@/components/home/ElectricBikes';
@@ -39,14 +39,24 @@ export default function Home() {
       {/* Upcoming Bikes Section */}
       <section className="py-8 bg-gray-50">
         <div className="container">
-          <UpcomingBikes />
+          <DynamicBikeStatus 
+            status="upcoming"
+            title="Upcoming Bikes & Scooters"
+            viewAllLink="/upcoming-bikes"
+            limit={8}
+          />
         </div>
       </section>
       
       {/* Latest Bikes */}
       <section className="py-8 bg-gray-50">
         <div className="container">
-          <LatestBikes />
+          <DynamicBikeStatus 
+            status="new_launch"
+            title="Latest Bikes & Scooters"
+            viewAllLink="/latest-bikes"
+            limit={8}
+          />
         </div>
       </section>
       
