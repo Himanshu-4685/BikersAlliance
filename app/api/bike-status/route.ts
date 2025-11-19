@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
               id: variantData?.variant_id || null,
               name: variantData?.variant_name || 'Unknown Variant',
               onRoadPrice: variantData?.on_road_price || null,
-              slug: variantData?.url || `bike-${statusItem.variant_id}`,
+              slug: variantData?.url || (variantData?.variant_name ? variantData.variant_name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') : `bike-${statusItem.variant_id}`),
               images: imagesData || [],
               specs: specsData
             }

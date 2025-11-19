@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase-server";
 import { successResponse, errorResponse } from "@/lib/api-response";
+import { generateBikeSlug, cleanBikeName } from "@/lib/slug-utils";
 
 export async function GET(request: Request) {
   try {
@@ -39,9 +40,11 @@ export async function GET(request: Request) {
       const formattedElectricBikes = electricBikes.map((bike: any) => {
         console.log('Processing electric bike:', bike.variant_name, 'Engine type:', bike.specs?.engine_type);
         
-        const brandSlug = bike.brands?.brand_name?.toLowerCase().replace(/\s+/g, '-') || '';
-        const modelSlug = bike.models?.model_name?.toLowerCase().replace(/\s+/g, '-') || '';
-        const variantUrl = brandSlug && modelSlug ? `${brandSlug}-${modelSlug}` : bike.variant_id;
+        const brandName = bike.brands?.brand_name || 'Unknown';
+        const modelName = bike.models?.model_name || 'Unknown';
+        const variantName = bike.variant_name || '';
+        const cleanName = cleanBikeName(modelName, variantName, brandName);
+        const variantUrl = generateBikeSlug(cleanName);
         
         return {
           variant_id: bike.variant_id,

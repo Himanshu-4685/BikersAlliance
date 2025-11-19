@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { createServerClient } from '@/lib/supabase-server';
 import { successResponse, errorResponse } from '@/lib/api-response';
+import { generateBikeSlug, cleanBikeName } from '@/lib/slug-utils';
 
 export async function GET(
   request: NextRequest,
@@ -113,12 +114,12 @@ export async function GET(
 
     // Format the bikes data
     const formattedBikes = (variants || []).map((variant: any) => {
-      // Create slug from variant name if URL is missing
-      const variantSlug = variant.url || variant.variant_name
-        .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .trim();
+      // Create consistent slug from variant name
+      const brandName = variant.brands?.brand_name || cleanBrandName || 'Unknown';
+      const modelName = variant.models?.model_name || 'Unknown';
+      const variantName = variant.variant_name || '';
+      const cleanName = cleanBikeName(modelName, variantName, brandName);
+      const variantSlug = generateBikeSlug(cleanName);
       
       // Get the first image URL from the images array, or use default
       const imageUrl = variant.images && variant.images.length > 0 

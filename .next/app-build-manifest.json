@@ -11,15 +11,40 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/latest-bikes/page": [
+    "/bikes/[slug]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/latest-bikes/page.js"
+      "static/chunks/app/bikes/[slug]/page.js"
     ],
-    "/used-bikes/[slug]/page": [
+    "/brands/loading": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/used-bikes/[slug]/page.js"
+      "static/chunks/app/brands/loading.js"
+    ],
+    "/brands/[slug]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/brands/[slug]/page.js"
+    ],
+    "/brands/[slug]/loading": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/brands/[slug]/loading.js"
+    ],
+    "/finance/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/finance/layout.js"
+    ],
+    "/finance/emi-calculator/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/finance/emi-calculator/page.js"
+    ],
+    "/finance/emi-calculator/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/finance/emi-calculator/layout.js"
     ]
   }
 }

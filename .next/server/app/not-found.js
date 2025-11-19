@@ -12,78 +12,6 @@ exports.id = "app/not-found";
 exports.ids = ["app/not-found"];
 exports.modules = {
 
-/***/ "(ssr)/./node_modules/@supabase/auth-js/dist/main/lib sync recursive":
-/*!************************************************************!*\
-  !*** ./node_modules/@supabase/auth-js/dist/main/lib/ sync ***!
-  \************************************************************/
-/***/ ((module) => {
-
-function webpackEmptyContext(req) {
-	var e = new Error("Cannot find module '" + req + "'");
-	e.code = 'MODULE_NOT_FOUND';
-	throw e;
-}
-webpackEmptyContext.keys = () => ([]);
-webpackEmptyContext.resolve = webpackEmptyContext;
-webpackEmptyContext.id = "(ssr)/./node_modules/@supabase/auth-js/dist/main/lib sync recursive";
-module.exports = webpackEmptyContext;
-
-/***/ }),
-
-/***/ "(ssr)/./node_modules/@supabase/functions-js/dist/main sync recursive":
-/*!*************************************************************!*\
-  !*** ./node_modules/@supabase/functions-js/dist/main/ sync ***!
-  \*************************************************************/
-/***/ ((module) => {
-
-function webpackEmptyContext(req) {
-	var e = new Error("Cannot find module '" + req + "'");
-	e.code = 'MODULE_NOT_FOUND';
-	throw e;
-}
-webpackEmptyContext.keys = () => ([]);
-webpackEmptyContext.resolve = webpackEmptyContext;
-webpackEmptyContext.id = "(ssr)/./node_modules/@supabase/functions-js/dist/main sync recursive";
-module.exports = webpackEmptyContext;
-
-/***/ }),
-
-/***/ "(ssr)/./node_modules/@supabase/realtime-js/dist/main sync recursive":
-/*!************************************************************!*\
-  !*** ./node_modules/@supabase/realtime-js/dist/main/ sync ***!
-  \************************************************************/
-/***/ ((module) => {
-
-function webpackEmptyContext(req) {
-	var e = new Error("Cannot find module '" + req + "'");
-	e.code = 'MODULE_NOT_FOUND';
-	throw e;
-}
-webpackEmptyContext.keys = () => ([]);
-webpackEmptyContext.resolve = webpackEmptyContext;
-webpackEmptyContext.id = "(ssr)/./node_modules/@supabase/realtime-js/dist/main sync recursive";
-module.exports = webpackEmptyContext;
-
-/***/ }),
-
-/***/ "(ssr)/./node_modules/@supabase/storage-js/dist/main/lib sync recursive":
-/*!***************************************************************!*\
-  !*** ./node_modules/@supabase/storage-js/dist/main/lib/ sync ***!
-  \***************************************************************/
-/***/ ((module) => {
-
-function webpackEmptyContext(req) {
-	var e = new Error("Cannot find module '" + req + "'");
-	e.code = 'MODULE_NOT_FOUND';
-	throw e;
-}
-webpackEmptyContext.keys = () => ([]);
-webpackEmptyContext.resolve = webpackEmptyContext;
-webpackEmptyContext.id = "(ssr)/./node_modules/@supabase/storage-js/dist/main/lib sync recursive";
-module.exports = webpackEmptyContext;
-
-/***/ }),
-
 /***/ "./request-async-storage.external":
 /*!*****************************************************************************!*\
   !*** external "next/dist/client/components/request-async-storage.external" ***!
@@ -150,28 +78,6 @@ module.exports = require("next/dist\\client\\components\\static-generation-async
 
 /***/ }),
 
-/***/ "http":
-/*!***********************!*\
-  !*** external "http" ***!
-  \***********************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("http");
-
-/***/ }),
-
-/***/ "https":
-/*!************************!*\
-  !*** external "https" ***!
-  \************************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("https");
-
-/***/ }),
-
 /***/ "path":
 /*!***********************!*\
   !*** external "path" ***!
@@ -180,28 +86,6 @@ module.exports = require("https");
 
 "use strict";
 module.exports = require("path");
-
-/***/ }),
-
-/***/ "punycode":
-/*!***************************!*\
-  !*** external "punycode" ***!
-  \***************************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("punycode");
-
-/***/ }),
-
-/***/ "stream":
-/*!*************************!*\
-  !*** external "stream" ***!
-  \*************************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("stream");
 
 /***/ }),
 
@@ -224,17 +108,6 @@ module.exports = require("url");
 
 "use strict";
 module.exports = require("util");
-
-/***/ }),
-
-/***/ "zlib":
-/*!***********************!*\
-  !*** external "zlib" ***!
-  \***********************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("zlib");
 
 /***/ }),
 
@@ -533,7 +406,7 @@ const e1 = (0,next_dist_build_webpack_loaders_next_flight_loader_module_proxy__W
 var __webpack_require__ = require("../webpack-runtime.js");
 __webpack_require__.C(exports);
 var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
-var __webpack_exports__ = __webpack_require__.X(0, ["vendor-chunks/next","vendor-chunks/@supabase","vendor-chunks/tr46","vendor-chunks/whatwg-url","vendor-chunks/webidl-conversions","vendor-chunks/cookie","vendor-chunks/react-icons","vendor-chunks/styled-jsx","vendor-chunks/@swc"], () => (__webpack_exec__("(rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fnot-found&page=%2Fnot-found&appPaths=&pagePath=node_modules%2Fnext%2Fdist%2Fclient%2Fcomponents%2Fnot-found-error.js&appDir=C%3A%5CUsers%5Chiman%5CDesktop%5Cbikersalliance%5CBike-website-main%5CBikersAlliance%5Capp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=C%3A%5CUsers%5Chiman%5CDesktop%5Cbikersalliance%5CBike-website-main%5CBikersAlliance&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!")));
+var __webpack_exports__ = __webpack_require__.X(0, ["vendor-chunks/next","vendor-chunks/@supabase","vendor-chunks/tslib","vendor-chunks/cookie","vendor-chunks/react-icons","vendor-chunks/styled-jsx","vendor-chunks/@swc"], () => (__webpack_exec__("(rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fnot-found&page=%2Fnot-found&appPaths=&pagePath=node_modules%2Fnext%2Fdist%2Fclient%2Fcomponents%2Fnot-found-error.js&appDir=C%3A%5CUsers%5Chiman%5CDesktop%5Cbikersalliance%5CBike-website-main%5CBikersAlliance%5Capp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=C%3A%5CUsers%5Chiman%5CDesktop%5Cbikersalliance%5CBike-website-main%5CBikersAlliance&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!")));
 module.exports = __webpack_exports__;
 
 })();

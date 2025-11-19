@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { BikeFromDB, Bike } from '@/types/bike';
 import BikeCard from '@/components/bikes/BikeCard';
+import { generateBikeSlug } from '@/lib/slug-utils';
 
 // Helper function to truncate text with ellipsis
 const truncateText = (text: string, maxLength: number): string => {
@@ -42,7 +43,7 @@ const formatBikeData = (dbBike: BikeFromDB): Bike => {
   return {
     id: dbBike.variant_id,
     name: dbBike.variant_name, // Just show the variant name
-    slug: dbBike.variant_url, // Add slug for navigation
+    slug: generateBikeSlug(dbBike.variant_name), // Generate consistent slug from variant name
     image: dbBike.image_url || '/demo.avif',
     price: dbBike.on_road_price?.toLocaleString('en-IN') || 'N/A',
     specs: {

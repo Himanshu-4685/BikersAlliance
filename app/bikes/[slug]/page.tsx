@@ -4,13 +4,25 @@ import { useState, useEffect } from 'react';
 import { useParams, notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FiChevronRight, FiTag, FiSettings, FiBarChart, FiCalendar, FiInfo } from 'react-icons/fi';
-
-// Custom components
-import ReviewsSection from '@/components/bikes/ReviewsSection';
-import SimilarBikesSection from '@/components/bikes/SimilarBikesSection';
-import EMICalculator from '@/components/bikes/EMICalculator';
-import DealersSection from '@/components/bikes/DealersSection';
+import { 
+  FiChevronRight, 
+  FiTag, 
+  FiSettings, 
+  FiBarChart, 
+  FiCalendar, 
+  FiInfo, 
+  FiStar,
+  FiHeart,
+  FiShare2,
+  FiChevronLeft,
+  FiMapPin,
+  FiPhone,
+  FiMail,
+  FiClock,
+  FiCheck,
+  FiX,
+  FiArrowRight
+} from 'react-icons/fi';
 
 // Types
 interface BikeDetails {
@@ -24,6 +36,7 @@ interface BikeDetails {
     name: string;
     slug: string;
     logo: string | null;
+    country?: string;
   };
   category: {
     id: string;
@@ -41,9 +54,9 @@ interface BikeDetails {
     price: number;
   }[];
   specifications: {
-    id: string;
     name: string;
     value: string;
+    category: string;
   }[];
   features: {
     id: string;
@@ -59,47 +72,47 @@ interface BikeDetails {
     title: string;
     content: string;
     rating: number;
-    pros: string | null;
-    cons: string | null;
     createdAt: string;
     user: {
       name: string;
       image: string | null;
     };
   }[];
-  similarModels?: {
-    id: string;
+}
+
+interface SimilarModel {
+  id: string;
+  name: string;
+  slug: string;
+  image: string;
+  price: number;
+  brand: {
     name: string;
     slug: string;
-    image: string;
-    price: number;
-    category?: string;
-    brand?: {
-      name: string;
-      slug: string;
-    };
-  }[];
+  };
 }
 
 export default function BikeDetailsPage() {
   const { slug } = useParams() as { slug: string };
   const [bike, setBike] = useState<BikeDetails | null>(null);
+  const [similarModels, setSimilarModels] = useState<SimilarModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
-  const [activeTab, setActiveTab] = useState('specs');
+  const [activeTab, setActiveTab] = useState('overview');
+  const [selectedVariant, setSelectedVariant] = useState(0);
+  const [showEMICalculator, setShowEMICalculator] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
   
   // Fetch bike details
   useEffect(() => {
     const fetchBikeDetails = async () => {
       try {
-        console.log('Fetching bike details for slug:', slug);
-        const response = await fetch(`/api/bikes/${slug}`);
+        const response = await fetch(`/api/models/${slug}`);
         const result = await response.json();
         
-        console.log('API Response:', result);
-        
         if (result.success) {
-          setBike(result.data);
+          setBike(result.data.model);
+          setSimilarModels(result.data.similarModels || []);
         } else {
           console.error('Failed to fetch bike details:', result.error);
           notFound();
@@ -123,11 +136,31 @@ export default function BikeDetailsPage() {
     return notFound();
   }
   
-  // Group specifications by category
+  // Group specifications by category with better categorization
   const groupedSpecs: Record<string, { name: string; value: string }[]> = {};
   
   bike.specifications.forEach(spec => {
-    const category = spec.name.split(' ')[0].toLowerCase();
+    let category = 'general';
+    
+    // Better categorization based on spec name
+    const specName = spec.name.toLowerCase();
+    if (specName.includes('engine') || specName.includes('displacement') || 
+        specName.includes('power') || specName.includes('torque') || 
+        specName.includes('cylinder')) {
+      category = 'engine';
+    } else if (specName.includes('mileage') || specName.includes('fuel')) {
+      category = 'mileage';
+    } else if (specName.includes('transmission') || specName.includes('gear') || 
+               specName.includes('clutch')) {
+      category = 'transmission';
+    } else if (specName.includes('body') || specName.includes('weight') || 
+               specName.includes('dimension') || specName.includes('length') || 
+               specName.includes('width') || specName.includes('height')) {
+      category = 'dimensions';
+    } else if (specName.includes('brake') || specName.includes('suspension') || 
+               specName.includes('tyre') || specName.includes('wheel')) {
+      category = 'chassis';
+    }
     
     if (!groupedSpecs[category]) {
       groupedSpecs[category] = [];
@@ -260,31 +293,144 @@ export default function BikeDetailsPage() {
               <div className="p-4 mt-4 bg-white border rounded-lg">
                 {activeTab === 'specs' && (
                   <div>
-                    <h2 className="text-lg font-semibold text-gray-900">Specifications</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Technical Specifications</h2>
                     
-                    {Object.entries(groupedSpecs).map(([category, specs]) => (
-                      <div key={category} className="mt-4">
-                        <h3 className="text-md font-medium text-gray-900 capitalize">
-                          {category} Specifications
-                        </h3>
-                        
-                        <div className="mt-2 border rounded-md">
-                          <table className="w-full text-sm">
-                            <tbody>
-                              {specs.map((spec, index) => (
-                                <tr 
-                                  key={spec.name}
-                                  className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}
-                                >
-                                  <td className="px-4 py-2 font-medium text-gray-700">{spec.name}</td>
-                                  <td className="px-4 py-2 text-gray-600">{spec.value}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                    <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+                      {/* Engine Specifications */}
+                      {groupedSpecs.engine && (
+                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+                          <div className="flex items-center mb-4">
+                            <div className="p-2 bg-blue-500 rounded-lg">
+                              <FiSettings className="w-5 h-5 text-white" />
+                            </div>
+                            <h3 className="ml-3 text-lg font-semibold text-blue-900">Engine</h3>
+                          </div>
+                          <div className="space-y-3">
+                            {groupedSpecs.engine.map((spec) => (
+                              <div key={spec.name} className="flex justify-between items-center py-2 border-b border-blue-100 last:border-b-0">
+                                <span className="text-sm font-medium text-blue-700">{spec.name}</span>
+                                <span className="text-sm font-bold text-blue-900">{spec.value}</span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
+                      )}
+
+                      {/* Mileage Specifications */}
+                      {groupedSpecs.mileage && (
+                        <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6">
+                          <div className="flex items-center mb-4">
+                            <div className="p-2 bg-green-500 rounded-lg">
+                              <FiBarChart className="w-5 h-5 text-white" />
+                            </div>
+                            <h3 className="ml-3 text-lg font-semibold text-green-900">Fuel Efficiency</h3>
+                          </div>
+                          <div className="space-y-3">
+                            {groupedSpecs.mileage.map((spec) => (
+                              <div key={spec.name} className="flex justify-between items-center py-2 border-b border-green-100 last:border-b-0">
+                                <span className="text-sm font-medium text-green-700">{spec.name}</span>
+                                <span className="text-sm font-bold text-green-900">{spec.value}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Dimensions Specifications */}
+                      {groupedSpecs.dimensions && (
+                        <div className="bg-gradient-to-br from-purple-50 to-violet-50 border border-purple-200 rounded-lg p-6">
+                          <div className="flex items-center mb-4">
+                            <div className="p-2 bg-purple-500 rounded-lg">
+                              <FiInfo className="w-5 h-5 text-white" />
+                            </div>
+                            <h3 className="ml-3 text-lg font-semibold text-purple-900">Dimensions</h3>
+                          </div>
+                          <div className="space-y-3">
+                            {groupedSpecs.dimensions.map((spec) => (
+                              <div key={spec.name} className="flex justify-between items-center py-2 border-b border-purple-100 last:border-b-0">
+                                <span className="text-sm font-medium text-purple-700">{spec.name}</span>
+                                <span className="text-sm font-bold text-purple-900">{spec.value}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Transmission Specifications */}
+                      {groupedSpecs.transmission && (
+                        <div className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-lg p-6">
+                          <div className="flex items-center mb-4">
+                            <div className="p-2 bg-orange-500 rounded-lg">
+                              <FiSettings className="w-5 h-5 text-white" />
+                            </div>
+                            <h3 className="ml-3 text-lg font-semibold text-orange-900">Transmission</h3>
+                          </div>
+                          <div className="space-y-3">
+                            {groupedSpecs.transmission.map((spec) => (
+                              <div key={spec.name} className="flex justify-between items-center py-2 border-b border-orange-100 last:border-b-0">
+                                <span className="text-sm font-medium text-orange-700">{spec.name}</span>
+                                <span className="text-sm font-bold text-orange-900">{spec.value}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Chassis Specifications */}
+                      {groupedSpecs.chassis && (
+                        <div className="bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-200 rounded-lg p-6">
+                          <div className="flex items-center mb-4">
+                            <div className="p-2 bg-teal-500 rounded-lg">
+                              <FiSettings className="w-5 h-5 text-white" />
+                            </div>
+                            <h3 className="ml-3 text-lg font-semibold text-teal-900">Chassis & Suspension</h3>
+                          </div>
+                          <div className="space-y-3">
+                            {groupedSpecs.chassis.map((spec) => (
+                              <div key={spec.name} className="flex justify-between items-center py-2 border-b border-teal-100 last:border-b-0">
+                                <span className="text-sm font-medium text-teal-700">{spec.name}</span>
+                                <span className="text-sm font-bold text-teal-900">{spec.value}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* All Other Specifications */}
+                      {Object.entries(groupedSpecs).filter(([category]) => 
+                        !['engine', 'mileage', 'dimensions', 'transmission', 'chassis'].includes(category)
+                      ).map(([category, specs]) => (
+                        <div key={category} className="bg-gradient-to-br from-gray-50 to-slate-50 border border-gray-200 rounded-lg p-6">
+                          <div className="flex items-center mb-4">
+                            <div className="p-2 bg-gray-500 rounded-lg">
+                              <FiTag className="w-5 h-5 text-white" />
+                            </div>
+                            <h3 className="ml-3 text-lg font-semibold text-gray-900 capitalize">{category}</h3>
+                          </div>
+                          <div className="space-y-3">
+                            {specs.map((spec) => (
+                              <div key={spec.name} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
+                                <span className="text-sm font-medium text-gray-700">{spec.name}</span>
+                                <span className="text-sm font-bold text-gray-900">{spec.value}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Key Highlights Section */}
+                    <div className="mt-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 text-white">
+                      <h3 className="text-xl font-bold mb-4">Key Performance Highlights</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {bike.specifications.slice(0, 4).map((spec) => (
+                          <div key={spec.name} className="text-center">
+                            <div className="text-2xl font-bold">{spec.value}</div>
+                            <div className="text-sm opacity-90">{spec.name}</div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    </div>
                   </div>
                 )}
                 
@@ -411,9 +557,27 @@ export default function BikeDetailsPage() {
             {/* EMI Calculator */}
             {bike.variants && bike.variants.length > 0 && (
               <div className="mt-4">
-                <EMICalculator 
-                  bikePrice={bike.variants[0].price} 
-                />
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-blue-900 mb-2">EMI Calculator</h4>
+                  <p className="text-sm text-blue-700 mb-3">
+                    Calculate your monthly EMI for {bike.name}
+                  </p>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>Ex-showroom Price:</span>
+                      <span className="font-semibold">₹{bike.variants[0].price?.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Estimated EMI (5 years):</span>
+                      <span className="font-semibold text-green-600">
+                        ₹{Math.round((bike.variants[0].price || 0) / 60).toLocaleString('en-IN')}/month
+                      </span>
+                    </div>
+                  </div>
+                  <Link href="/finance/emi-calculator" className="mt-3 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors block text-center">
+                    Calculate Detailed EMI
+                  </Link>
+                </div>
               </div>
             )}
           </div>
@@ -429,16 +593,111 @@ export default function BikeDetailsPage() {
         
         {/* Reviews Section */}
         {bike.rating && (
-          <ReviewsSection 
-            reviews={bike.reviews || []}
-            averageRating={bike.rating.average || 0}
-            totalReviews={bike.rating.count || 0}
-          />
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold">Reviews & Ratings</h2>
+              <div className="flex items-center space-x-2">
+                <div className="flex">
+                  {[...Array(5)].map((_, i) => (
+                    <FiStar
+                      key={i}
+                      className={`w-5 h-5 ${
+                        i < (bike.rating.average || 0)
+                          ? 'text-yellow-400 fill-current'
+                          : 'text-gray-300'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="font-semibold">{bike.rating.average}/5</span>
+                <span className="text-gray-500">({bike.rating.count} reviews)</span>
+              </div>
+            </div>
+            
+            {bike.reviews && bike.reviews.length > 0 ? (
+              <div className="space-y-4">
+                {bike.reviews.slice(0, 3).map((review: any, index: number) => (
+                  <div key={index} className="border-b border-gray-200 pb-4 last:border-b-0">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <h4 className="font-semibold">{review.userName}</h4>
+                        <div className="flex">
+                          {[...Array(5)].map((_, i) => (
+                            <FiStar
+                              key={i}
+                              className={`w-4 h-4 ${
+                                i < review.rating
+                                  ? 'text-yellow-400 fill-current'
+                                  : 'text-gray-300'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <span className="text-sm text-gray-500">
+                        {new Date(review.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-gray-600">{review.content}</p>
+                  </div>
+                ))}
+                <button className="w-full mt-4 bg-gray-100 text-gray-700 py-2 rounded-md hover:bg-gray-200 transition-colors">
+                  View All Reviews
+                </button>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <FiStar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500">No reviews yet. Be the first to review!</p>
+                <button className="mt-4 bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700">
+                  Write a Review
+                </button>
+              </div>
+            )}
+          </div>
         )}
         
         {/* Dealers Section */}
         {bike.brand && (
-          <DealersSection brandId={bike.brand.id} />
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 className="text-2xl font-bold mb-6">Authorized Dealers</h2>
+            <div className="text-center py-8">
+              <FiMapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500 mb-4">Find {bike.brand.name} dealers near you</p>
+              <div className="space-y-3">
+                <div className="flex items-center justify-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <FiMapPin className="w-5 h-5 text-red-600" />
+                    <span className="text-gray-700">Select your city</span>
+                  </div>
+                  <select className="border border-gray-300 rounded-md px-3 py-2 bg-white">
+                    <option>Choose city...</option>
+                    <option>Delhi</option>
+                    <option>Mumbai</option>
+                    <option>Bangalore</option>
+                    <option>Chennai</option>
+                    <option>Hyderabad</option>
+                    <option>Pune</option>
+                  </select>
+                </div>
+                <button className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors">
+                  Find Dealers
+                </button>
+              </div>
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-600">
+                  <div className="flex items-center space-x-2">
+                    <FiPhone className="w-4 h-4" />
+                    <span>Call: 1800-XXX-XXXX</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <FiMail className="w-4 h-4" />
+                    <span>Email: dealers@{bike.brand.slug}.com</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

@@ -1,5 +1,12 @@
 {
   "/page": "app/page.js",
-  "/latest-bikes/page": "app/latest-bikes/page.js",
-  "/used-bikes/[slug]/page": "app/used-bikes/[slug]/page.js"
+  "/bikes/[slug]/page": "app/bikes/[slug]/page.js",
+  "/api/brands/route": "app/api/brands/route.js",
+  "/api/hero-images/route": "app/api/hero-images/route.js",
+  "/api/bikes/category/route": "app/api/bikes/category/route.js",
+  "/api/bikes/scooters/route": "app/api/bikes/scooters/route.js",
+  "/api/bike-status/route": "app/api/bike-status/route.js",
+  "/api/bikes/electric/route": "app/api/bikes/electric/route.js",
+  "/api/models/[slug]/route": "app/api/models/[slug]/route.js",
+  "/finance/emi-calculator/page": "app/finance/emi-calculator/page.js"
 }

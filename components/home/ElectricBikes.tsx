@@ -3,8 +3,9 @@
 import { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FiChevronLeft, FiChevronRight, FiPlus } from 'react-icons/fi';
 import { ElectricBike, Bike } from '@/types/bike';
+import { generateBikeSlug } from '@/lib/slug-utils';
 import BikeCard from '@/components/bikes/BikeCard';
 
 // Helper function to convert ElectricBike to standard Bike format
@@ -26,7 +27,7 @@ const formatElectricBikeData = (electricBike: ElectricBike): Bike => {
   return {
     id: electricBike.variant_id,
     name: electricBike.variant_name,
-    slug: electricBike.variant_url,
+    slug: generateBikeSlug(electricBike.variant_name),
     image: electricBike.image_url,
     price: formatPrice(electricBike.on_road_price),
     specs: {

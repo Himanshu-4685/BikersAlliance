@@ -88,7 +88,7 @@ export default function UpcomingBikes() {
           >
             <div className="overflow-hidden transition-shadow bg-white border border-gray-200 rounded-lg hover:shadow-md">
               {/* Bike Image */}
-              <Link href={`/upcoming-bikes/${bike.id}`} className="block">
+              <Link href={`/bikes/${bike.id}`} className="block">
                 <div className="relative h-48 overflow-hidden bg-gray-100">
                   <Image
                     src={bike.image}
@@ -105,7 +105,7 @@ export default function UpcomingBikes() {
               
               {/* Bike Info */}
               <div className="p-4">
-                <Link href={`/upcoming-bikes/${bike.id}`} className="block">
+                <Link href={`/bikes/${bike.id}`} className="block">
                   <h3 className="mb-2 text-lg font-medium text-gray-900 hover:text-primary">
                     {bike.name}
                   </h3>
