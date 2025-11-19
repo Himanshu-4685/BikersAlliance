@@ -24,7 +24,8 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const formattedModels = models?.map(model => ({
+    // Type assertion to fix TypeScript inference issue
+    const formattedModels = (models as any)?.map((model: any) => ({
       id: model.model_id,
       name: model.model_name,
       brand: model.brands?.brand_name,

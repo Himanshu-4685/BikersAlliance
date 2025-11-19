@@ -48,8 +48,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
 
     variant = variants[0];
-    const model = variant.models;
-    const brand = variant.brands;
+    const model = (variant as any).models;
+    const brand = (variant as any).brands;
 
     // Get all variants for this model (including the current one)
     const { data: allVariants } = await supabase
@@ -60,33 +60,34 @@ export async function GET(request: NextRequest, context: RouteContext) {
         on_road_price,
         created_at
       `)
-      .eq('model_id', variant.model_id)
+      .eq('model_id', (variant as any).model_id)
       .order('on_road_price', { ascending: true });
 
     // Get specifications from the current variant
-    let specifications = [];
+    let specifications: Array<{name: string, value: string, category: string}> = [];
     const { data: specs } = await supabase
       .from('specs')
       .select('*')
-      .eq('variant_id', variant.variant_id)
+      .eq('variant_id', (variant as any).variant_id)
       .single();
 
     if (specs) {
+      const specsData = specs as any;
       specifications = [
-        { name: 'Engine Type', value: specs.engine_type || 'N/A', category: 'engine' },
-        { name: 'Displacement', value: specs.displacement || 'N/A', category: 'engine' },
-        { name: 'Max Power', value: specs.peak_power || 'N/A', category: 'engine' },
-        { name: 'Max Torque', value: specs.max_torque || 'N/A', category: 'engine' },
-        { name: 'City Mileage', value: specs.city_mileage || 'N/A', category: 'mileage' },
-        { name: 'Highway Mileage', value: specs.highway_mileage || 'N/A', category: 'mileage' },
-        { name: 'Body Type', value: specs.body_type || 'N/A', category: 'dimensions' },
-        { name: 'Transmission', value: specs.transmission || 'N/A', category: 'transmission' }
+        { name: 'Engine Type', value: specsData.engine_type || 'N/A', category: 'engine' },
+        { name: 'Displacement', value: specsData.displacement || 'N/A', category: 'engine' },
+        { name: 'Max Power', value: specsData.peak_power || 'N/A', category: 'engine' },
+        { name: 'Max Torque', value: specsData.max_torque || 'N/A', category: 'engine' },
+        { name: 'City Mileage', value: specsData.city_mileage || 'N/A', category: 'mileage' },
+        { name: 'Highway Mileage', value: specsData.highway_mileage || 'N/A', category: 'mileage' },
+        { name: 'Body Type', value: specsData.body_type || 'N/A', category: 'dimensions' },
+        { name: 'Transmission', value: specsData.transmission || 'N/A', category: 'transmission' }
       ].filter(spec => spec.value !== 'N/A' && spec.value !== null);
     }
 
     // Get images for this variant and related variants
-    let images = [];
-    const variantIds = allVariants ? allVariants.map(v => v.variant_id) : [variant.variant_id];
+    let images: Array<{id: string, url: string, alt: string}> = [];
+    const variantIds = allVariants ? (allVariants as any).map((v: any) => v.variant_id) : [(variant as any).variant_id];
     const { data: imageData } = await supabase
       .from('images')
       .select('image_id, url, alt_text')
@@ -94,15 +95,15 @@ export async function GET(request: NextRequest, context: RouteContext) {
       .limit(5);
 
     if (imageData && imageData.length > 0) {
-      images = imageData.map(img => ({
+      images = (imageData as any).map((img: any) => ({
         id: img.image_id.toString(),
         url: img.url,
-        alt: img.alt_text || `${variant.variant_name} image`
+        alt: img.alt_text || `${(variant as any).variant_name} image`
       }));
     }
 
     // Get reviews
-    let reviews = [];
+    let reviews: Array<any> = [];
     let rating = { average: 0, count: 0 };
     
     const { data: reviewData } = await supabase
@@ -122,7 +123,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       .limit(5);
 
     if (reviewData && reviewData.length > 0) {
-      reviews = reviewData.map(review => ({
+      reviews = (reviewData as any).map((review: any) => ({
         id: review.review_id.toString(),
         title: review.title || 'User Review',
         content: review.body || '',
@@ -135,7 +136,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       }));
 
       // Calculate average rating
-      const totalRating = reviewData.reduce((sum, review) => sum + review.rating, 0);
+      const totalRating = (reviewData as any).reduce((sum: number, review: any) => sum + review.rating, 0);
       rating = {
         average: Math.round((totalRating / reviewData.length) * 10) / 10,
         count: reviewData.length
@@ -152,11 +153,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
         models!inner(model_name),
         images(url)
       `)
-      .eq('brand_id', variant.brand_id)
-      .neq('variant_id', variant.variant_id)
+      .eq('brand_id', (variant as any).brand_id)
+      .neq('variant_id', (variant as any).variant_id)
       .limit(6);
 
-    const formattedSimilarModels = similarVariants?.map(sv => ({
+    const formattedSimilarModels = (similarVariants as any)?.map((sv: any) => ({
       id: sv.variant_id.toString(),
       name: sv.variant_name,
       slug: sv.variant_name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'),
@@ -171,13 +172,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
     // Return the response
     return successResponse({
       model: {
-        id: variant.variant_id.toString(),
-        name: variant.variant_name,
-        slug: variant.variant_name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'),
-        description: brand.description || `The ${variant.variant_name} is a premium motorcycle from ${brand.brand_name}, offering exceptional performance and style.`,
-        launchDate: variant.created_at || null,
+        id: (variant as any).variant_id.toString(),
+        name: (variant as any).variant_name,
+        slug: (variant as any).variant_name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'),
+        description: brand.description || `The ${(variant as any).variant_name} is a premium motorcycle from ${brand.brand_name}, offering exceptional performance and style.`,
+        launchDate: (variant as any).created_at || null,
         brand: {
-          id: variant.brand_id,
+          id: (variant as any).brand_id,
           name: brand.brand_name,
           slug: brand.brand_name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'),
           logo: brand.logo_url,
@@ -188,10 +189,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
           {
             id: 'placeholder',
             url: '/images/placeholder-bike.jpg',
-            alt: `${variant.variant_name} placeholder image`
+            alt: `${(variant as any).variant_name} placeholder image`
           }
         ],
-        variants: (allVariants || []).map(v => ({
+        variants: ((allVariants as any) || []).map((v: any) => ({
           id: v.variant_id.toString(),
           name: v.variant_name,
           price: v.on_road_price || 0

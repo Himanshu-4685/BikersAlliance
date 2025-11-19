@@ -23,6 +23,7 @@ import {
   FiX,
   FiArrowRight
 } from 'react-icons/fi';
+import SimilarBikesSection from '@/components/bikes/SimilarBikesSection';
 
 // Types
 interface BikeDetails {
@@ -78,6 +79,7 @@ interface BikeDetails {
       image: string | null;
     };
   }[];
+  similarModels?: SimilarModel[];
 }
 
 interface SimilarModel {
@@ -513,7 +515,7 @@ export default function BikeDetailsPage() {
                 {bike.specifications.filter(spec => 
                   ['Engine', 'Mileage', 'Power', 'Torque', 'Fuel Capacity', 'Weight'].includes(spec.name)
                 ).map(spec => (
-                  <div key={spec.id} className="flex items-start">
+                  <div key={spec.name} className="flex items-start">
                     <div className="p-2 mr-3 text-primary bg-primary-50 rounded-md">
                       {spec.name === 'Engine' && <FiSettings />}
                       {spec.name === 'Mileage' && <FiBarChart />}
@@ -602,7 +604,7 @@ export default function BikeDetailsPage() {
                     <FiStar
                       key={i}
                       className={`w-5 h-5 ${
-                        i < (bike.rating.average || 0)
+                        i < (bike.rating?.average || 0)
                           ? 'text-yellow-400 fill-current'
                           : 'text-gray-300'
                       }`}
