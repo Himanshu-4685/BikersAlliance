@@ -1,1 +1,5 @@
-{}
+{
+  "/page": "app/page.js",
+  "/latest-bikes/page": "app/latest-bikes/page.js",
+  "/used-bikes/[slug]/page": "app/used-bikes/[slug]/page.js"
+}

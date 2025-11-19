@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { BikeFromDB, Bike } from '@/types/bike';
+import BikeCard from '@/components/bikes/BikeCard';
 
 // Helper function to truncate text with ellipsis
 const truncateText = (text: string, maxLength: number): string => {
@@ -109,12 +110,15 @@ export default function FeaturedBikes() {
   };
 
   const categories = [
-    { key: 'commuter', label: 'Commuter Bikes' },
-    { key: 'sports', label: 'Sports Bikes' },
-    { key: 'cruiser', label: 'Cruiser Bikes' },
-    { key: 'mileage', label: 'Best Mileage Bikes' },
-    { key: 'electric', label: 'Electric Bikes' }
+    { key: 'commuter', label: 'Commuter Bikes', viewAllText: 'View All Commuter', link: '/bikes/type/commuter' },
+    { key: 'sports', label: 'Sports Bikes', viewAllText: 'View All Sports', link: '/bikes/type/sports' },
+    { key: 'cruiser', label: 'Cruiser Bikes', viewAllText: 'View All Cruiser', link: '/bikes/type/cruiser' },
+    { key: 'mileage', label: 'Best Mileage Bikes', viewAllText: 'View All Mileage', link: '/bikes/mileage/above-60' },
+    { key: 'electric', label: 'Electric Bikes', viewAllText: 'View All Electric', link: '/electric' }
   ];
+
+  // Get the current category data
+  const currentCategory = categories.find(cat => cat.key === activeCategory) || categories[0];
   
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
@@ -123,8 +127,8 @@ export default function FeaturedBikes() {
         <h2 className="text-2xl text-gray-900" style={{ fontFamily: 'Lato, sans-serif, Arial', fontSize: '23px', fontWeight: 500 }}>
           <b>Bikes in Spotlight</b>
         </h2>
-        <Link href="/bikes" className="px-4 py-2 text-sm text-primary border border-primary rounded-md hover:bg-primary hover:text-white transition-colors">
-          View All Bikes
+        <Link href={currentCategory.link} className="px-4 py-2 text-sm text-primary border border-primary rounded-md hover:bg-primary hover:text-white transition-colors">
+          {currentCategory.viewAllText}
         </Link>
       </div>
 
@@ -196,60 +200,11 @@ export default function FeaturedBikes() {
         ) : (
           // Bikes data
           bikes.map((bike) => (
-            <div 
+            <BikeCard 
               key={bike.id} 
-              className="flex-none w-[270px] snap-start"
-            >
-            <div className="overflow-hidden transition-shadow bg-white border border-gray-200 rounded-lg hover:shadow-md">
-              {/* Bike Image */}
-              <Link href={`/bikes/${bike.slug || bike.id}`} className="block">
-                <div className="relative h-48 overflow-hidden bg-gray-100">
-                  <Image
-                    src={bike.image}
-                    alt={bike.name}
-                    fill
-                    className="object-cover transition-transform duration-300 hover:scale-105"
-                    sizes="(max-width: 768px) 100vw, 270px"
-                  />
-                </div>
-              </Link>
-              
-              {/* Bike Info */}
-              <div className="p-4">
-                <Link href={`/bikes/${bike.slug || bike.id}`} className="block">
-                  <h3 className="mb-2 text-lg font-medium text-gray-900 hover:text-primary">
-                    {truncateText(bike.name, 22)}
-                  </h3>
-                </Link>
-                <div className="mb-3 text-lg font-bold text-gray-900">
-                  ₹ {bike.price}
-                </div>
-                
-                {/* Specs */}
-                <div className="grid grid-cols-3 gap-2 pt-3 mt-3 text-xs text-gray-500 border-t border-gray-100">
-                  <div>
-                    <div className="font-medium">Engine</div>
-                    <div>{bike.specs.engine}</div>
-                  </div>
-                  <div>
-                    <div className="font-medium">
-                      {activeCategory === 'electric' ? 'Range' : 'Mileage'}
-                    </div>
-                    <div>{bike.specs.mileage}</div>
-                  </div>
-                  <div>
-                    <div className="font-medium">Power</div>
-                    <div>{bike.specs.power}</div>
-                  </div>
-                </div>
-                
-                {/* CTA */}
-                <button className="w-full px-4 py-2 mt-4 text-sm text-center text-primary transition-colors border border-primary rounded-md hover:bg-primary hover:text-white">
-                  View Specifications & Price
-                </button>
-              </div>
-            </div>
-            </div>
+              bike={bike} 
+              viewMode="grid"
+            />
           ))
         )}
         </div>

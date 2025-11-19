@@ -1,12 +1,34 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { FiHeart, FiShare2 } from 'react-icons/fi';
-import { FormattedBike } from '@/types/bike';
+import { FiHeart, FiShare2, FiSettings, FiZap } from 'react-icons/fi';
+import { FormattedBike, Bike } from '@/types/bike';
+import BikeCard from '@/components/bikes/BikeCard';
 
 interface BikeGridProps {
   bikes: FormattedBike[];
   loading?: boolean;
 }
+
+// Helper function to convert FormattedBike to standard Bike format
+const formatBikeForCard = (formattedBike: FormattedBike): Bike => {
+  const formatPrice = (price: number | null) => {
+    if (!price) return 'Price on request';
+    return price.toLocaleString('en-IN');
+  };
+
+  return {
+    id: formattedBike.id,
+    name: formattedBike.name,
+    slug: formattedBike.slug,
+    image: formattedBike.image || '/images/default-bike.jpg',
+    price: formatPrice(formattedBike.price),
+    specs: {
+      engine: formattedBike.specs.displacement || 'N/A',
+      mileage: formattedBike.specs.mileage || 'N/A',
+      power: formattedBike.specs.power || 'N/A'
+    }
+  };
+};
 
 export default function BikeGrid({ bikes, loading = false }: BikeGridProps) {
   const formatPrice = (price: number | null) => {
@@ -44,7 +66,7 @@ export default function BikeGrid({ bikes, loading = false }: BikeGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {bikes.map((bike) => (
-        <div key={bike.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+        <div key={bike.id} className="bg-white rounded-lg shadow-sm hover:shadow-md border border-gray-200 transition-shadow overflow-hidden">
           <div className="relative">
             <Image
               src={bike.image || '/images/default-bike.jpg'}
@@ -83,33 +105,45 @@ export default function BikeGrid({ bikes, loading = false }: BikeGridProps) {
               <span className="text-sm text-gray-600">{bike.brand.name}</span>
             </div>
             
-            <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
-              {bike.name}
-            </h3>
+            <Link href={`/bikes/${bike.slug}`} className="block">
+              <h3 className="font-medium text-lg text-gray-900 mb-2 hover:text-primary line-clamp-2">
+                {bike.name}
+              </h3>
+            </Link>
             
-            <div className="space-y-1 text-sm text-gray-600 mb-4">
-              {bike.specs.displacement && (
-                <div>Engine: {bike.specs.displacement}</div>
-              )}
-              {bike.specs.mileage && (
-                <div>Mileage: {bike.specs.mileage}</div>
-              )}
-              {bike.specs.bodyType && (
-                <div>Type: {bike.specs.bodyType}</div>
-              )}
+            <div className="mb-3 text-lg font-bold text-gray-900">
+              ₹ {formatPrice(bike.price)}
             </div>
             
-            <div className="flex items-center justify-between">
-              <div className="font-bold text-lg text-gray-900">
-                {formatPrice(bike.price)}
+            {/* Specs - matching LatestBikes format */}
+            <div className="grid grid-cols-3 gap-2 pt-3 mt-3 text-xs text-gray-500 border-t border-gray-100">
+              <div className="text-center">
+                <div className="flex items-center justify-center mb-1">
+                  <FiSettings className="w-4 h-4 text-gray-400" />
+                </div>
+                <div className="font-medium">Engine</div>
+                <div>{bike.specs.displacement || 'N/A'}</div>
               </div>
-              <Link
-                href={`/bikes/${bike.slug}`}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm transition-colors"
-              >
-                View Details
-              </Link>
+              <div className="text-center">
+                <div className="flex items-center justify-center mb-1">
+                  <div className="w-4 h-4 text-red-500 font-bold">⛽</div>
+                </div>
+                <div className="font-medium">Mileage</div>
+                <div>{bike.specs.mileage || 'N/A'}</div>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center mb-1">
+                  <FiZap className="w-4 h-4 text-gray-400" />
+                </div>
+                <div className="font-medium">Power</div>
+                <div>{bike.specs.power || 'N/A'}</div>
+              </div>
             </div>
+            
+            {/* CTA */}
+            <button className="w-full px-4 py-2 mt-4 text-sm text-center text-primary transition-colors border border-primary rounded-md hover:bg-primary hover:text-white">
+              View Specifications & Price
+            </button>
           </div>
         </div>
       ))}

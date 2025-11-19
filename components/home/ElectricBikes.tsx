@@ -4,11 +4,42 @@ import { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import { ElectricBike } from '@/types/bike';
+import { ElectricBike, Bike } from '@/types/bike';
+import BikeCard from '@/components/bikes/BikeCard';
+
+// Helper function to convert ElectricBike to standard Bike format
+const formatElectricBikeData = (electricBike: ElectricBike): Bike => {
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-IN').format(price);
+  };
+
+  const formatRange = (mileage: number) => {
+    // For electric bikes, assume range is approximately mileage * 1.5 (rough estimate)
+    const range = Math.round(mileage * 1.5);
+    return `${range} km`;
+  };
+
+  const formatPower = (power: number) => {
+    return `${power} kW`;
+  };
+
+  return {
+    id: electricBike.variant_id,
+    name: electricBike.variant_name,
+    slug: electricBike.variant_url,
+    image: electricBike.image_url,
+    price: formatPrice(electricBike.on_road_price),
+    specs: {
+      engine: 'Electric',
+      mileage: formatRange(electricBike.city_mileage || 50),
+      power: formatPower(electricBike.peak_power || 5)
+    }
+  };
+};
 
 export default function ElectricBikes() {
   const sliderRef = useRef<HTMLDivElement>(null);
-  const [electricBikes, setElectricBikes] = useState<ElectricBike[]>([]);
+  const [electricBikes, setElectricBikes] = useState<Bike[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,7 +56,8 @@ export default function ElectricBikes() {
         const data = await response.json();
         
         if (data.success && data.data?.bikes) {
-          setElectricBikes(data.data.bikes);
+          const formattedBikes = data.data.bikes.map(formatElectricBikeData);
+          setElectricBikes(formattedBikes);
         } else {
           setElectricBikes([]);
         }
@@ -53,26 +85,7 @@ export default function ElectricBikes() {
     }
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-IN').format(price);
-  };
 
-  const formatRange = (mileage: number) => {
-    // For electric bikes, assume range is approximately mileage * 1.5 (rough estimate)
-    const range = Math.round(mileage * 1.5);
-    return `${range} Km`;
-  };
-
-  const formatChargingTime = () => {
-    // Default charging time for electric bikes (could be made dynamic later)
-    return '4-6 Hrs';
-  };
-
-  const formatTopSpeed = (power: number) => {
-    // Estimate top speed based on peak power (rough formula)
-    const topSpeed = Math.round(power * 2.5);
-    return `${topSpeed} Kmph`;
-  };
   
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
@@ -131,53 +144,11 @@ export default function ElectricBikes() {
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
           {electricBikes.map((bike) => (
-            <div 
-              key={bike.variant_id} 
-              className="flex-none w-[280px] snap-start"
-            >
-              <div className="overflow-hidden transition-shadow bg-white border border-gray-200 rounded-lg hover:shadow-md">
-                {/* Bike Image */}
-                <div className="relative h-48 bg-gray-100">
-                  <Image
-                    src={bike.image_url}
-                    alt={bike.variant_name}
-                    fill
-                    className="object-cover"
-                    sizes="280px"
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 px-3 py-2 bg-gradient-to-t from-black/70 to-transparent">
-                    <h3 className="text-sm font-medium text-white">{bike.variant_name}</h3>
-                    <p className="text-xs text-white/90">₹ {formatPrice(bike.on_road_price)}</p>
-                  </div>
-                </div>
-                
-                {/* Bike Specs */}
-                <div className="grid grid-cols-3 gap-2 p-3">
-                  <div className="text-center">
-                    <p className="text-xs text-gray-500">Range</p>
-                    <p className="font-medium text-gray-800">{formatRange(bike.city_mileage || 50)}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-xs text-gray-500">Charging</p>
-                    <p className="font-medium text-gray-800">{formatChargingTime()}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-xs text-gray-500">Top Speed</p>
-                    <p className="font-medium text-gray-800">{formatTopSpeed(bike.peak_power || 5)}</p>
-                  </div>
-                </div>
-                
-                {/* CTA */}
-                <div className="px-3 pb-3">
-                  <Link 
-                    href={`/bikes/${bike.variant_url}`} 
-                    className="block w-full px-4 py-2 text-sm font-medium text-center text-white transition-colors bg-primary rounded-md hover:bg-primary-600"
-                  >
-                    View Details
-                  </Link>
-                </div>
-              </div>
-            </div>
+            <BikeCard 
+              key={bike.id} 
+              bike={bike} 
+              viewMode="grid"
+            />
           ))}
           
           <div className="flex-none w-[200px] snap-start">
