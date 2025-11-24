@@ -101,10 +101,12 @@ export async function GET(request: NextRequest) {
         on_road_price,
         model_id,
         brand_id,
-        models!inner(model_name),
+        mileage,
+        engine_capacity,
+        models!inner(model_name, image_url),
         brands!inner(brand_name)
       `)
-      .or(`variant_name.ilike.%${query}%,models.model_name.ilike.%${query}%`)
+      .or(`variant_name.ilike.*${query}*,models.model_name.ilike.*${query}*`)
       .limit(10);
 
     if (variantsError) {
@@ -130,12 +132,12 @@ export async function GET(request: NextRequest) {
 
       // Add to search results for full search
       searchResults.results.bikes = variants.map((variant: any) => ({
-        id: variant.variant_id,
-        name: `${variant.models?.model_name || ''} ${variant.variant_name}`,
+        id: variant.variant_id?.toString() || '',
+        name: variant.variant_name || '',
         slug: createSlug(`${variant.models?.model_name || ''} ${variant.variant_name}`),
         price: variant.on_road_price || 0,
         brand: {
-          id: variant.brand_id,
+          id: variant.brand_id || '',
           name: variant.brands?.brand_name || 'Unknown',
           slug: createSlug(variant.brands?.brand_name || 'unknown')
         }

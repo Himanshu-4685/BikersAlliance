@@ -61,28 +61,74 @@ export type Database = {
       };
       brands: {
         Row: {
-          id: string;
-          name: string;
+          brand_id: string;
+          brand_name: string;
           logo_url: string | null;
+          country: string | null;
+          description: string | null;
           created_at: string;
-          updated_at: string;
-          slug: string;
         };
         Insert: {
-          id?: string;
-          name: string;
+          brand_id?: string;
+          brand_name: string;
           logo_url?: string | null;
+          country?: string | null;
+          description?: string | null;
           created_at?: string;
-          updated_at?: string;
-          slug: string;
         };
         Update: {
-          id?: string;
-          name?: string;
+          brand_id?: string;
+          brand_name?: string;
           logo_url?: string | null;
+          country?: string | null;
+          description?: string | null;
           created_at?: string;
-          updated_at?: string;
-          slug?: string;
+        };
+      };
+      models: {
+        Row: {
+          model_id: number;
+          brand_id: string;
+          model_name: string | null;
+        };
+        Insert: {
+          model_id?: number;
+          brand_id: string;
+          model_name?: string | null;
+        };
+        Update: {
+          model_id?: number;
+          brand_id?: string;
+          model_name?: string | null;
+        };
+      };
+      variants: {
+        Row: {
+          variant_id: number;
+          model_id: number;
+          brand_id: string;
+          variant_name: string;
+          on_road_price: number | null;
+          created_at: string;
+          url: string | null;
+        };
+        Insert: {
+          variant_id?: number;
+          model_id: number;
+          brand_id: string;
+          variant_name: string;
+          on_road_price?: number | null;
+          created_at?: string;
+          url?: string | null;
+        };
+        Update: {
+          variant_id?: number;
+          model_id?: number;
+          brand_id?: string;
+          variant_name?: string;
+          on_road_price?: number | null;
+          created_at?: string;
+          url?: string | null;
         };
       };
       categories: {

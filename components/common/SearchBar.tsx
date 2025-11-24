@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from 'next/navigation';
 import { FiSearch } from 'react-icons/fi';
 import { createClient } from "@/utils/supabase/client";
+import { generateSlug } from '@/lib/slug-utils';
 
 interface Variant {
   variant_id: number;
@@ -10,6 +12,7 @@ interface Variant {
 }
 
 export default function SearchBar() {
+  const router = useRouter();
   const [query, setQuery] = useState<string>("");
   const [results, setResults] = useState<Variant[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -61,8 +64,62 @@ export default function SearchBar() {
   }, [query]);
 
   const handleSelect = (variant: Variant) => {
+    const slug = generateSlug(variant.variant_name);
+    router.push(`/bikes/${slug}`);
     setQuery(variant.variant_name);
     setShowDropdown(false);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim()) {
+      // First check if this is a brand search
+      const searchQuery = query.trim();
+      
+      try {
+        // Use the search API to check for brand matches
+        const response = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
+        const searchData = await response.json();
+        
+        if (searchData.success && searchData.data.suggestions) {
+          // Look for exact brand matches first
+          const brandSuggestion = searchData.data.suggestions.find((suggestion: any) => 
+            suggestion.type === 'brand' && 
+            suggestion.brandName.toLowerCase() === searchQuery.toLowerCase()
+          );
+          
+          if (brandSuggestion) {
+            router.push(brandSuggestion.href);
+            setShowDropdown(false);
+            return;
+          }
+          
+          // Look for partial brand matches
+          const partialBrandMatch = searchData.data.suggestions.find((suggestion: any) => 
+            suggestion.type === 'brand' && 
+            suggestion.brandName.toLowerCase().includes(searchQuery.toLowerCase())
+          );
+          
+          if (partialBrandMatch) {
+            router.push(partialBrandMatch.href);
+            setShowDropdown(false);
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Error checking brand matches:', error);
+      }
+      
+      // If there are variant results, go to the first one
+      if (results.length > 0) {
+        const slug = generateSlug(results[0].variant_name);
+        router.push(`/bikes/${slug}`);
+      } else {
+        // Otherwise, go to search results page with query
+        router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+      }
+      setShowDropdown(false);
+    }
   };
 
   const handleFocus = () => {
@@ -92,54 +149,59 @@ export default function SearchBar() {
 
   return (
     <div className="w-full max-w-2xl relative">
-      <div className="relative">
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          placeholder="Search Bikes or Scooters eg. KTM, Honda Activa, Duke, Pulsar"
-          className="w-full py-2 pl-4 pr-12 text-sm text-gray-900 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
-          autoComplete="off"
-        />
-        <div className="absolute inset-y-0 right-0 flex items-center px-4">
-          <FiSearch className="w-4 h-4 text-gray-500" />
+      <form onSubmit={handleSubmit}>
+        <div className="relative">
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            placeholder="Search Bikes or Scooters eg. KTM, Honda Activa, Duke, Pulsar"
+            className="w-full py-2 pl-4 pr-12 text-sm text-gray-900 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+            autoComplete="off"
+          />
+          <button
+            type="submit"
+            className="absolute inset-y-0 right-0 flex items-center px-4 hover:text-primary"
+          >
+            <FiSearch className="w-4 h-4 text-gray-500" />
+          </button>
         </div>
+      </form>
         
-        {/* Search Results */}
-        {(loading || showDropdown) && (
-          <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 z-50 max-h-60 overflow-y-auto">
-            {loading && (
-              <div className="px-4 py-3 text-sm text-gray-500 flex items-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
-                Searching...
-              </div>
-            )}
-            
-            {!loading && results.length > 0 && results.map((variant) => (
-              <div
-                key={variant.variant_id}
-                className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex justify-between items-center border-b border-gray-100 last:border-b-0 transition-colors"
-                onClick={() => handleSelect(variant)}
-              >
-                <span className="text-sm text-gray-900 font-medium">
-                  {highlightMatch(variant.variant_name, query)}
-                </span>
-                <span className="text-xs text-gray-500 capitalize bg-gray-100 px-2 py-1 rounded-full">
-                  variant
-                </span>
-              </div>
-            ))}
-            
-            {!loading && results.length === 0 && query.trim().length >= 2 && (
-              <div className="px-4 py-3 text-sm text-gray-500">
-                No results found for "{query}"
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      {/* Search Results */}
+      {(loading || showDropdown) && (
+        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 z-50 max-h-60 overflow-y-auto">
+          {loading && (
+            <div className="px-4 py-3 text-sm text-gray-500 flex items-center">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
+              Searching...
+            </div>
+          )}
+          
+          {!loading && results.length > 0 && results.map((variant) => (
+            <div
+              key={variant.variant_id}
+              className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex justify-between items-center border-b border-gray-100 last:border-b-0 transition-colors"
+              onClick={() => handleSelect(variant)}
+            >
+              <span className="text-sm text-gray-900 font-medium">
+                {highlightMatch(variant.variant_name, query)}
+              </span>
+              <span className="text-xs text-gray-500 capitalize bg-gray-100 px-2 py-1 rounded-full">
+                variant
+              </span>
+            </div>
+          ))}
+          
+          {!loading && results.length === 0 && query.trim().length >= 2 && (
+            <div className="px-4 py-3 text-sm text-gray-500">
+              No results found for "{query}"
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

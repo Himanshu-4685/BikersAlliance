@@ -11,145 +11,35 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/bikes/offers/page": [
+    "/admin/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/bikes/offers/page.js"
+      "static/chunks/app/admin/layout.js"
     ],
-    "/showrooms/page": [
+    "/admin/login/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/showrooms/page.js"
+      "static/chunks/app/admin/login/page.js"
     ],
-    "/tools/fuel-calculator/page": [
+    "/admin/dashboard/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/tools/fuel-calculator/page.js"
+      "static/chunks/app/admin/dashboard/page.js"
     ],
-    "/tools/fuel-calculator/layout": [
+    "/admin/brands/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/tools/fuel-calculator/layout.js"
+      "static/chunks/app/admin/brands/page.js"
     ],
-    "/electric/page": [
+    "/admin/models/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/electric/page.js"
+      "static/chunks/app/admin/models/page.js"
     ],
-    "/electric/loading": [
+    "/admin/variants/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/electric/loading.js"
-    ],
-    "/electric/error": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/electric/error.js"
-    ],
-    "/finance/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/finance/layout.js"
-    ],
-    "/finance/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/finance/page.js"
-    ],
-    "/finance/offers/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/finance/offers/page.js"
-    ],
-    "/finance/emi-calculator/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/finance/emi-calculator/page.js"
-    ],
-    "/finance/emi-calculator/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/finance/emi-calculator/layout.js"
-    ],
-    "/finance/eligibility/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/finance/eligibility/page.js"
-    ],
-    "/used-bikes/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/used-bikes/page.js"
-    ],
-    "/used-bikes/[slug]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/used-bikes/[slug]/page.js"
-    ],
-    "/sell-bike/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/sell-bike/page.js"
-    ],
-    "/sell-bike/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/sell-bike/layout.js"
-    ],
-    "/news/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/news/page.js"
-    ],
-    "/news/top-stories/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/news/top-stories/page.js"
-    ],
-    "/videos/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/videos/page.js"
-    ],
-    "/web-stories/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/web-stories/page.js"
-    ],
-    "/login/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/login/page.js"
-    ],
-    "/register/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/register/page.js"
-    ],
-    "/dashboard/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/page.js"
-    ],
-    "/bikes/[slug]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/bikes/[slug]/page.js"
-    ],
-    "/scooters/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/scooters/page.js"
-    ],
-    "/scooters/[slug]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/scooters/[slug]/page.js"
-    ],
-    "/bikes/type/[type]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/bikes/type/[type]/page.js"
+      "static/chunks/app/admin/variants/page.js"
     ],
     "/not-found": [
       "static/chunks/webpack.js",
