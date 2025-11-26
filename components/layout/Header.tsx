@@ -29,8 +29,8 @@ const navItems = [
           { label: 'All Best Bikes', href: '/bikes/best' },
         ]
       },
-      { label: 'Upcoming Bikes', href: '/bikes/upcoming' },
-      { label: 'New Bike Launches', href: '/bikes/launches' },
+      { label: 'Upcoming Bikes', href: '/upcoming-bikes' },
+      { label: 'New Bike Launches', href: '/latest-bikes' },
       { label: 'Compare Bikes', href: '/compare' },
       { label: 'Popular Brands', href: '/brands', hasSubDropdown: true,
         subItems: [
@@ -62,8 +62,8 @@ const navItems = [
           { label: 'All Best Scooters', href: '/scooters/best' },
         ]
       },
-      { label: 'Upcoming Scooters', href: '/scooters/upcoming' },
-      { label: 'New Scooter Launches', href: '/scooters/launches' },
+      { label: 'Upcoming Scooters', href: '/upcoming-bikes' },
+      { label: 'New Scooter Launches', href: '/latest-bikes' },
     ]
   },
   { 
@@ -71,16 +71,6 @@ const navItems = [
     href: '/electric',
     hasDropdown: true,
     dropdownItems: [
-      { label: 'Electric Bikes', href: '/electric/bikes' },
-      { label: 'Electric Scooters', href: '/electric/scooters', hasSubDropdown: true,
-        subItems: [
-          { label: 'Yulu Wynn', href: '/electric/scooters/yulu-wynn' },
-          { label: 'TVS iQube', href: '/electric/scooters/tvs-iqube' },
-          { label: 'Honda Activa e', href: '/electric/scooters/honda-activa-e' },
-          { label: 'All Electric Scooters', href: '/electric/scooters' },
-        ]
-      },
-      { label: 'Electric Cycles', href: '/electric/cycles' },
       { label: 'Electric Bike Charging Stations', href: '/electric/charging-stations' },
     ]
   },

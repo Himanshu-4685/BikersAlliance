@@ -45,9 +45,8 @@ export async function GET(request: NextRequest) {
         model_id,
         brand_id,
         on_road_price,
-        mileage,
-        engine_capacity,
         created_at,
+        url,
         models!inner(
           model_name
         ),
@@ -78,7 +77,7 @@ export async function GET(request: NextRequest) {
 
     // Get paginated data
     const { data: variants, error } = await query
-      .order('created_at', { ascending: false })
+      .order('variant_id', { ascending: true })
       .range(offset, offset + limit - 1);
 
     if (error) {

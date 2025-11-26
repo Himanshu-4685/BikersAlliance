@@ -52,7 +52,7 @@ export default function AdminHeader({ title, onMenuClick }: AdminHeaderProps) {
               </div>
               <div className="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center">
                 <span className="text-sm font-medium text-white">
-                  {admin.name.charAt(0).toUpperCase()}
+                  {(admin.name?.charAt(0) || admin.email?.charAt(0) || 'A').toUpperCase()}
                 </span>
               </div>
             </div>

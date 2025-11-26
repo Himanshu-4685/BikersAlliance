@@ -4,6 +4,7 @@ import { Resend } from 'resend';
 
 interface SubscribeRequest {
   email: string;
+  resend?: boolean;
 }
 
 // Email service configuration
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
   try {
     console.log('🚀 Newsletter API called');
     const body: SubscribeRequest = await request.json();
-    const { email } = body;
+    const { email, resend } = body;
 
     console.log('📧 Email subscription request for:', email);
 
@@ -33,6 +34,29 @@ export async function POST(request: NextRequest) {
         { error: 'Valid email is required' },
         { status: 400 }
       );
+    }
+
+    // If this is a resend request, skip the subscription check and database operations
+    if (resend) {
+      console.log('🔄 Resending newsletter to:', email);
+      
+      // Send welcome email directly
+      console.log('📤 Sending newsletter email...');
+      const emailSent = await sendWelcomeEmail(email);
+
+      if (emailSent) {
+        console.log('✅ Newsletter resent successfully');
+        return NextResponse.json(
+          { message: 'Newsletter resent successfully!' },
+          { status: 200 }
+        );
+      } else {
+        console.log('❌ Failed to resend newsletter');
+        return NextResponse.json(
+          { error: 'Failed to resend newsletter. Please try again.' },
+          { status: 500 }
+        );
+      }
     }
 
     // Check if email already exists in newsletter subscriptions

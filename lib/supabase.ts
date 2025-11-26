@@ -154,6 +154,32 @@ export type Database = {
           slug?: string;
         };
       };
+      newsletter_subscriptions: {
+        Row: {
+          id: string;
+          email: string;
+          subscribed_at: string;
+          status: 'active' | 'unsubscribed';
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          subscribed_at?: string;
+          status?: 'active' | 'unsubscribed';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          subscribed_at?: string;
+          status?: 'active' | 'unsubscribed';
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
       users: {
         Row: {
           id: string;

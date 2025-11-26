@@ -16,8 +16,7 @@ interface Variant {
   model_name?: string;
   brand_name?: string;
   on_road_price?: number;
-  mileage?: string;
-  engine_capacity?: string;
+  url?: string;
   created_at: string;
 }
 
@@ -58,12 +57,18 @@ export default function AdminVariantsPage() {
         }
       });
 
+      if (response.status === 401) {
+        // Unauthorized: redirect to admin login
+        router.push('/admin/login');
+        return;
+      }
+
       if (response.ok) {
         const data = await response.json();
         setVariants(data.variants || []);
         setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));
       } else {
-        console.error('Failed to fetch variants');
+        console.error('Failed to fetch variants', response.status);
       }
     } catch (error) {
       console.error('Error fetching variants:', error);
@@ -96,6 +101,10 @@ export default function AdminVariantsPage() {
 
   const columns = [
     {
+      key: 'variant_id',
+      label: 'ID'
+    },
+    {
       key: 'variant_name',
       label: 'Variant Name',
       sortable: true
@@ -118,14 +127,9 @@ export default function AdminVariantsPage() {
         : '-'
     },
     {
-      key: 'engine_capacity',
-      label: 'Engine',
-      render: (variant: Variant) => variant.engine_capacity || '-'
-    },
-    {
-      key: 'mileage',
-      label: 'Mileage',
-      render: (variant: Variant) => variant.mileage || '-'
+      key: 'url',
+      label: 'URL',
+      render: (variant: Variant) => variant.url || '-'
     },
     {
       key: 'created_at',

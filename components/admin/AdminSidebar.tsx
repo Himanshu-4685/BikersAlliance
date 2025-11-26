@@ -26,7 +26,7 @@ const navigation = [
   { name: 'Brands', href: '/admin/brands', icon: FiTruck },
   { name: 'Models', href: '/admin/models', icon: FiShoppingBag },
   { name: 'Variants', href: '/admin/variants', icon: FiEye },
-  { name: 'Specifications', href: '/admin/specs', icon: FiSettings },
+  { name: 'Specifications', href: '/admin/specifications', icon: FiSettings },
   { name: 'Status & Launches', href: '/admin/status', icon: FiActivity },
   { name: 'Bookings', href: '/admin/bookings', icon: FiBookOpen },
   { name: 'Reviews', href: '/admin/reviews', icon: FiStar },

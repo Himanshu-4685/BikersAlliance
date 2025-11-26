@@ -24,7 +24,7 @@ export default function RecentActivity() {
     try {
       const response = await fetch('/api/admin/recent-activity', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         }
       });
 

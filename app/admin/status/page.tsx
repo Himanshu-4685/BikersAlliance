@@ -11,14 +11,15 @@ import { FiPlus, FiEdit, FiTrash2, FiCalendar, FiTrendingUp } from 'react-icons/
 interface Status {
   status_id: number;
   model_id: number;
-  status_type: 'launched' | 'upcoming' | 'discontinued';
+  variant_id: number;
+  status_type: 'upcoming' | 'new_launch';
   launch_date?: string;
   expected_launch?: string;
   price_range?: string;
-  notes?: string;
   created_at: string;
   model_name?: string;
   brand_name?: string;
+  variant_name?: string;
 }
 
 export default function AdminStatusPage() {
@@ -32,8 +33,7 @@ export default function AdminStatusPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [stats, setStats] = useState({
     launched: 0,
-    upcoming: 0,
-    discontinued: 0
+    upcoming: 0
   });
   const itemsPerPage = 10;
 
@@ -65,13 +65,18 @@ export default function AdminStatusPage() {
         }
       });
 
+      if (response.status === 401) {
+        router.push('/admin/login');
+        return;
+      }
+
       if (response.ok) {
         const data = await response.json();
         setStatuses(data.statuses || []);
         setStats(data.stats || { launched: 0, upcoming: 0, discontinued: 0 });
         setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));
       } else {
-        console.error('Failed to fetch statuses');
+        console.error('Failed to fetch statuses', response.status);
       }
     } catch (error) {
       console.error('Error fetching statuses:', error);
@@ -104,9 +109,8 @@ export default function AdminStatusPage() {
 
   const getStatusBadge = (statusType: string) => {
     const statusStyles = {
-      launched: 'bg-green-100 text-green-800',
-      upcoming: 'bg-blue-100 text-blue-800',
-      discontinued: 'bg-red-100 text-red-800'
+      new_launch: 'bg-green-100 text-green-800',
+      upcoming: 'bg-blue-100 text-blue-800'
     };
     
     return (
@@ -117,6 +121,14 @@ export default function AdminStatusPage() {
   };
 
   const columns = [
+    {
+      key: 'status_id',
+      label: 'ID'
+    },
+    {
+      key: 'variant_id',
+      label: 'Variant ID'
+    },
     {
       key: 'model_name',
       label: 'Model',
@@ -137,7 +149,7 @@ export default function AdminStatusPage() {
       key: 'launch_date',
       label: 'Launch Date',
       render: (status: Status) => {
-        if (status.status_type === 'launched' && status.launch_date) {
+        if (status.status_type === 'new_launch' && status.launch_date) {
           return new Date(status.launch_date).toLocaleDateString();
         } else if (status.status_type === 'upcoming' && status.expected_launch) {
           return `Expected: ${new Date(status.expected_launch).toLocaleDateString()}`;
@@ -151,15 +163,9 @@ export default function AdminStatusPage() {
       render: (status: Status) => status.price_range || '-'
     },
     {
-      key: 'notes',
-      label: 'Notes',
-      render: (status: Status) => (
-        <div className="max-w-xs">
-          <p className="text-sm text-gray-600 truncate">
-            {status.notes || '-'}
-          </p>
-        </div>
-      )
+      key: 'variant_name',
+      label: 'Variant',
+      render: (status: Status) => status.variant_name || '-'
     },
     {
       key: 'created_at',
@@ -223,7 +229,7 @@ export default function AdminStatusPage() {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white rounded-lg shadow p-6">
                 <div className="flex items-center">
                   <FiTrendingUp className="w-8 h-8 text-green-600" />
@@ -242,15 +248,7 @@ export default function AdminStatusPage() {
                   </div>
                 </div>
               </div>
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center">
-                  <FiTrendingUp className="w-8 h-8 text-red-600" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Discontinued</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.discontinued}</p>
-                  </div>
-                </div>
-              </div>
+
             </div>
 
             {/* Filters */}
@@ -268,9 +266,8 @@ export default function AdminStatusPage() {
                 className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">All Status</option>
-                <option value="launched">Launched</option>
+                <option value="new_launch">New Launch</option>
                 <option value="upcoming">Upcoming</option>
-                <option value="discontinued">Discontinued</option>
               </select>
             </div>
 

@@ -13,10 +13,6 @@ interface Model {
   model_name: string;
   brand_id: string;
   brand_name?: string;
-  image_url?: string;
-  description?: string;
-  launch_date?: string;
-  created_at: string;
   variants_count?: number;
 }
 
@@ -57,12 +53,18 @@ export default function AdminModelsPage() {
         }
       });
 
+      if (response.status === 401) {
+        // Unauthorized: redirect to admin login
+        router.push('/admin/login');
+        return;
+      }
+
       if (response.ok) {
         const data = await response.json();
         setModels(data.models || []);
         setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));
       } else {
-        console.error('Failed to fetch models');
+        console.error('Failed to fetch models', response.status);
       }
     } catch (error) {
       console.error('Error fetching models:', error);
@@ -95,21 +97,9 @@ export default function AdminModelsPage() {
 
   const columns = [
     {
-      key: 'image_url',
-      label: 'Image',
-      render: (model: Model) => (
-        <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
-          {model.image_url ? (
-            <img 
-              src={model.image_url} 
-              alt={model.model_name}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <FiImage className="w-6 h-6 text-gray-400" />
-          )}
-        </div>
-      )
+      key: 'model_id',
+      label: 'ID',
+      render: (model: Model) => model.model_id
     },
     {
       key: 'model_name',
@@ -125,16 +115,6 @@ export default function AdminModelsPage() {
       key: 'variants_count',
       label: 'Variants Count',
       render: (model: Model) => model.variants_count || 0
-    },
-    {
-      key: 'launch_date',
-      label: 'Launch Date',
-      render: (model: Model) => model.launch_date ? new Date(model.launch_date).toLocaleDateString() : '-'
-    },
-    {
-      key: 'created_at',
-      label: 'Created',
-      render: (model: Model) => new Date(model.created_at).toLocaleDateString()
     },
     {
       key: 'actions',

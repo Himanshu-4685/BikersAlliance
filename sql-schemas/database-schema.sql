@@ -12,6 +12,33 @@ CREATE TABLE public.Admin (
   created_at timestamp without time zone DEFAULT now(),
   CONSTRAINT Admin_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.admin (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name character varying NOT NULL,
+  email character varying NOT NULL UNIQUE,
+  password_hash character varying NOT NULL,
+  phone character varying,
+  role character varying NOT NULL DEFAULT 'admin'::character varying CHECK (role::text = ANY (ARRAY['super_admin'::character varying, 'admin'::character varying, 'editor'::character varying]::text[])),
+  profile_image_url text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  is_active boolean DEFAULT true,
+  CONSTRAINT admin_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.admin_audit_log (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  admin_id uuid,
+  action character varying NOT NULL,
+  table_name character varying,
+  record_id text,
+  old_values jsonb,
+  new_values jsonb,
+  ip_address inet,
+  user_agent text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT admin_audit_log_pkey PRIMARY KEY (id),
+  CONSTRAINT admin_audit_log_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES public.admin(id)
+);
 CREATE TABLE public.bookings (
   booking_id integer NOT NULL DEFAULT nextval('bookings_booking_id_seq'::regclass),
   user_id integer,

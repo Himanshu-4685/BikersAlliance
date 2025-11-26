@@ -135,6 +135,11 @@ export default function Footer() {
                   Bike News
                 </Link>
               </li>
+              <li>
+                <Link href="/newsletter" className="text-sm text-gray-300 hover:text-white">
+                  Newsletter
+                </Link>
+              </li>
             </ul>
           </div>
 

@@ -45,7 +45,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       
       // Check if there's a valid session token in localStorage
-      const adminToken = localStorage.getItem('admin_token');
+      const adminToken = localStorage.getItem('adminToken');
       if (!adminToken) {
         setAdmin(null);
         return;
@@ -64,13 +64,13 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         const { admin: adminData } = await response.json();
         setAdmin(adminData);
       } else {
-        localStorage.removeItem('admin_token');
+        localStorage.removeItem('adminToken');
         setAdmin(null);
       }
     } catch (err) {
       console.error('Error checking admin session:', err);
       setError('Failed to verify admin session');
-      localStorage.removeItem('admin_token');
+      localStorage.removeItem('adminToken');
       setAdmin(null);
     } finally {
       setIsLoading(false);
@@ -94,7 +94,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
       if (response.ok && data.success) {
         setAdmin(data.admin);
-        localStorage.setItem('admin_token', data.token);
+        localStorage.setItem('adminToken', data.token);
         
         // Log the login action
         await logAction('LOGIN');
@@ -120,7 +120,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         await logAction('LOGOUT');
       }
 
-      localStorage.removeItem('admin_token');
+      localStorage.removeItem('adminToken');
       setAdmin(null);
       setError(null);
       
@@ -143,7 +143,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         },
         body: JSON.stringify(data),
       });
@@ -190,7 +190,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         },
         body: JSON.stringify({
           action,

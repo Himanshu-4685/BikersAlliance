@@ -9,10 +9,12 @@ import DataTable from '@/components/admin/DataTable';
 import { FiMail, FiSend, FiUsers, FiDownload, FiTrash2 } from 'react-icons/fi';
 
 interface Subscriber {
-  id: number;
+  id: string;
   email: string;
   subscribed_at: string;
   status: 'active' | 'unsubscribed';
+  created_at: string;
+  updated_at: string;
 }
 
 interface Campaign {
@@ -90,7 +92,7 @@ export default function AdminNewsletterPage() {
     }
   };
 
-  const handleUnsubscribe = async (subscriberId: number) => {
+  const handleUnsubscribe = async (subscriberId: string) => {
     if (!confirm('Are you sure you want to unsubscribe this user?')) return;
 
     try {
@@ -111,6 +113,31 @@ export default function AdminNewsletterPage() {
     } catch (error) {
       console.error('Error unsubscribing user:', error);
       alert('Error unsubscribing user');
+    }
+  };
+
+  const handleResend = async (subscriberId: string, email: string) => {
+    if (!confirm(`Are you sure you want to resend the newsletter to ${email}?`)) return;
+
+    try {
+      const response = await fetch(`/api/admin/newsletter/subscribers/${subscriberId}/resend`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(data.message || 'Newsletter resent successfully!');
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || 'Failed to resend newsletter');
+      }
+    } catch (error) {
+      console.error('Error resending newsletter:', error);
+      alert('Error resending newsletter');
     }
   };
 
@@ -170,6 +197,13 @@ export default function AdminNewsletterPage() {
       label: 'Actions',
       render: (subscriber: Subscriber) => (
         <div className="flex items-center space-x-2">
+          <button
+            onClick={() => handleResend(subscriber.id, subscriber.email)}
+            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            title="Resend Newsletter"
+          >
+            <FiSend className="w-4 h-4" />
+          </button>
           {subscriber.status === 'active' && (
             <button
               onClick={() => handleUnsubscribe(subscriber.id)}

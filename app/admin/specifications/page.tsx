@@ -18,7 +18,11 @@ interface Specification {
   max_torque?: string;
   no_of_cylinders?: string;
   cooling_system?: string;
-  created_at: string;
+  city_mileage?: string;
+  highway_mileage?: string;
+  body_type?: string;
+  peak_power?: string;
+  transmission?: string;
 }
 
 export default function AdminSpecificationsPage() {
@@ -58,13 +62,18 @@ export default function AdminSpecificationsPage() {
         }
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setSpecifications(data.specifications || []);
-        setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));
-      } else {
-        console.error('Failed to fetch specifications');
-      }
+        if (response.status === 401) {
+          router.push('/admin/login');
+          return;
+        }
+
+        if (response.ok) {
+          const data = await response.json();
+          setSpecifications(data.specifications || []);
+          setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));
+        } else {
+          console.error('Failed to fetch specifications', response.status);
+        }
     } catch (error) {
       console.error('Error fetching specifications:', error);
     } finally {
@@ -96,6 +105,10 @@ export default function AdminSpecificationsPage() {
 
   const columns = [
     {
+      key: 'variant_id',
+      label: 'Variant ID'
+    },
+    {
       key: 'variant_name',
       label: 'Variant',
       render: (spec: Specification) => spec.variant_name || '-'
@@ -124,6 +137,16 @@ export default function AdminSpecificationsPage() {
       key: 'max_torque',
       label: 'Max Torque',
       render: (spec: Specification) => spec.max_torque || '-'
+    },
+    {
+      key: 'city_mileage',
+      label: 'City Mileage',
+      render: (spec: Specification) => spec.city_mileage || '-'
+    },
+    {
+      key: 'peak_power',
+      label: 'Peak Power',
+      render: (spec: Specification) => spec.peak_power || '-'
     },
     {
       key: 'actions',

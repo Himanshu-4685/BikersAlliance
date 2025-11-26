@@ -42,10 +42,6 @@ export async function GET(request: NextRequest) {
         model_id,
         model_name,
         brand_id,
-        description,
-        image_url,
-        launch_date,
-        created_at,
         brands!inner(
           brand_name
         ),
@@ -71,7 +67,7 @@ export async function GET(request: NextRequest) {
 
     // Get paginated data
     const { data: models, error } = await query
-      .order('created_at', { ascending: false })
+      .order('model_id', { ascending: true })
       .range(offset, offset + limit - 1);
 
     if (error) {
@@ -88,10 +84,6 @@ export async function GET(request: NextRequest) {
       model_name: model.model_name,
       brand_id: model.brand_id,
       brand_name: model.brands?.brand_name,
-      description: model.description,
-      image_url: model.image_url,
-      launch_date: model.launch_date,
-      created_at: model.created_at,
       variants_count: model.variants ? model.variants.length : 0
     }));
 

@@ -51,7 +51,7 @@ export default function AdminBrandsPage() {
 
       const response = await fetch(`/api/admin/brands?${params}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         }
       });
 
@@ -76,7 +76,7 @@ export default function AdminBrandsPage() {
       const response = await fetch(`/api/admin/brands/${brandId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         }
       });
 
@@ -88,7 +88,7 @@ export default function AdminBrandsPage() {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+              'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
             },
             body: JSON.stringify({
               action: 'DELETE',
