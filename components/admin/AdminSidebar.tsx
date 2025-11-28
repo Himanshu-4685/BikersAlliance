@@ -32,6 +32,9 @@ const navigation = [
   { name: 'Reviews', href: '/admin/reviews', icon: FiStar },
   { name: 'Users', href: '/admin/users', icon: FiUsers },
   { name: 'Images', href: '/admin/images', icon: FiImage },
+  { name: 'News', href: '/admin/news', icon: FiBookOpen },
+  { name: 'Videos', href: '/admin/videos', icon: FiEye },
+  { name: 'Web Stories', href: '/admin/web-stories', icon: FiStar },
   { name: 'Newsletter', href: '/admin/newsletter', icon: FiMail },
   { name: 'Settings', href: '/admin/settings', icon: FiSettings },
 ];

@@ -110,6 +110,20 @@ CREATE TABLE public.models (
   CONSTRAINT models_pkey PRIMARY KEY (model_id),
   CONSTRAINT models_brand_id_fkey FOREIGN KEY (brand_id) REFERENCES public.brands(brand_id)
 );
+CREATE TABLE public.news (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  title text NOT NULL,
+  slug text NOT NULL UNIQUE,
+  excerpt text,
+  content text,
+  cover_image_url text,
+  author text,
+  published_at timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  is_published boolean DEFAULT false,
+  CONSTRAINT news_pkey PRIMARY KEY (id)
+);
 CREATE TABLE public.newsletter_subscriptions (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   email text NOT NULL UNIQUE,
@@ -194,4 +208,31 @@ CREATE TABLE public.variants (
   CONSTRAINT variants_pkey PRIMARY KEY (variant_id),
   CONSTRAINT variants_brand_id_fkey FOREIGN KEY (brand_id) REFERENCES public.brands(brand_id),
   CONSTRAINT variants_model_id_fkey FOREIGN KEY (model_id) REFERENCES public.models(model_id)
+);
+CREATE TABLE public.videos (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  title text NOT NULL,
+  slug text NOT NULL UNIQUE,
+  description text,
+  video_url text,
+  thumbnail_url text,
+  source text,
+  published_at timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  is_published boolean DEFAULT false,
+  CONSTRAINT videos_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.web_stories (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  title text NOT NULL,
+  slug text NOT NULL UNIQUE,
+  cover_image_url text,
+  pages jsonb,
+  author text,
+  published_at timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  is_published boolean DEFAULT false,
+  CONSTRAINT web_stories_pkey PRIMARY KEY (id)
 );

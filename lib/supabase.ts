@@ -206,6 +206,126 @@ export type Database = {
           updated_at?: string;
         };
       };
+      news: {
+        Row: {
+          id: string;
+          title: string;
+          slug: string;
+          excerpt: string | null;
+          content: string | null;
+          cover_image_url: string | null;
+          author: string | null;
+          published_at: string | null;
+          created_at: string;
+          updated_at: string;
+          is_published: boolean;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          slug: string;
+          excerpt?: string | null;
+          content?: string | null;
+          cover_image_url?: string | null;
+          author?: string | null;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          is_published?: boolean;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          slug?: string;
+          excerpt?: string | null;
+          content?: string | null;
+          cover_image_url?: string | null;
+          author?: string | null;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          is_published?: boolean;
+        };
+      };
+      videos: {
+        Row: {
+          id: string;
+          title: string;
+          slug: string;
+          description: string | null;
+          video_url: string | null;
+          thumbnail_url: string | null;
+          source: string | null;
+          published_at: string | null;
+          created_at: string;
+          updated_at: string;
+          is_published: boolean;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          slug: string;
+          description?: string | null;
+          video_url?: string | null;
+          thumbnail_url?: string | null;
+          source?: string | null;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          is_published?: boolean;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          slug?: string;
+          description?: string | null;
+          video_url?: string | null;
+          thumbnail_url?: string | null;
+          source?: string | null;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          is_published?: boolean;
+        };
+      };
+      web_stories: {
+        Row: {
+          id: string;
+          title: string;
+          slug: string;
+          cover_image_url: string | null;
+          pages: any;
+          author: string | null;
+          published_at: string | null;
+          created_at: string;
+          updated_at: string;
+          is_published: boolean;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          slug: string;
+          cover_image_url?: string | null;
+          pages?: any;
+          author?: string | null;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          is_published?: boolean;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          slug?: string;
+          cover_image_url?: string | null;
+          pages?: any;
+          author?: string | null;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          is_published?: boolean;
+        };
+      };
     };
     views: {
       [_ in never]: never;

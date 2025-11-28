@@ -5,30 +5,27 @@ import { useRouter } from 'next/navigation';
 import { useAdminAuth } from '@/context/AdminAuthContext';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminHeader from '@/components/admin/AdminHeader';
-import { FiPlus, FiEdit, FiTrash2, FiEye, FiImage, FiUpload } from 'react-icons/fi';
+import { FiFolderPlus, FiFolder, FiImage, FiUpload, FiTrash2, FiEye, FiStar } from 'react-icons/fi';
+import { storageManager, StorageFolder, ImageWithUrl } from '@/utils/supabase-storage';
 
-interface Image {
-  image_id: number;
-  url: string;
-  alt_text?: string;
-  variant_id?: number;
-  variant_name?: string;
-  model_name?: string;
-  brand_name?: string;
-  created_at: string;
-  file_size?: number;
+interface FolderView {
+  name: string;
+  imageCount: number;
+  isSpecial?: boolean;
+  specialType?: 'hero' | 'brand' | 'profile';
 }
 
 export default function AdminImagesPage() {
   const { admin, isLoading } = useAdminAuth();
   const router = useRouter();
-  const [images, setImages] = useState<Image[]>([]);
+  const [folders, setFolders] = useState<FolderView[]>([]);
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
+  const [folderImages, setFolderImages] = useState<ImageWithUrl[]>([]);
   const [loading, setLoading] = useState(true);
+  const [imagesLoading, setImagesLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const itemsPerPage = 20;
+  const [view, setView] = useState<'folders' | 'images'>('folders');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isLoading && !admin) {
@@ -38,54 +35,87 @@ export default function AdminImagesPage() {
 
   useEffect(() => {
     if (admin) {
-      fetchImages();
+      fetchFolders();
     }
-  }, [admin, currentPage, searchTerm]);
+  }, [admin]);
 
-  const fetchImages = async () => {
+  const fetchFolders = async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: itemsPerPage.toString(),
-        ...(searchTerm && { search: searchTerm })
-      });
-
-      const response = await fetch(`/api/admin/images?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setImages(data.images || []);
-        setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));
-      } else {
-        console.error('Failed to fetch images');
+      setError(null);
+      
+      const { folders: storageFolders, error } = await storageManager.listImageFolders();
+      
+      if (error) {
+        setError(error);
+        setFolders([]);
+        return;
       }
+
+      // Process folders and get image counts
+      const folderViews: FolderView[] = await Promise.all(
+        storageFolders.map(async (folder) => {
+          const { files } = await storageManager.listFolderFiles(folder.name);
+          
+          return {
+            name: folder.name,
+            imageCount: files.length,
+            isSpecial: ['hero_section', 'Brand_image', 'Profile_image'].includes(folder.name),
+            specialType: folder.name === 'hero_section' ? 'hero' : 
+                        folder.name === 'Brand_image' ? 'brand' : 
+                        folder.name === 'Profile_image' ? 'profile' : undefined
+          };
+        })
+      );
+
+      setFolders(folderViews);
     } catch (error) {
-      console.error('Error fetching images:', error);
+      console.error('Error fetching folders:', error);
+      setError('Failed to load image folders');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (imageId: number) => {
+  const fetchFolderImages = async (folderName: string) => {
+    try {
+      setImagesLoading(true);
+      const { images, error } = await storageManager.getFilesWithUrls(folderName);
+      
+      if (error) {
+        setError(error);
+        setFolderImages([]);
+        return;
+      }
+
+      setFolderImages(images);
+      setSelectedFolder(folderName);
+      setView('images');
+    } catch (error) {
+      console.error('Error fetching folder images:', error);
+      setError('Failed to load folder images');
+    } finally {
+      setImagesLoading(false);
+    }
+  };
+
+  const handleDeleteImage = async (folderName: string, fileName: string) => {
     if (!confirm('Are you sure you want to delete this image?')) return;
 
     try {
-      const response = await fetch(`/api/admin/images/${imageId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      const { success, error } = await storageManager.deleteFile(folderName, fileName);
+      
+      if (success) {
+        // Refresh the images in current folder
+        await fetchFolderImages(folderName);
+        
+        // If this is hero_section, also refresh the homepage
+        if (folderName === 'hero_section') {
+          // Optionally trigger a refresh of the hero images API
+          fetch('/api/hero-images', { method: 'GET' });
         }
-      });
-
-      if (response.ok) {
-        setImages(images.filter(image => image.image_id !== imageId));
       } else {
-        alert('Failed to delete image');
+        alert(`Failed to delete image: ${error}`);
       }
     } catch (error) {
       console.error('Error deleting image:', error);
@@ -93,12 +123,23 @@ export default function AdminImagesPage() {
     }
   };
 
-  const formatFileSize = (bytes?: number) => {
-    if (!bytes) return '-';
-    const kb = bytes / 1024;
-    const mb = kb / 1024;
-    if (mb >= 1) return `${mb.toFixed(1)} MB`;
-    return `${kb.toFixed(1)} KB`;
+  const handleBackToFolders = () => {
+    setView('folders');
+    setSelectedFolder(null);
+    setFolderImages([]);
+  };
+
+  const getSpecialFolderIcon = (folderType?: string) => {
+    switch (folderType) {
+      case 'hero':
+        return <FiStar className="text-yellow-500" />;
+      case 'brand':
+        return <FiImage className="text-blue-500" />;
+      case 'profile':
+        return <FiEye className="text-green-500" />;
+      default:
+        return <FiFolder className="text-gray-500" />;
+    }
   };
 
   if (isLoading) {
@@ -121,194 +162,225 @@ export default function AdminImagesPage() {
             {/* Header */}
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Images Management</h1>
-                <p className="text-gray-600">Manage motorcycle images and gallery</p>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {view === 'folders' ? 'Image Storage Folders' : `${selectedFolder} Images`}
+                </h1>
+                <p className="text-gray-600">
+                  {view === 'folders' 
+                    ? 'Manage images organized by folders in your Supabase storage'
+                    : `Manage images in the ${selectedFolder} folder`
+                  }
+                </p>
               </div>
               <div className="flex items-center space-x-2">
+                {view === 'images' && (
+                  <button
+                    onClick={handleBackToFolders}
+                    className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    ← Back to Folders
+                  </button>
+                )}
                 <button
-                  onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                  className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  {viewMode === 'grid' ? 'List View' : 'Grid View'}
-                </button>
-                <button
-                  onClick={() => router.push('/admin/images/upload')}
+                  onClick={() => {
+                    if (view === 'folders') {
+                      router.push('/admin/images/upload');
+                    } else {
+                      router.push(`/admin/images/upload?folder=${selectedFolder}`);
+                    }
+                  }}
                   className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   <FiUpload className="w-4 h-4 mr-2" />
-                  Upload Images
+                  {view === 'folders' ? 'Upload Images' : `Upload to ${selectedFolder}`}
                 </button>
               </div>
             </div>
 
-            {/* Search */}
-            <div className="mb-6">
-              <input
-                type="text"
-                placeholder="Search images..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+            {/* Search (only for images view) */}
+            {view === 'images' && (
+              <div className="mb-6">
+                <input
+                  type="text"
+                  placeholder="Search images..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            )}
+
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-600">{error}</p>
+                <button 
+                  onClick={() => {
+                    setError(null);
+                    if (view === 'folders') {
+                      fetchFolders();
+                    } else if (selectedFolder) {
+                      fetchFolderImages(selectedFolder);
+                    }
+                  }}
+                  className="mt-2 text-red-600 hover:text-red-800 underline"
+                >
+                  Try Again
+                </button>
+              </div>
+            )}
 
             {/* Content */}
             {loading ? (
               <div className="flex items-center justify-center h-64">
-                <div className="text-gray-500">Loading images...</div>
+                <div className="text-gray-500">Loading folders...</div>
               </div>
-            ) : viewMode === 'grid' ? (
-              /* Grid View */
+            ) : view === 'folders' ? (
+              /* Folders View */
               <div>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {images.map((image) => (
-                    <div key={image.image_id} className="bg-white rounded-lg shadow overflow-hidden group">
-                      <div className="aspect-square relative">
-                        <img
-                          src={image.url}
-                          alt={image.alt_text || 'Image'}
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => router.push(`/admin/images/${image.image_id}`)}
-                              className="p-2 bg-white text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
-                              title="View"
-                            >
-                              <FiEye className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => router.push(`/admin/images/${image.image_id}/edit`)}
-                              className="p-2 bg-white text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
-                              title="Edit"
-                            >
-                              <FiEdit className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(image.image_id)}
-                              className="p-2 bg-white text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-                              title="Delete"
-                            >
-                              <FiTrash2 className="w-4 h-4" />
-                            </button>
+                {folders.length === 0 ? (
+                  <div className="text-center py-12">
+                    <FiFolder className="mx-auto h-12 w-12 text-gray-400" />
+                    <h3 className="mt-2 text-sm font-medium text-gray-900">No folders found</h3>
+                    <p className="mt-1 text-sm text-gray-500">
+                      No image folders found in your Supabase storage.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {folders.map((folder) => (
+                      <div
+                        key={folder.name}
+                        onClick={() => fetchFolderImages(folder.name)}
+                        className="bg-white rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border"
+                      >
+                        <div className="p-6">
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center space-x-3">
+                              {getSpecialFolderIcon(folder.specialType)}
+                              <h3 className="text-lg font-medium text-gray-900">
+                                {folder.name.replace(/_/g, ' ')}
+                              </h3>
+                            </div>
+                            {folder.isSpecial && (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                Special
+                              </span>
+                            )}
                           </div>
+                          
+                          <div className="flex items-center justify-between text-sm text-gray-500">
+                            <span>{folder.imageCount} images</span>
+                            {folder.specialType === 'hero' && (
+                              <span className="text-yellow-600 font-medium">
+                                Homepage Carousel
+                              </span>
+                            )}
+                          </div>
+                          
+                          {folder.specialType === 'hero' && (
+                            <p className="mt-2 text-xs text-gray-600">
+                              Images here control the homepage hero carousel
+                            </p>
+                          )}
                         </div>
                       </div>
-                      <div className="p-3">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {image.variant_name ? 
-                            `${image.brand_name || ''} ${image.model_name || ''} ${image.variant_name}`.trim() :
-                            image.alt_text || `Image ${image.image_id}`
-                          }
-                        </p>
-                        <p className="text-xs text-gray-500 truncate">
-                          {formatFileSize(image.file_size)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="mt-6 flex justify-center">
-                    <div className="flex space-x-2">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                        <button
-                          key={page}
-                          onClick={() => setCurrentPage(page)}
-                          className={`px-3 py-2 rounded-lg ${
-                            currentPage === page
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-white text-gray-700 hover:bg-gray-50'
-                          }`}
-                        >
-                          {page}
-                        </button>
-                      ))}
-                    </div>
+                    ))}
                   </div>
                 )}
               </div>
             ) : (
-              /* List View */
-              <div className="bg-white rounded-lg shadow overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Image
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Details
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Vehicle
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Size
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {images.map((image) => (
-                        <tr key={image.image_id}>
-                          <td className="px-6 py-4 whitespace-nowrap">
+              /* Images View */
+              <div>
+                {imagesLoading ? (
+                  <div className="flex items-center justify-center h-64">
+                    <div className="text-gray-500">Loading images...</div>
+                  </div>
+                ) : folderImages.length === 0 ? (
+                  <div className="text-center py-12">
+                    <FiImage className="mx-auto h-12 w-12 text-gray-400" />
+                    <h3 className="mt-2 text-sm font-medium text-gray-900">No images found</h3>
+                    <p className="mt-1 text-sm text-gray-500">
+                      This folder doesn't contain any images yet.
+                    </p>
+                    <button
+                      onClick={() => router.push(`/admin/images/upload?folder=${selectedFolder}`)}
+                      className="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      <FiUpload className="w-4 h-4 mr-2" />
+                      Upload Images
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    {/* Special folder notice */}
+                    {selectedFolder === 'hero_section' && (
+                      <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <div className="flex items-center">
+                          <FiStar className="w-5 h-5 text-yellow-600 mr-2" />
+                          <h4 className="text-sm font-medium text-yellow-800">
+                            Hero Section Images
+                          </h4>
+                        </div>
+                        <p className="mt-1 text-sm text-yellow-700">
+                          These images appear in the homepage carousel. Changes here will be reflected on the homepage automatically.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Images Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                      {folderImages
+                        .filter(image => 
+                          searchTerm === '' || 
+                          image.name.toLowerCase().includes(searchTerm.toLowerCase())
+                        )
+                        .map((image) => (
+                        <div key={image.name} className="bg-white rounded-lg shadow overflow-hidden group">
+                          <div className="aspect-square relative">
                             <img
                               src={image.url}
-                              alt={image.alt_text || 'Image'}
-                              className="w-16 h-16 object-cover rounded-lg"
+                              alt={image.name}
+                              className="w-full h-full object-cover"
                             />
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="text-sm font-medium text-gray-900">
-                              {image.alt_text || `Image ${image.image_id}`}
+                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                              <div className="flex space-x-2">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    window.open(image.url, '_blank');
+                                  }}
+                                  className="p-2 bg-white text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+                                  title="View Full Size"
+                                >
+                                  <FiEye className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteImage(selectedFolder!, image.name);
+                                  }}
+                                  className="p-2 bg-white text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                                  title="Delete"
+                                >
+                                  <FiTrash2 className="w-4 h-4" />
+                                </button>
+                              </div>
                             </div>
-                            <div className="text-sm text-gray-500">
-                              {new Date(image.created_at).toLocaleDateString()}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {image.variant_name ? 
-                              `${image.brand_name || ''} ${image.model_name || ''} ${image.variant_name}`.trim() :
-                              '-'
-                            }
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {formatFileSize(image.file_size)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div className="flex space-x-2">
-                              <button
-                                onClick={() => router.push(`/admin/images/${image.image_id}`)}
-                                className="text-blue-600 hover:text-blue-900"
-                              >
-                                <FiEye className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => router.push(`/admin/images/${image.image_id}/edit`)}
-                                className="text-green-600 hover:text-green-900"
-                              >
-                                <FiEdit className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleDelete(image.image_id)}
-                                className="text-red-600 hover:text-red-900"
-                              >
-                                <FiTrash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
+                          </div>
+                          <div className="p-3">
+                            <p className="text-sm font-medium text-gray-900 truncate" title={image.name}>
+                              {image.name}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {image.updated_at ? new Date(image.updated_at).toLocaleDateString() : 'Recently uploaded'}
+                            </p>
+                          </div>
+                        </div>
                       ))}
-                    </tbody>
-                  </table>
-                </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
