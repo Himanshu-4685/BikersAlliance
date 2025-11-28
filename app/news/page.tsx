@@ -1,6 +1,8 @@
 import { Metadata } from 'next';
 import NewsGrid from '@/components/news/NewsGrid';
 import HeroSection from '@/components/news/HeroSection';
+import { createClient } from '@/utils/supabase/server';
+import { cookies } from 'next/headers';
 
 export const metadata: Metadata = {
   title: 'Latest Bike News & Updates',
@@ -8,74 +10,78 @@ export const metadata: Metadata = {
   keywords: ['bike news', 'motorcycle news', 'latest launches', 'bike updates', 'industry news'],
 };
 
-// Mock data - in real app, this would come from an API or database
-const featuredNews = [
-  {
-    id: '1',
-    title: 'Royal Enfield Announces New 650cc Twin Engine',
-    excerpt: 'Royal Enfield is set to launch a new 650cc twin-cylinder engine that promises better performance and fuel efficiency.',
-    image: '/images/news/royal-enfield-650.jpg',
-    category: 'Launches',
-    publishedAt: '2024-11-05T10:00:00Z',
-    slug: 'royal-enfield-new-650cc-twin-engine',
-    featured: true,
-  },
-  {
-    id: '2',
-    title: 'TVS Raider Gets New Color Options',
-    excerpt: 'TVS Motor Company introduces new vibrant color schemes for the popular Raider motorcycle series.',
-    image: '/images/news/tvs-raider-colors.jpg',
-    category: 'Updates',
-    publishedAt: '2024-11-04T15:30:00Z',
-    slug: 'tvs-raider-new-color-options',
-    featured: false,
-  },
-  {
-    id: '3',
-    title: 'Electric Motorcycle Sales Rise by 45% in 2024',
-    excerpt: 'The electric motorcycle segment shows remarkable growth with increasing consumer adoption across India.',
-    image: '/images/news/electric-bike-sales.jpg',
-    category: 'Industry',
-    publishedAt: '2024-11-03T12:00:00Z',
-    slug: 'electric-motorcycle-sales-rise-2024',
-    featured: false,
-  },
-];
+async function getFeaturedNews() {
+  try {
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+    
+    const { data, error } = await (supabase as any)
+      .from('news')
+      .select('*')
+      .eq('is_published', true)
+      .eq('featured', true)
+      .order('created_at', { ascending: false })
+      .limit(6);
 
-const recentNews = [
-  {
-    id: '4',
-    title: 'Honda CB350 RS Gets ABS Update',
-    excerpt: 'Honda Motorcycle and Scooter India updates the CB350 RS with enhanced ABS system and new features.',
-    image: '/images/news/honda-cb350-rs.jpg',
-    category: 'Updates',
-    publishedAt: '2024-11-02T09:15:00Z',
-    slug: 'honda-cb350-rs-abs-update',
-    featured: false,
-  },
-  {
-    id: '5',
-    title: 'Yamaha MT-15 Version 2.0 Launched',
-    excerpt: 'Yamaha introduces the updated MT-15 with new styling, improved ergonomics, and advanced features.',
-    image: '/images/news/yamaha-mt15-v2.jpg',
-    category: 'Launches',
-    publishedAt: '2024-11-01T14:20:00Z',
-    slug: 'yamaha-mt15-version-2-launched',
-    featured: false,
-  },
-  {
-    id: '6',
-    title: 'Bajaj Pulsar NS Series Gets New Variants',
-    excerpt: 'Bajaj Auto expands the Pulsar NS lineup with new variants offering enhanced performance and features.',
-    image: '/images/news/bajaj-pulsar-ns.jpg',
-    category: 'Launches',
-    publishedAt: '2024-10-31T11:45:00Z',
-    slug: 'bajaj-pulsar-ns-new-variants',
-    featured: false,
-  },
-];
+    if (error) {
+      console.error('Error fetching featured news:', error);
+      return [];
+    }
 
-export default function NewsPage() {
+    return data || [];
+  } catch (err) {
+    console.error('Error in getFeaturedNews:', err);
+    return [];
+  }
+}
+
+async function getRecentNews() {
+  try {
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+    
+    const { data, error } = await (supabase as any)
+      .from('news')
+      .select('*')
+      .eq('is_published', true)
+      .order('created_at', { ascending: false })
+      .limit(12);
+
+    if (error) {
+      console.error('Error fetching recent news:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (err) {
+    console.error('Error in getRecentNews:', err);
+    return [];
+  }
+}
+
+// Transform database fields to match component expectations
+function transformNewsData(newsArray: any[]) {
+  return newsArray.map((news: any) => ({
+    id: news.id.toString(),
+    title: news.title,
+    excerpt: news.excerpt || '',
+    image: news.cover_image_url || '/images/news/default-news.jpg',
+    category: news.category || 'General',
+    publishedAt: news.published_at || news.created_at,
+    slug: news.slug,
+    featured: news.featured || false,
+  }));
+}
+
+export default async function NewsPage() {
+  const [featuredNewsRaw, recentNewsRaw] = await Promise.all([
+    getFeaturedNews(),
+    getRecentNews(),
+  ]);
+
+  const featuredNews = transformNewsData(featuredNewsRaw);
+  const recentNews = transformNewsData(recentNewsRaw.filter((news: any) => !news.featured));
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
@@ -84,22 +90,30 @@ export default function NewsPage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Featured News */}
-        <section className="mb-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-3xl font-bold text-gray-900">Featured News</h2>
-            <a href="/news/top-stories" className="text-red-600 hover:text-red-700 font-medium">
-              View All →
-            </a>
-          </div>
-          <NewsGrid news={featuredNews} />
-        </section>
+        {featuredNews.length > 0 && (
+          <section className="mb-12">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-3xl font-bold text-gray-900">Featured News</h2>
+              <a href="/news/top-stories" className="text-red-600 hover:text-red-700 font-medium">
+                View All →
+              </a>
+            </div>
+            <NewsGrid news={featuredNews} />
+          </section>
+        )}
 
         {/* Recent News */}
         <section>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-3xl font-bold text-gray-900">Recent News</h2>
           </div>
-          <NewsGrid news={recentNews} />
+          {recentNews.length > 0 ? (
+            <NewsGrid news={recentNews} />
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg">No news articles found. Check back later for the latest updates!</p>
+            </div>
+          )}
         </section>
 
         {/* Categories Section */}

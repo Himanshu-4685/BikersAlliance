@@ -1,0 +1,33 @@
+"use strict";(()=>{var e={};e.id=8537,e.ids=[8537,9394],e.modules={20399:e=>{e.exports=require("next/dist/compiled/next-server/app-page.runtime.prod.js")},30517:e=>{e.exports=require("next/dist/compiled/next-server/app-route.runtime.prod.js")},25528:e=>{e.exports=require("next/dist\\client\\components\\action-async-storage.external.js")},91877:e=>{e.exports=require("next/dist\\client\\components\\request-async-storage.external.js")},25319:e=>{e.exports=require("next/dist\\client\\components\\static-generation-async-storage.external.js")},14300:e=>{e.exports=require("buffer")},6113:e=>{e.exports=require("crypto")},12781:e=>{e.exports=require("stream")},73837:e=>{e.exports=require("util")},66613:(e,r,t)=>{t.r(r),t.d(r,{headerHooks:()=>g,originalPathname:()=>v,requestAsyncStorage:()=>d,routeModule:()=>p,serverHooks:()=>_,staticGenerationAsyncStorage:()=>m,staticGenerationBailout:()=>y});var s={};t.r(s),t.d(s,{GET:()=>GET,POST:()=>POST});var a=t(10884),n=t(16132),i=t(95798),o=t(9394),c=t(96721),l=t.n(c);let u=process.env.ADMIN_JWT_SECRET||"your-super-secret-admin-key";async function GET(e){try{let r=e.headers.get("authorization");if(!r||!r.startsWith("Bearer "))return i.Z.json({success:!1,error:"No token provided"},{status:401});let t=r.substring(7);try{l().verify(t,u)}catch(e){return i.Z.json({success:!1,error:"Invalid token"},{status:401})}let{searchParams:s}=new URL(e.url),a=parseInt(s.get("page")||"1"),n=parseInt(s.get("limit")||"10"),c=s.get("search")||"",p=(a-1)*n,d=(0,o.lx)(),m=d.from("specs").select(`
+        variant_id,
+        engine_type,
+        displacement,
+        max_torque,
+        no_of_cylinders,
+        cooling_system,
+        valve_per_cylinder,
+        starting,
+        fuel_supply,
+        clutch,
+        ignition,
+        gear_box,
+        bore,
+        stroke,
+        compression_ratio,
+        city_mileage,
+        highway_mileage,
+        body_type,
+        zero_to_hundred,
+        peak_power,
+        transmission,
+        other_features,
+        variants!inner(
+          variant_name,
+          models!inner(
+            model_name,
+            brands!inner(
+              brand_name
+            )
+          )
+        )
+      `);c&&(m=m.or(`variants.variant_name.ilike.%${c}%,variants.models.model_name.ilike.%${c}%`));let{count:_}=await d.from("specs").select("*",{count:"exact",head:!0}),{data:g,error:y}=await m.range(p,p+n-1);if(y)return console.error("Database error:",y),i.Z.json({success:!1,error:"Database error"},{status:500});let v=(g||[]).map(e=>({variant_id:e.variant_id,variant_name:e.variants?.variant_name,model_name:e.variants?.models?.model_name,brand_name:e.variants?.models?.brands?.brand_name,engine_type:e.engine_type,displacement:e.displacement,max_torque:e.max_torque,no_of_cylinders:e.no_of_cylinders,cooling_system:e.cooling_system,city_mileage:e.city_mileage,highway_mileage:e.highway_mileage,body_type:e.body_type,peak_power:e.peak_power,transmission:e.transmission}));return i.Z.json({success:!0,specifications:v,total:_||0,page:a,limit:n})}catch(e){return console.error("Specifications API error:",e),i.Z.json({success:!1,error:"Internal server error"},{status:500})}}async function POST(e){try{let r=e.headers.get("authorization");if(!r||!r.startsWith("Bearer "))return i.Z.json({success:!1,error:"No token provided"},{status:401});let t=r.substring(7);try{l().verify(t,u)}catch(e){return i.Z.json({success:!1,error:"Invalid token"},{status:401})}let s=await e.json(),{variant_id:a,engine_type:n,displacement:c,max_torque:p,no_of_cylinders:d,cooling_system:m}=s;if(!a)return i.Z.json({success:!1,error:"Variant ID is required"},{status:400});let _=(0,o.lx)(),{data:g,error:y}=await _.from("specs").insert({variant_id:a,engine_type:n,displacement:c,max_torque:p,no_of_cylinders:d,cooling_system:m}).select().single();if(y)return console.error("Database error:",y),i.Z.json({success:!1,error:"Failed to create specification"},{status:500});return i.Z.json({success:!0,specification:g})}catch(e){return console.error("Specifications API error:",e),i.Z.json({success:!1,error:"Internal server error"},{status:500})}}let p=new a.AppRouteRouteModule({definition:{kind:n.x.APP_ROUTE,page:"/api/admin/specifications/route",pathname:"/api/admin/specifications",filename:"route",bundlePath:"app/api/admin/specifications/route"},resolvedPagePath:"C:\\Users\\himan\\Desktop\\bikersalliance\\Bike-website-main\\BikersAlliance\\app\\api\\admin\\specifications\\route.ts",nextConfigOutput:"",userland:s}),{requestAsyncStorage:d,staticGenerationAsyncStorage:m,serverHooks:_,headerHooks:g,staticGenerationBailout:y}=p,v="/api/admin/specifications/route"},9394:(e,r,t)=>{t.d(r,{lx:()=>createServerClient});var s=t(21136);t(569);var a=t(24596);let createServerClient=()=>{let e=(0,a.cookies)();return(0,s.e)(e)}}};var r=require("../../../../webpack-runtime.js");r.C(e);var __webpack_exec__=e=>r(r.s=e),t=r.X(0,[657,6449,5798,3178,4596,4280,4376,2170],()=>__webpack_exec__(66613));module.exports=t})();

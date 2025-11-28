@@ -5,18 +5,45 @@ import { useRouter } from 'next/navigation';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminHeader from '@/components/admin/AdminHeader';
 import { storageManager } from '@/utils/supabase-storage';
+import { FiEdit2, FiTrash2, FiPlus, FiEye, FiSearch } from 'react-icons/fi';
+
+interface NewsItem {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  cover_image_url: string;
+  author: string;
+  category: string;
+  featured: boolean;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+  published_at: string;
+}
 
 export default function AdminNewsPage() {
   const router = useRouter();
+  const [view, setView] = useState<'list' | 'create'>('list');
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Create form states
   const [folders, setFolders] = useState<string[]>([]);
   const [selectedFolder, setSelectedFolder] = useState('');
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
   const [excerpt, setExcerpt] = useState('');
   const [content, setContent] = useState('');
+  const [category, setCategory] = useState('General');
+  const [featured, setFeatured] = useState(false);
+  const [isPublished, setIsPublished] = useState(true);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   // Auto-generate slug from title
   const generateSlug = (title: string) => {
@@ -31,8 +58,25 @@ export default function AdminNewsPage() {
   };
 
   useEffect(() => {
+    fetchNewsItems();
     fetchFolders();
   }, []);
+
+  const fetchNewsItems = async () => {
+    try {
+      const response = await fetch('/api/admin/news');
+      const data = await response.json();
+      if (data.success) {
+        setNewsItems(data.data);
+      } else {
+        setError('Failed to fetch news items');
+      }
+    } catch (err) {
+      setError('Error fetching news items');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchFolders = async () => {
     const { folders: storageFolders } = await storageManager.listImageFolders();
@@ -44,6 +88,28 @@ export default function AdminNewsPage() {
     setCoverFile(file);
   };
 
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this news item?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/news/${id}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        setSuccess('News item deleted successfully!');
+        fetchNewsItems(); // Refresh the list
+      } else {
+        setError(data.error || 'Failed to delete news item');
+      }
+    } catch (err) {
+      setError('Error deleting news item');
+    }
+  };
+
   const handleSubmit = async () => {
     if (!title || !slug) {
       setError('Title and slug are required');
@@ -52,6 +118,7 @@ export default function AdminNewsPage() {
 
     setUploading(true);
     setError(null);
+    setSuccess(null);
 
     try {
       let coverUrl: string | null = null;
@@ -71,14 +138,41 @@ export default function AdminNewsPage() {
       const resp = await fetch('/api/admin/news', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, slug, excerpt, content, cover_image_url: coverUrl })
+        body: JSON.stringify({ 
+          title, 
+          slug, 
+          excerpt, 
+          content, 
+          cover_image_url: coverUrl,
+          category,
+          featured,
+          is_published: isPublished
+        })
       });
 
       const data = await resp.json();
       if (!data.success) {
         setError(data.error || 'Failed to create news');
       } else {
-        router.push('/admin/news');
+        setSuccess(data.message || 'News created successfully!');
+        // Clear form
+        setTitle('');
+        setSlug('');
+        setExcerpt('');
+        setContent('');
+        setCoverFile(null);
+        setCategory('General');
+        setFeatured(false);
+        setIsPublished(true);
+        setSelectedFolder('');
+        
+        // Reset file input
+        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
+        
+        // Refresh the list and go back to list view
+        fetchNewsItems();
+        setView('list');
       }
     } catch (err: any) {
       setError(err.message || 'Unexpected error');
@@ -87,39 +181,331 @@ export default function AdminNewsPage() {
     }
   };
 
+  // Filter news items based on search term
+  const filteredNewsItems = newsItems.filter(item =>
+    item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.author.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (view === 'create') {
+    return (
+      <div className="flex h-screen bg-gray-100">
+        <AdminSidebar />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <AdminHeader title="News Manager" />
+          <main className="flex-1 overflow-auto p-6">
+            <div className="max-w-4xl mx-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h1 className="text-2xl font-bold">Create News Item</h1>
+                <button
+                  onClick={() => setView('list')}
+                  className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+                >
+                  ← Back to List
+                </button>
+              </div>
+
+              {error && (
+                <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                  <strong>Error:</strong> {error}
+                </div>
+              )}
+              
+              {success && (
+                <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+                  <strong>Success:</strong> {success}
+                </div>
+              )}
+
+              <div className="bg-white rounded-lg p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Title *</label>
+                  <input 
+                    className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                    placeholder="Enter news title" 
+                    value={title} 
+                    onChange={e => handleTitleChange(e.target.value)} 
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">Slug *</label>
+                  <input 
+                    className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                    placeholder="news-slug-url" 
+                    value={slug} 
+                    onChange={e => setSlug(e.target.value)} 
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">Excerpt</label>
+                  <textarea 
+                    className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                    placeholder="Brief description of the news..." 
+                    value={excerpt} 
+                    onChange={e => setExcerpt(e.target.value)} 
+                    rows={3}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">Category</label>
+                  <select 
+                    className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                    value={category} 
+                    onChange={e => setCategory(e.target.value)}
+                  >
+                    <option value="General">General</option>
+                    <option value="Launches">Launches</option>
+                    <option value="Reviews">Reviews</option>
+                    <option value="Industry">Industry</option>
+                    <option value="Updates">Updates</option>
+                    <option value="Electric">Electric</option>
+                    <option value="Scooters">Scooters</option>
+                    <option value="Motorcycles">Motorcycles</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">Content</label>
+                  <textarea 
+                    className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                    placeholder="Full news content (HTML or markdown)" 
+                    value={content} 
+                    onChange={e => setContent(e.target.value)} 
+                    rows={8}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Select storage folder</label>
+                  <select className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" value={selectedFolder} onChange={e => setSelectedFolder(e.target.value)}>
+                    <option value="">Select folder...</option>
+                    {folders.map(f => <option key={f} value={f}>{f}</option>)}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Cover Image</label>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleCoverSelect}
+                    className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                
+                <div className="flex items-center space-x-4">
+                  <label className="flex items-center">
+                    <input 
+                      type="checkbox" 
+                      checked={featured} 
+                      onChange={e => setFeatured(e.target.checked)}
+                      className="mr-2"
+                    />
+                    Featured Article
+                  </label>
+                  
+                  <label className="flex items-center">
+                    <input 
+                      type="checkbox" 
+                      checked={isPublished} 
+                      onChange={e => setIsPublished(e.target.checked)}
+                      className="mr-2"
+                    />
+                    Published
+                  </label>
+                </div>
+
+                <div className="flex space-x-2">
+                  <button 
+                    onClick={handleSubmit} 
+                    className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" 
+                    disabled={uploading}
+                  >
+                    {uploading ? 'Creating...' : 'Create News'}
+                  </button>
+                  
+                  <button 
+                    onClick={() => setView('list')} 
+                    className="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+                    type="button"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen bg-gray-100">
       <AdminSidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <AdminHeader title="News Manager" />
         <main className="flex-1 overflow-auto p-6">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-2xl font-bold mb-4">Create News Item</h1>
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-2xl font-bold">News Management</h1>
+              <button
+                onClick={() => setView('create')}
+                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+              >
+                <FiPlus className="mr-2" />
+                Create News
+              </button>
+            </div>
 
-            {error && <div className="mb-4 text-red-600">{error}</div>}
-
-            <div className="bg-white rounded-lg p-6 space-y-4">
-              <input className="w-full p-2 border" placeholder="Title" value={title} onChange={e => handleTitleChange(e.target.value)} />
-              <input className="w-full p-2 border" placeholder="Slug" value={slug} onChange={e => setSlug(e.target.value)} />
-              <textarea className="w-full p-2 border" placeholder="Excerpt" value={excerpt} onChange={e => setExcerpt(e.target.value)} />
-              <textarea className="w-full p-2 border h-40" placeholder="Content HTML or markdown" value={content} onChange={e => setContent(e.target.value)} />
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Select storage folder</label>
-                <select className="p-2 border w-full" value={selectedFolder} onChange={e => setSelectedFolder(e.target.value)}>
-                  <option value="">Select folder...</option>
-                  {folders.map(f => <option key={f} value={f}>{f}</option>)}
-                </select>
+            {error && (
+              <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                <strong>Error:</strong> {error}
               </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Cover Image</label>
-                <input type="file" accept="image/*" onChange={handleCoverSelect} />
+            )}
+            
+            {success && (
+              <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+                <strong>Success:</strong> {success}
               </div>
+            )}
 
-              <div className="flex space-x-2">
-                <button onClick={handleSubmit} className="px-4 py-2 bg-blue-600 text-white rounded" disabled={uploading}>{uploading ? 'Saving...' : 'Create'}</button>
+            {/* Search and filters */}
+            <div className="mb-6 bg-white rounded-lg p-4 shadow-sm">
+              <div className="flex items-center space-x-4">
+                <div className="flex-1 relative">
+                  <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search news by title, category, or author..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
               </div>
+            </div>
+
+            {/* News list */}
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+              {loading ? (
+                <div className="p-8 text-center">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <p className="mt-2 text-gray-600">Loading news items...</p>
+                </div>
+              ) : filteredNewsItems.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">
+                  <p>No news items found.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          News Item
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Category
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Author
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Created
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {filteredNewsItems.map((item) => (
+                        <tr key={item.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4">
+                            <div className="flex items-start space-x-3">
+                              {item.cover_image_url && (
+                                <img 
+                                  src={item.cover_image_url} 
+                                  alt={item.title}
+                                  className="w-16 h-12 object-cover rounded"
+                                />
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-sm font-medium text-gray-900 truncate">
+                                  {item.title}
+                                </h3>
+                                {item.excerpt && (
+                                  <p className="text-sm text-gray-500 truncate">
+                                    {item.excerpt}
+                                  </p>
+                                )}
+                                <div className="flex items-center space-x-2 mt-1">
+                                  {item.featured && (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                      Featured
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="text-sm text-gray-900">{item.category}</span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="text-sm text-gray-900">{item.author}</span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              item.is_published 
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {item.is_published ? 'Published' : 'Draft'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {new Date(item.created_at).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={() => router.push(`/news/${item.slug}`)}
+                                className="text-gray-400 hover:text-gray-600"
+                                title="View"
+                              >
+                                <FiEye className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => router.push(`/admin/news/edit/${item.id}`)}
+                                className="text-blue-400 hover:text-blue-600"
+                                title="Edit"
+                              >
+                                <FiEdit2 className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(item.id)}
+                                className="text-red-400 hover:text-red-600"
+                                title="Delete"
+                              >
+                                <FiTrash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         </main>
