@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { FiMenu, FiX, FiUser, FiHeart, FiSearch, FiChevronDown } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext.supabase';
+import { useWishlist } from '@/context/WishlistContext';
 import UserProfile from '@/components/auth/UserProfile';
 import SearchSuggestions from '@/components/common/SearchSuggestions';
 import SearchBar from '@/components/common/SearchBar';
@@ -18,7 +19,6 @@ const navItems = [
     href: '/bikes/all',
     hasDropdown: true,
     dropdownItems: [
-      { label: 'New Bikes', href: '/bikes/new' },
       { label: 'Best Bikes', href: '/bikes/best', hasSubDropdown: true, 
         subItems: [
           { label: 'Royal Enfield Hunter 350', href: '/bikes/royal-enfield-hunter-350' },
@@ -51,7 +51,6 @@ const navItems = [
     href: '/scooters',
     hasDropdown: true,
     dropdownItems: [
-      { label: 'New Scooters', href: '/scooters/new' },
       { label: 'Best Scooters', href: '/scooters/best', hasSubDropdown: true,
         subItems: [
           { label: 'Honda Activa 6G', href: '/scooters/honda-activa-6g' },
@@ -108,6 +107,7 @@ const navItems = [
 
 export default function Header() {
   const { user } = useAuth();
+  const { wishlistCount } = useWishlist();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({});
@@ -343,12 +343,20 @@ export default function Header() {
             
             {/* Action Buttons - moved to the right side of navigation */}
             <div className="flex items-center space-x-4">
-              <Link href="/wishlist" className="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-700 hover:text-primary">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"></path>
-                </svg>
+              {/* Wishlist Icon */}
+              <Link
+                href={user ? "/dashboard/shortlisted" : "/login"}
+                className="relative flex items-center justify-center w-10 h-10 text-gray-600 hover:text-primary transition-colors"
+                title={user ? "View wishlist" : "Login to view wishlist"}
+              >
+                <FiHeart className="w-5 h-5" />
+                {user && wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full">
+                    {wishlistCount > 99 ? '99+' : wishlistCount}
+                  </span>
+                )}
               </Link>
-              
+
               {user ? (
                 <UserProfile />
               ) : (

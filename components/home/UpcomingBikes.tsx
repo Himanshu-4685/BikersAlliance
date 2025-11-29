@@ -1,9 +1,11 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FiChevronLeft, FiChevronRight, FiClock } from 'react-icons/fi';
+import WishlistButton from '@/components/common/WishlistButton';
+import NotificationPopup from '@/components/common/NotificationPopup';
 
 // Upcoming Bikes Data
 const upcomingBikes = [
@@ -39,6 +41,8 @@ const upcomingBikes = [
 
 export default function UpcomingBikes() {
   const sliderRef = useRef<HTMLDivElement>(null);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [selectedBike, setSelectedBike] = useState<typeof upcomingBikes[0] | null>(null);
   
   const scrollLeft = () => {
     if (sliderRef.current) {
@@ -50,6 +54,11 @@ export default function UpcomingBikes() {
     if (sliderRef.current) {
       sliderRef.current.scrollBy({ left: 300, behavior: 'smooth' });
     }
+  };
+
+  const handleNotifyClick = (bike: typeof upcomingBikes[0]) => {
+    setSelectedBike(bike);
+    setIsPopupOpen(true);
   };
   
   return (
@@ -100,6 +109,18 @@ export default function UpcomingBikes() {
                   <div className="absolute top-0 left-0 px-2 py-1 text-xs font-medium text-white bg-primary">
                     Upcoming
                   </div>
+                  {/* Wishlist Button */}
+                  <div className="absolute top-2 right-2">
+                    <WishlistButton 
+                      bike={{
+                        id: bike.id,
+                        name: bike.name,
+                        slug: bike.id,
+                        image: bike.image
+                      }}
+                      size="sm" 
+                    />
+                  </div>
                 </div>
               </Link>
               
@@ -121,7 +142,10 @@ export default function UpcomingBikes() {
                 </div>
                 
                 {/* CTA */}
-                <button className="w-full px-4 py-2 mt-4 text-sm text-center text-primary transition-colors border border-primary rounded-md hover:bg-primary hover:text-white">
+                <button 
+                  onClick={() => handleNotifyClick(bike)}
+                  className="w-full px-4 py-2 mt-4 text-sm text-center text-primary transition-colors border border-primary rounded-md hover:bg-primary hover:text-white"
+                >
                   Get Notified When Launched
                 </button>
               </div>
@@ -139,6 +163,21 @@ export default function UpcomingBikes() {
           <FiChevronRight className="w-6 h-6" />
         </button>
       </div>
+
+      {/* Notification Popup */}
+      {selectedBike && (
+        <NotificationPopup
+          isOpen={isPopupOpen}
+          onClose={() => setIsPopupOpen(false)}
+          bikeData={{
+            id: selectedBike.id,
+            name: selectedBike.name,
+            expectedPrice: selectedBike.expectedPrice,
+            expectedLaunch: selectedBike.expectedLaunch,
+            image: selectedBike.image
+          }}
+        />
+      )}
     </div>
   );
 }

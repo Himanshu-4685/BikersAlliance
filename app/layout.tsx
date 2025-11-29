@@ -5,6 +5,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { AuthProvider } from '@/context/AuthContext.supabase';
 import { ComparisonProvider } from '@/context/ComparisonContext';
+import { WishlistProvider } from '@/context/WishlistContext';
 import ComparisonBar from '@/components/comparison/ComparisonBar';
 
 // Load fonts
@@ -57,12 +58,14 @@ export default function RootLayout({
       </head>
       <body>
         <AuthProvider>
-          <ComparisonProvider>
-            <Header />
-            <main>{children}</main>
-            <Footer />
-            <ComparisonBar />
-          </ComparisonProvider>
+          <WishlistProvider>
+            <ComparisonProvider>
+              <Header />
+              <main>{children}</main>
+              <Footer />
+              <ComparisonBar />
+            </ComparisonProvider>
+          </WishlistProvider>
         </AuthProvider>
       </body>
     </html>

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FiChevronLeft, FiChevronRight, FiClock, FiCalendar } from 'react-icons/fi';
 import { BikeStatus } from '@/types/bike-status';
+import NotificationPopup from '@/components/common/NotificationPopup';
 
 interface DynamicBikeStatusProps {
   status: 'upcoming' | 'new_launch';
@@ -23,6 +24,8 @@ export default function DynamicBikeStatus({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [selectedBike, setSelectedBike] = useState<BikeStatus | null>(null);
 
   useEffect(() => {
     fetchBikes();
@@ -139,6 +142,11 @@ export default function DynamicBikeStatus({
       month: 'short', 
       year: 'numeric' 
     });
+  };
+
+  const handleNotifyClick = (bike: BikeStatus) => {
+    setSelectedBike(bike);
+    setIsPopupOpen(true);
   };
 
   if (loading) {
@@ -310,9 +318,21 @@ export default function DynamicBikeStatus({
                   )}
                   
                   {/* CTA Button */}
-                  <button className="w-full px-4 py-2 mt-4 text-sm text-center text-primary transition-colors border border-primary rounded-md hover:bg-primary hover:text-white">
-                    {status === 'upcoming' ? 'Get Notified When Launched' : 'View Details'}
-                  </button>
+                  {status === 'upcoming' ? (
+                    <button 
+                      onClick={() => handleNotifyClick(bike)}
+                      className="w-full px-4 py-2 mt-4 text-sm text-center text-primary transition-colors border border-primary rounded-md hover:bg-primary hover:text-white"
+                    >
+                      Get Notified When Launched
+                    </button>
+                  ) : (
+                    <Link 
+                      href={`/bikes/${bike.variant.slug}`}
+                      className="block w-full px-4 py-2 mt-4 text-sm text-center text-primary transition-colors border border-primary rounded-md hover:bg-primary hover:text-white"
+                    >
+                      View Details
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>
@@ -330,6 +350,23 @@ export default function DynamicBikeStatus({
           </button>
         )}
       </div>
+
+      {/* Notification Popup */}
+      {selectedBike && (
+        <NotificationPopup
+          isOpen={isPopupOpen}
+          onClose={() => setIsPopupOpen(false)}
+          bikeData={{
+            id: selectedBike.variant.slug,
+            name: selectedBike.variant.name,
+            expectedPrice: selectedBike.priceRange,
+            expectedLaunch: selectedBike.expectedLaunch ? formatDate(selectedBike.expectedLaunch) : undefined,
+            image: (selectedBike.variant.images && selectedBike.variant.images.length > 0) 
+              ? selectedBike.variant.images[0].url 
+              : '/demo.avif'
+          }}
+        />
+      )}
     </div>
   );
 }

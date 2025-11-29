@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Bike } from '@/types/bike';
 import { FiSettings, FiZap } from 'react-icons/fi';
+import WishlistButton from '@/components/common/WishlistButton';
 
 interface BikeCardProps {
   bike: Bike;
@@ -17,7 +18,7 @@ export default function BikeCard({ bike, viewMode = 'grid', showBrand = false, s
     return (
       <div className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow duration-200 flex p-4">
         <Link href={`/bikes/${bike.slug}`} className="flex w-full">
-          <div className="flex-shrink-0 w-48">
+          <div className="flex-shrink-0 w-48 relative">
             <Image
               src={bike.image}
               alt={bike.name}
@@ -25,6 +26,10 @@ export default function BikeCard({ bike, viewMode = 'grid', showBrand = false, s
               height={128}
               className="w-full h-32 object-cover rounded-lg"
             />
+            {/* Wishlist Button for list view */}
+            <div className="absolute top-2 right-2">
+              <WishlistButton bike={bike} size="sm" />
+            </div>
           </div>
           <div className="ml-4 flex-1">
             <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
@@ -81,6 +86,10 @@ export default function BikeCard({ bike, viewMode = 'grid', showBrand = false, s
                 New Launch
               </div>
             )}
+            {/* Wishlist Button */}
+            <div className="absolute top-2 right-2">
+              <WishlistButton bike={bike} size="sm" />
+            </div>
           </div>
         </Link>
         
@@ -121,9 +130,12 @@ export default function BikeCard({ bike, viewMode = 'grid', showBrand = false, s
           </div>
           
           {/* CTA */}
-          <button className="w-full px-4 py-2 mt-4 text-sm text-center text-primary transition-colors border border-primary rounded-md hover:bg-primary hover:text-white">
+          <Link 
+            href={`/bikes/${bike.slug}`}
+            className="block w-full px-4 py-2 mt-4 text-sm text-center text-primary transition-colors border border-primary rounded-md hover:bg-primary hover:text-white"
+          >
             View Specifications & Price
-          </button>
+          </Link>
         </div>
       </div>
     </div>

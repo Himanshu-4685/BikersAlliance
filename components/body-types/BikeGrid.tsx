@@ -141,9 +141,12 @@ export default function BikeGrid({ bikes, loading = false }: BikeGridProps) {
             </div>
             
             {/* CTA */}
-            <button className="w-full px-4 py-2 mt-4 text-sm text-center text-primary transition-colors border border-primary rounded-md hover:bg-primary hover:text-white">
+            <Link 
+              href={`/bikes/${bike.slug}`}
+              className="block w-full px-4 py-2 mt-4 text-sm text-center text-primary transition-colors border border-primary rounded-md hover:bg-primary hover:text-white"
+            >
               View Specifications & Price
-            </button>
+            </Link>
           </div>
         </div>
       ))}

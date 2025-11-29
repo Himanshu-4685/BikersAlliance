@@ -24,6 +24,7 @@ import {
   FiArrowRight
 } from 'react-icons/fi';
 import SimilarBikesSection from '@/components/bikes/SimilarBikesSection';
+import WishlistButton from '@/components/common/WishlistButton';
 
 // Types
 interface BikeDetails {
@@ -195,7 +196,21 @@ export default function BikeDetailsPage() {
             <span className="text-gray-900">{bike.name}</span>
           </div>
           
-          <h1 className="mt-4 text-3xl font-bold text-gray-900">{bike.name}</h1>
+          <div className="flex items-center justify-between mt-4">
+            <h1 className="text-3xl font-bold text-gray-900">{bike.name}</h1>
+            <WishlistButton 
+              bike={{
+                id: bike.id,
+                name: bike.name,
+                slug: bike.slug,
+                image: bike.images?.[0]?.url,
+                price: bike.variants?.[0]?.price,
+                brand: bike.brand
+              }}
+              variant="button"
+              showText={true}
+            />
+          </div>
           
           {/* Launch date */}
           {bike.launchDate && (
