@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback, lazy, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdminAuth } from '@/context/AdminAuthContext';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminHeader from '@/components/admin/AdminHeader';
 import StatsCard from '@/components/admin/StatsCard';
-import RecentActivity from '@/components/admin/RecentActivity';
+import useSWR from 'swr';
 import { 
   FiUsers, 
   FiTruck, 
@@ -15,6 +15,28 @@ import {
   FiActivity,
   FiEye
 } from 'react-icons/fi';
+import { SkeletonCard } from '@/components/common/LoadingComponents';
+
+// Lazy load heavy components
+const RecentActivity = lazy(() => import('@/components/admin/RecentActivity'));
+
+
+
+// SWR fetcher function
+const fetcher = async (url: string) => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null;
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch dashboard stats');
+  }
+  
+  return response.json();
+};
 
 interface DashboardStats {
   totalBrands: number;
@@ -28,15 +50,27 @@ interface DashboardStats {
 export default function AdminDashboardPage() {
   const { admin, isLoading } = useAdminAuth();
   const router = useRouter();
-  const [stats, setStats] = useState<DashboardStats>({
+  
+  // Use SWR for data fetching with caching and revalidation
+  const { data: statsData, error: statsError, isLoading: loadingStats } = useSWR(
+    admin ? '/api/admin/dashboard-stats' : null,
+    fetcher,
+    {
+      refreshInterval: 60000, // Refresh every minute
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+      dedupingInterval: 30000, // Dedupe requests within 30 seconds
+    }
+  );
+
+  const stats = useMemo(() => statsData?.stats || {
     totalBrands: 0,
     totalModels: 0,
     totalVariants: 0,
     totalBookings: 0,
     totalUsers: 0,
     monthlyGrowth: 0
-  });
-  const [loadingStats, setLoadingStats] = useState(true);
+  }, [statsData]);
 
   useEffect(() => {
     if (!isLoading && !admin) {
@@ -44,30 +78,69 @@ export default function AdminDashboardPage() {
     }
   }, [admin, isLoading, router]);
 
-  useEffect(() => {
-    if (admin) {
-      fetchDashboardStats();
-    }
-  }, [admin]);
+  // Memoized navigation handlers
+  const handleNavigateTo = useCallback((path: string) => {
+    router.push(path);
+  }, [router]);
 
-  const fetchDashboardStats = async () => {
-    try {
-      const response = await fetch('/api/admin/dashboard-stats', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data.stats);
-      }
-    } catch (error) {
-      console.error('Error fetching dashboard stats:', error);
-    } finally {
-      setLoadingStats(false);
+  // Memoized stats cards configuration
+  const statsCards = useMemo(() => [
+    {
+      title: "Total Brands",
+      value: loadingStats ? '...' : stats.totalBrands.toString(),
+      icon: <FiTruck className="h-6 w-6" />,
+      change: "+2 this month",
+      changeType: "positive" as const,
+      color: "blue" as const
+    },
+    {
+      title: "Total Models",
+      value: loadingStats ? '...' : stats.totalModels.toString(),
+      icon: <FiShoppingBag className="h-6 w-6" />,
+      change: "+15 this month",
+      changeType: "positive" as const,
+      color: "green" as const
+    },
+    {
+      title: "Total Variants",
+      value: loadingStats ? '...' : stats.totalVariants.toString(),
+      icon: <FiEye className="h-6 w-6" />,
+      change: "+45 this month",
+      changeType: "positive" as const,
+      color: "purple" as const
+    },
+    {
+      title: "Active Users",
+      value: loadingStats ? '...' : stats.totalUsers.toString(),
+      icon: <FiUsers className="h-6 w-6" />,
+      change: `+${stats.monthlyGrowth}%`,
+      changeType: "positive" as const,
+      color: "orange" as const
     }
-  };
+  ], [loadingStats, stats]);
+
+  // Memoized secondary stats
+  const secondaryStats = useMemo(() => [
+    {
+      title: "Total Bookings",
+      value: loadingStats ? '...' : stats.totalBookings.toString(),
+      icon: <FiShoppingBag className="h-5 w-5 text-yellow-600" />,
+      bgColor: "bg-yellow-100"
+    },
+    {
+      title: "Monthly Growth",
+      value: loadingStats ? '...' : `+${stats.monthlyGrowth}%`,
+      icon: <FiTrendingUp className="h-5 w-5 text-red-600" />,
+      bgColor: "bg-red-100"
+    },
+    {
+      title: "System Status",
+      value: "Operational",
+      icon: <FiActivity className="h-5 w-5 text-green-600" />,
+      bgColor: "bg-green-100",
+      valueColor: "text-green-600"
+    }
+  ], [loadingStats, stats]);
 
   if (isLoading || !admin) {
     return (
@@ -101,86 +174,60 @@ export default function AdminDashboardPage() {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <StatsCard
-                title="Total Brands"
-                value={loadingStats ? '...' : stats.totalBrands.toString()}
-                icon={<FiTruck className="h-6 w-6" />}
-                change="+2 this month"
-                changeType="positive"
-                color="blue"
-              />
-              <StatsCard
-                title="Total Models"
-                value={loadingStats ? '...' : stats.totalModels.toString()}
-                icon={<FiShoppingBag className="h-6 w-6" />}
-                change="+15 this month"
-                changeType="positive"
-                color="green"
-              />
-              <StatsCard
-                title="Total Variants"
-                value={loadingStats ? '...' : stats.totalVariants.toString()}
-                icon={<FiEye className="h-6 w-6" />}
-                change="+45 this month"
-                changeType="positive"
-                color="purple"
-              />
-              <StatsCard
-                title="Active Users"
-                value={loadingStats ? '...' : stats.totalUsers.toString()}
-                icon={<FiUsers className="h-6 w-6" />}
-                change={`+${stats.monthlyGrowth}%`}
-                changeType="positive"
-                color="orange"
-              />
+              {loadingStats ? (
+                // Show skeleton loading
+                Array.from({ length: 4 }).map((_, index) => (
+                  <SkeletonCard key={index} />
+                ))
+              ) : (
+                // Show actual stats cards
+                statsCards.map((card, index) => (
+                  <StatsCard key={`${card.title}-${index}`} {...card} />
+                ))
+              )}
             </div>
 
             {/* Secondary Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-yellow-100 rounded-md">
-                    <FiShoppingBag className="h-5 w-5 text-yellow-600" />
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-500">Total Bookings</p>
-                    <p className="text-lg font-semibold text-gray-900">
-                      {loadingStats ? '...' : stats.totalBookings}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-red-100 rounded-md">
-                    <FiTrendingUp className="h-5 w-5 text-red-600" />
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-500">Monthly Growth</p>
-                    <p className="text-lg font-semibold text-gray-900">
-                      {loadingStats ? '...' : `+${stats.monthlyGrowth}%`}
-                    </p>
+              {secondaryStats.map((stat, index) => (
+                <div key={`${stat.title}-${index}`} className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center">
+                    <div className={`p-2 ${stat.bgColor} rounded-md`}>
+                      {stat.icon}
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-gray-500">{stat.title}</p>
+                      <p className={`text-lg font-semibold ${stat.valueColor || 'text-gray-900'}`}>
+                        {stat.value}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-green-100 rounded-md">
-                    <FiActivity className="h-5 w-5 text-green-600" />
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-500">System Status</p>
-                    <p className="text-lg font-semibold text-green-600">Operational</p>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
 
             {/* Recent Activity */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <RecentActivity />
+              <Suspense fallback={
+                <div className="bg-white rounded-lg shadow">
+                  <div className="p-6 border-b border-gray-200">
+                    <div className="h-6 bg-gray-200 rounded w-32 animate-pulse"></div>
+                  </div>
+                  <div className="p-6 space-y-4">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div key={i} className="flex items-center space-x-3 animate-pulse">
+                        <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                        <div className="flex-1">
+                          <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              }>
+                <RecentActivity />
+              </Suspense>
               
               <div className="bg-white rounded-lg shadow">
                 <div className="p-6 border-b border-gray-200">
@@ -189,7 +236,7 @@ export default function AdminDashboardPage() {
                 <div className="p-6">
                   <div className="space-y-3">
                     <button
-                      onClick={() => router.push('/admin/brands/new')}
+                      onClick={() => handleNavigateTo('/admin/brands/new')}
                       className="w-full text-left px-4 py-3 rounded-lg border-2 border-dashed border-gray-300 hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
                     >
                       <div className="flex items-center">
@@ -199,7 +246,7 @@ export default function AdminDashboardPage() {
                     </button>
                     
                     <button
-                      onClick={() => router.push('/admin/models/new')}
+                      onClick={() => handleNavigateTo('/admin/models/new')}
                       className="w-full text-left px-4 py-3 rounded-lg border-2 border-dashed border-gray-300 hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
                     >
                       <div className="flex items-center">
@@ -209,7 +256,7 @@ export default function AdminDashboardPage() {
                     </button>
                     
                     <button
-                      onClick={() => router.push('/admin/variants/new')}
+                      onClick={() => handleNavigateTo('/admin/variants/new')}
                       className="w-full text-left px-4 py-3 rounded-lg border-2 border-dashed border-gray-300 hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
                     >
                       <div className="flex items-center">

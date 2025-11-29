@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, memo } from 'react';
 import { FiTrendingUp, FiTrendingDown } from 'react-icons/fi';
 
 interface StatsCardProps {
@@ -40,7 +40,7 @@ const colorClasses = {
   }
 };
 
-export default function StatsCard({ 
+const StatsCard = memo(function StatsCard({ 
   title, 
   value, 
   icon, 
@@ -83,4 +83,6 @@ export default function StatsCard({
       )}
     </div>
   );
-}
+});
+
+export default StatsCard;
