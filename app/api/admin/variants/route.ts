@@ -144,12 +144,11 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { 
+      variant_id,
       variant_name, 
       model_id, 
       brand_id, 
-      on_road_price, 
-      mileage, 
-      engine_capacity 
+      on_road_price 
     } = body;
 
     if (!variant_name || !model_id || !brand_id) {
@@ -159,18 +158,94 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate variant_id if provided
+    if (variant_id && (isNaN(Number(variant_id)) || Number(variant_id) <= 0)) {
+      return NextResponse.json(
+        { success: false, error: 'Variant ID must be a positive number' },
+        { status: 400 }
+      );
+    }
+
     const supabase = createServerClient();
 
-    const { data: variant, error } = await (supabase as any)
-      .from('variants')
-      .insert({
-        variant_name,
-        model_id,
-        brand_id,
-        on_road_price
-      })
-      .select()
-      .single();
+    let variant;
+    let error;
+
+    // Function to find next available ID
+    const findNextAvailableId = async (startId: number = 578): Promise<number> => {
+      let currentId = startId;
+      while (currentId <= startId + 1000) { // Safety limit
+        const { data: existing } = await supabase
+          .from('variants')
+          .select('variant_id')
+          .eq('variant_id', currentId)
+          .single();
+        
+        if (!existing) {
+          return currentId;
+        }
+        currentId++;
+      }
+      throw new Error('Could not find available ID');
+    };
+
+    // If variant_id is provided, use it directly
+    if (variant_id) {
+      // Check if the ID already exists
+      const { data: existingVariant } = await supabase
+        .from('variants')
+        .select('variant_id')
+        .eq('variant_id', variant_id)
+        .single();
+      
+      if (existingVariant) {
+        return NextResponse.json(
+          { success: false, error: `Variant ID ${variant_id} already exists` },
+          { status: 400 }
+        );
+      }
+
+      const insertResult = await (supabase as any)
+        .from('variants')
+        .insert({
+          variant_id: Number(variant_id),
+          variant_name,
+          model_id,
+          brand_id,
+          on_road_price
+        })
+        .select()
+        .single();
+
+      variant = insertResult.data;
+      error = insertResult.error;
+    } else {
+      // Auto-generate ID - find next available ID starting from 578
+      try {
+        const nextId = await findNextAvailableId(578);
+        
+        const insertResult = await (supabase as any)
+          .from('variants')
+          .insert({
+            variant_id: nextId,
+            variant_name,
+            model_id,
+            brand_id,
+            on_road_price
+          })
+          .select()
+          .single();
+
+        variant = insertResult.data;
+        error = insertResult.error;
+      } catch (findIdError) {
+        console.error('Error finding next ID:', findIdError);
+        return NextResponse.json(
+          { success: false, error: 'Could not generate variant ID' },
+          { status: 500 }
+        );
+      }
+    }
 
     if (error) {
       console.error('Database error:', error);

@@ -43,9 +43,20 @@ export default function AdminSpecificationsPage() {
 
   useEffect(() => {
     if (admin) {
+      const debounceTimer = setTimeout(() => {
+        setCurrentPage(1); // Reset to first page when searching
+        fetchSpecifications();
+      }, 300);
+      
+      return () => clearTimeout(debounceTimer);
+    }
+  }, [admin, searchTerm]);
+
+  useEffect(() => {
+    if (admin) {
       fetchSpecifications();
     }
-  }, [admin, currentPage, searchTerm]);
+  }, [admin, currentPage]);
 
   const fetchSpecifications = async () => {
     try {
@@ -211,25 +222,17 @@ export default function AdminSpecificationsPage() {
               </button>
             </div>
 
-            {/* Search */}
-            <div className="mb-6">
-              <input
-                type="text"
-                placeholder="Search specifications..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
             {/* Data Table */}
             <DataTable
               columns={columns}
               data={specifications}
               loading={loading}
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={setCurrentPage}
+              onRefresh={fetchSpecifications}
             />
           </div>
         </main>

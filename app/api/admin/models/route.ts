@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { model_name, brand_id, description, image_url, launch_date } = body;
+    const { model_id, model_name, brand_id } = body;
 
     if (!model_name || !brand_id) {
       return NextResponse.json(
@@ -137,16 +137,90 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate model_id if provided
+    if (model_id && (isNaN(Number(model_id)) || Number(model_id) <= 0)) {
+      return NextResponse.json(
+        { success: false, error: 'Model ID must be a positive number' },
+        { status: 400 }
+      );
+    }
+
     const supabase = createServerClient();
 
-    const { data: model, error } = await (supabase as any)
-      .from('models')
-      .insert({
-        model_name,
-        brand_id
-      })
-      .select()
-      .single();
+    let model;
+    let error;
+
+    // Function to find next available ID
+    const findNextAvailableId = async (startId: number = 142): Promise<number> => {
+      let currentId = startId;
+      while (currentId <= startId + 1000) { // Safety limit
+        const { data: existing } = await supabase
+          .from('models')
+          .select('model_id')
+          .eq('model_id', currentId)
+          .single();
+        
+        if (!existing) {
+          return currentId;
+        }
+        currentId++;
+      }
+      throw new Error('Could not find available ID');
+    };
+
+    // If model_id is provided, use it directly
+    if (model_id) {
+      // Check if the ID already exists
+      const { data: existingModel } = await supabase
+        .from('models')
+        .select('model_id')
+        .eq('model_id', model_id)
+        .single();
+      
+      if (existingModel) {
+        return NextResponse.json(
+          { success: false, error: `Model ID ${model_id} already exists` },
+          { status: 400 }
+        );
+      }
+
+      const insertResult = await (supabase as any)
+        .from('models')
+        .insert({
+          model_id: Number(model_id),
+          model_name,
+          brand_id
+        })
+        .select()
+        .single();
+
+      model = insertResult.data;
+      error = insertResult.error;
+    } else {
+      // Auto-generate ID - find next available ID starting from 142
+      try {
+        const nextId = await findNextAvailableId(142);
+        
+        const insertResult = await (supabase as any)
+          .from('models')
+          .insert({
+            model_id: nextId,
+            model_name,
+            brand_id
+          })
+          .select()
+          .single();
+
+        model = insertResult.data;
+        error = insertResult.error;
+      } catch (findIdError) {
+        console.error('Error finding next ID:', findIdError);
+        return NextResponse.json(
+          { success: false, error: 'Could not generate model ID' },
+          { status: 500 }
+        );
+      }
+    }
 
     if (error) {
       console.error('Database error:', error);

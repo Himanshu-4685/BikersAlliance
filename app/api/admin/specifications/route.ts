@@ -71,15 +71,67 @@ export async function GET(request: NextRequest) {
         )
       `);
 
-    // Add search filter
+    // Add search filter including variant names
     if (search) {
-      query = query.or(`variants.variant_name.ilike.%${search}%,variants.models.model_name.ilike.%${search}%`);
+      // First get variant IDs that match the search term
+      const { data: matchingVariants } = await supabase
+        .from('variants')
+        .select('variant_id, variant_name')
+        .or(`variant_name.ilike.%${search}%`) as { data: Array<{variant_id: string, variant_name: string}> | null };
+      
+      const variantIds = matchingVariants?.map((v: any) => v.variant_id) || [];
+      
+      // Search in multiple fields using OR logic
+      const searchTerm = `%${search}%`;
+      let searchConditions = [
+        `engine_type.ilike.${searchTerm}`,
+        `displacement.ilike.${searchTerm}`,
+        `max_torque.ilike.${searchTerm}`,
+        `body_type.ilike.${searchTerm}`,
+        `peak_power.ilike.${searchTerm}`,
+        `transmission.ilike.${searchTerm}`
+      ];
+      
+      // Add variant ID conditions if we found matching variants
+      if (variantIds.length > 0) {
+        searchConditions.push(`variant_id.in.(${variantIds.join(',')})`);
+      }
+      
+      query = query.or(searchConditions.join(','));
     }
 
-    // Get total count
-    const { count } = await supabase
+    // Get total count with same search logic
+    let countQuery = supabase
       .from('specs')
       .select('*', { count: 'exact', head: true });
+    
+    if (search) {
+      // Get variant IDs that match search for count query too
+      const { data: matchingVariantsForCount } = await supabase
+        .from('variants')
+        .select('variant_id')
+        .or(`variant_name.ilike.%${search}%`) as { data: Array<{variant_id: string}> | null };
+      
+      const variantIdsForCount = matchingVariantsForCount?.map((v: any) => v.variant_id) || [];
+      
+      const searchTerm = `%${search}%`;
+      let countSearchConditions = [
+        `engine_type.ilike.${searchTerm}`,
+        `displacement.ilike.${searchTerm}`,
+        `max_torque.ilike.${searchTerm}`,
+        `body_type.ilike.${searchTerm}`,
+        `peak_power.ilike.${searchTerm}`,
+        `transmission.ilike.${searchTerm}`
+      ];
+      
+      if (variantIdsForCount.length > 0) {
+        countSearchConditions.push(`variant_id.in.(${variantIdsForCount.join(',')})`);
+      }
+      
+      countQuery = countQuery.or(countSearchConditions.join(','));
+    }
+    
+    const { count } = await countQuery;
 
     // Get paginated data
     const { data: specifications, error } = await query
