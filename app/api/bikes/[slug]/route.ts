@@ -31,6 +31,12 @@ interface Variant {
   on_road_price: number;
   ex_showroom_price: number | null;
   specifications: any;
+  url: string | null;
+  images: Array<{
+    image_id: string;
+    url: string;
+    alt_text: string | null;
+  }> | null;
   models: Model;
 }
 
@@ -48,13 +54,18 @@ interface SimilarVariant {
 }
 
 // Helper function to get image URL with fallback
-function getVariantImageUrl(variantId: string, supabaseUrl: string): string {
-  return `${supabaseUrl}/storage/v1/object/public/image/variant_image/${variantId}.png`;
+function getVariantImageUrl(variant: any, supabaseUrl: string): string {
+  // First try to get image from database
+  if (variant.images && variant.images.length > 0) {
+    return variant.images[0].url;
+  }
+  // Fallback to constructed URL
+  return `${supabaseUrl}/storage/v1/object/public/image/variant_image/${variant.variant_id}.png`;
 }
 
 // Helper function to get default image URL
 function getDefaultImageUrl(): string {
-  return '/images/bikes/default-bike.svg'; // Using SVG placeholder
+  return '/demo.avif'; // Use the demo image that exists
 }
 
 // Helper function to parse and group specifications
@@ -150,14 +161,29 @@ export async function GET(
     } else {
       console.log('API: Fetching by slug');
       // Handle regular slug lookup
-      // Parse slug to extract brand and model
+      // Parse slug to extract brand and model - handle different slug formats
       const slugParts = slug.split('-');
-      const brandName = slugParts[0];
-      const modelName = slugParts.slice(1).join('-');
+      let brandName, modelName;
       
-      console.log('API: Brand:', brandName, 'Model:', modelName);
+      // Try different parsing strategies
+      if (slugParts.length >= 2) {
+        // Common format: brand-model or brand-model-variant
+        brandName = slugParts[0];
+        // For models with multiple words, join them
+        if (slugParts.length === 2) {
+          modelName = slugParts[1];
+        } else {
+          // For slugs like 'kawasaki-ninja-h2-r', try different combinations
+          modelName = slugParts.slice(1).join(' ');
+        }
+      } else {
+        brandName = slug;
+        modelName = '';
+      }
       
-      // Fetch bike details with comprehensive data
+      console.log('API: Parsed slug - Brand:', brandName, 'Model:', modelName);
+      
+      // Fetch bike details with comprehensive data including images
       const result = await supabase
         .from('variants')
         .select(`
@@ -166,6 +192,12 @@ export async function GET(
           on_road_price,
           ex_showroom_price,
           specifications,
+          url,
+          images(
+            image_id,
+            url,
+            alt_text
+          ),
           models!inner(
             model_id,
             model_name,
@@ -184,8 +216,7 @@ export async function GET(
             )
           )
         `)
-        .ilike('models.brands.brand_name', `%${brandName}%`)
-        .ilike('models.model_name', `%${modelName}%`)
+        .or(`models.brands.brand_name.ilike.%${brandName}%,models.model_name.ilike.%${modelName}%,url.ilike.%${slug}%`)
         .order('on_road_price') as { data: Variant[] | null; error: any };
       
       variants = result.data;
@@ -239,7 +270,7 @@ export async function GET(
       name: variant.variant_name,
       price: variant.on_road_price,
       exShowroomPrice: variant.ex_showroom_price,
-      imageUrl: getVariantImageUrl(variant.variant_id, supabaseUrl),
+      imageUrl: getVariantImageUrl(variant, supabaseUrl),
       defaultImageUrl: getDefaultImageUrl(),
       specifications: parseAndGroupSpecs(variant.specifications)
     }));
@@ -250,7 +281,7 @@ export async function GET(
       name: `${variant.models.brands.brand_name} ${variant.models.model_name}`,
       slug: `${variant.models.brands.brand_name.toLowerCase()}-${variant.models.model_name.toLowerCase()}`.replace(/\s+/g, '-'),
       price: variant.on_road_price,
-      imageUrl: getVariantImageUrl(variant.variant_id, supabaseUrl),
+      imageUrl: getVariantImageUrl(variant, supabaseUrl),
       defaultImageUrl: getDefaultImageUrl()
     }));
     

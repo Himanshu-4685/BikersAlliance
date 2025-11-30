@@ -98,7 +98,7 @@ export default function BikeDetailsPage() {
   const [similarModels, setSimilarModels] = useState<SimilarModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('specs');
   const [selectedVariant, setSelectedVariant] = useState(0);
   const [showEMICalculator, setShowEMICalculator] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -333,16 +333,6 @@ export default function BikeDetailsPage() {
                       <p className="text-gray-600 mb-6">
                         {bike.description || `The ${bike.name} is a premium motorcycle from ${bike.brand.name}, offering exceptional performance and style for riders who demand the best.`}
                       </p>
-                      
-                      {/* Key Highlights */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        {bike.specifications.slice(0, 6).map((spec, index) => (
-                          <div key={index} className="bg-gray-50 p-4 rounded-lg">
-                            <div className="text-sm text-gray-500">{spec.name}</div>
-                            <div className="text-lg font-semibold text-gray-900">{spec.value}</div>
-                          </div>
-                        ))}
-                      </div>
                     </div>
                   </div>
                 )}

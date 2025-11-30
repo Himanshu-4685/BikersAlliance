@@ -343,7 +343,7 @@ export default function Header() {
             <div className="flex items-center space-x-4">
               {/* Wishlist Icon */}
               <Link
-                href={user ? "/dashboard/shortlisted" : "/login"}
+                href={user ? "/dashboard?section=shortlisted" : "/login"}
                 className="relative flex items-center justify-center w-10 h-10 text-gray-600 hover:text-primary transition-colors"
                 title={user ? "View wishlist" : "Login to view wishlist"}
               >

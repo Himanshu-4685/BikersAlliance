@@ -70,7 +70,7 @@ const UserProfile = () => {
               <FiShoppingBag className="mr-3 text-gray-500" />
               My Orders
             </Link>
-            <Link href="/dashboard" onClick={() => setIsOpen(false)} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+            <Link href="/dashboard?section=shortlisted" onClick={() => setIsOpen(false)} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
               <FiHeart className="mr-3 text-gray-500" />
               Shortlisted Vehicles
             </Link>

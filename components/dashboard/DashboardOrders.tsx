@@ -31,6 +31,41 @@ export default function DashboardOrders() {
   const [loading, setLoading] = useState(true);
   const [deletingOrder, setDeletingOrder] = useState<string | null>(null);
 
+  const cleanSlug = (slug: string) => {
+    // Handle different slug patterns
+    if (!slug) return slug;
+    
+    // If the slug starts with /bikes/, extract the last part (the variant slug)
+    if (slug.startsWith('/bikes/')) {
+      const pathParts = slug.split('/');
+      return pathParts[pathParts.length - 1] || slug;
+    }
+    
+    // For existing complex slugs, try to extract just the variant name
+    // Handle patterns like "ducati-panigale-ducati-panigale-v4-s" where there are duplicates
+    const parts = slug.split('-');
+    
+    if (parts.length > 4) {
+      // Find the first duplicate brand/model name and take everything after it
+      const seen = new Set();
+      let startIndex = 0;
+      
+      for (let i = 0; i < parts.length; i++) {
+        if (seen.has(parts[i])) {
+          startIndex = i + 1;
+          break;
+        }
+        seen.add(parts[i]);
+      }
+      
+      if (startIndex > 0 && startIndex < parts.length) {
+        return parts.slice(startIndex).join('-');
+      }
+    }
+    
+    return slug;
+  };
+
   // Fetch user orders
   useEffect(() => {
     const fetchOrders = async () => {
@@ -121,32 +156,30 @@ export default function DashboardOrders() {
                 <div className="flex items-start space-x-4">
                   {/* Bike Image */}
                   <div className="flex-shrink-0 w-20 h-16 bg-gray-200 rounded-lg overflow-hidden">
-                    {order.image_url ? (
+                    <Link href={`/bikes/${cleanSlug(order.bike_name.toLowerCase().replace(/\s+/g, '-'))}`}>
                       <Image
-                        src={order.image_url}
+                        src={order.image_url || '/demo.avif'}
                         alt={order.bike_name}
                         width={80}
                         height={64}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = '/demo.avif';
                         }}
                       />
-                    ) : (
-                      <div className="w-full h-full bg-gray-300 flex items-center justify-center">
-                        <FiPackage className="w-6 h-6 text-gray-500" />
-                      </div>
-                    )}
+                    </Link>
                   </div>
 
                   {/* Order Details */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                          {order.bike_name}
-                        </h3>
+                        <Link href={`/bikes/${cleanSlug(order.bike_name.toLowerCase().replace(/\s+/g, '-'))}`}>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-1 hover:text-primary transition-colors cursor-pointer">
+                            {order.bike_name}
+                          </h3>
+                        </Link>
                         <p className="text-gray-600 mb-2">
                           <span className="font-medium">{order.variant_name}</span> • {order.brand_name}
                         </p>
@@ -176,13 +209,13 @@ export default function DashboardOrders() {
 
                     {/* Actions */}
                     <div className="flex items-center space-x-3 pt-3 border-t">
-                      <button
-                        onClick={() => router.push(`/bikes/${order.bike_name.toLowerCase().replace(/\s+/g, '-')}`)}
+                      <Link 
+                        href={`/bikes/${cleanSlug(order.bike_name.toLowerCase().replace(/\s+/g, '-'))}`}
                         className="flex items-center px-4 py-2 text-sm font-medium text-primary border border-primary rounded-md hover:bg-primary-50 transition-colors"
                       >
                         <FiEye className="w-4 h-4 mr-2" />
                         View Details
-                      </button>
+                      </Link>
                       
                       <button
                         onClick={() => handleDeleteOrder(order.id)}

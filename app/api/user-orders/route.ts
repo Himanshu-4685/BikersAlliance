@@ -23,6 +23,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if user already has this variant in their orders
+    const { data: existingOrder, error: checkError } = await supabase
+      .from('user_orders')
+      .select('id')
+      .eq('user_id', user_id)
+      .eq('variant_id', parseInt(variant_id))
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('Error checking existing order:', checkError);
+      return NextResponse.json(
+        { success: false, error: 'Failed to check existing orders' },
+        { status: 500 }
+      );
+    }
+
+    if (existingOrder) {
+      return NextResponse.json(
+        { success: false, error: 'You have already added this bike to your orders' },
+        { status: 409 }
+      );
+    }
+
     // Insert order into database
     const { data, error } = await supabase
       .from('user_orders')
@@ -101,6 +124,51 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       orders: orders || []
+    });
+
+  } catch (error) {
+    console.error('API error:', error);
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { user_id, variant_id } = await request.json();
+
+    console.log('DELETE /api/user-orders - Request data:', {
+      user_id, variant_id
+    });
+
+    // Input validation
+    if (!user_id || !variant_id) {
+      return NextResponse.json(
+        { success: false, error: 'User ID and variant ID are required' },
+        { status: 400 }
+      );
+    }
+
+    // Delete order from database
+    const { error } = await supabase
+      .from('user_orders')
+      .delete()
+      .eq('user_id', user_id)
+      .eq('variant_id', parseInt(variant_id));
+
+    if (error) {
+      console.error('Database error:', error);
+      return NextResponse.json(
+        { success: false, error: 'Failed to remove order from database' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Order removed successfully'
     });
 
   } catch (error) {

@@ -107,7 +107,7 @@ export default function BikeDetailsPage() {
   const [similarModels, setSimilarModels] = useState<SimilarModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('specs');
   const [selectedVariant, setSelectedVariant] = useState(0);
   const [showEMICalculator, setShowEMICalculator] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -116,6 +116,42 @@ export default function BikeDetailsPage() {
   const [addingToOrders, setAddingToOrders] = useState(false);
   const [isInOrders, setIsInOrders] = useState(false);
   const [userOrderId, setUserOrderId] = useState<string | null>(null);
+
+  // Get images for the currently selected variant
+  const getCurrentVariantImages = () => {
+    if (!bike || !bike.variants || selectedVariant >= bike.variants.length) return [];
+    
+    const currentVariant = bike.variants[selectedVariant];
+    const variantName = currentVariant?.name?.toLowerCase() || '';
+    
+    // Try to match images based on variant name patterns
+    // This is a more intelligent approach until we have proper variant-image mapping
+    if (bike.images && bike.images.length > 0) {
+      // Look for images that might match the current variant
+      const potentialMatches = bike.images.filter(img => {
+        const imgAlt = (img.alt || '').toLowerCase();
+        const imgUrl = (img.url || '').toLowerCase();
+        
+        // Check if image alt text or URL contains variant-specific terms
+        return (
+          imgAlt.includes(variantName) ||
+          imgUrl.includes(variantName) ||
+          (variantName.includes('h2 r') && (imgAlt.includes('h2') || imgUrl.includes('h2'))) ||
+          (variantName.includes('h2') && (imgAlt.includes('h2') || imgUrl.includes('h2'))) ||
+          (variantName.includes('300') && (imgAlt.includes('300') || imgUrl.includes('300'))) ||
+          (variantName.includes('400') && (imgAlt.includes('400') || imgUrl.includes('400'))) ||
+          (variantName.includes('650') && (imgAlt.includes('650') || imgUrl.includes('650'))) ||
+          (variantName.includes('1000') && (imgAlt.includes('1000') || imgUrl.includes('1000'))) ||
+          (variantName.includes('zx') && (imgAlt.includes('zx') || imgUrl.includes('zx')))
+        );
+      });
+      
+      // If we found specific matches, use them; otherwise use the first image
+      return potentialMatches.length > 0 ? potentialMatches.slice(0, 1) : bike.images.slice(0, 1);
+    }
+    
+    return [];
+  };
   
   // Fetch bike details
   useEffect(() => {
@@ -127,6 +163,27 @@ export default function BikeDetailsPage() {
         if (result.success) {
           setBike(result.data.model);
           setSimilarModels(result.data.similarModels || []);
+          
+          // Find the specific variant that matches the slug
+          const targetVariantName = slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          
+          const matchingVariantIndex = result.data.model.variants.findIndex((variant: any) => {
+            const variantNameLower = variant.name.toLowerCase();
+            const targetNameLower = targetVariantName.toLowerCase();
+            
+            // Try different matching strategies for specific variant names
+            return (
+              variantNameLower.includes('h2 r') ||
+              variantNameLower.includes('h2r') ||
+              variantNameLower === targetNameLower ||
+              variantNameLower.includes(targetNameLower.split(' ').slice(-2).join(' ')) ||
+              // For exact matches like "Kawasaki Ninja H2 R"
+              variantNameLower.replace(/\s+/g, ' ').trim() === targetNameLower.replace(/\s+/g, ' ').trim()
+            );
+          });
+          
+          // Set the selected variant to the matching one, or default to first
+          setSelectedVariant(matchingVariantIndex >= 0 ? matchingVariantIndex : 0);
         } else {
           console.error('Failed to fetch bike details:', result.error);
           notFound();
@@ -148,25 +205,22 @@ export default function BikeDetailsPage() {
       if (!user || !bike) return;
 
       try {
-        const response = await fetch('/api/user-orders');
+        const response = await fetch(`/api/user-orders?user_id=${user.id}`);
         const result = await response.json();
 
         if (response.ok && result.success) {
           const currentVariant = bike.variants[selectedVariant];
           const existingOrder = result.orders.find((order: any) => 
-            order.variant_id === currentVariant?.id
+            order.variant_id === parseInt(currentVariant?.id)
           );
 
-          if (existingOrder) {
-            setIsInOrders(true);
-            setUserOrderId(existingOrder.id);
-          } else {
-            setIsInOrders(false);
-            setUserOrderId(null);
-          }
+          setIsInOrders(!!existingOrder);
+        } else {
+          setIsInOrders(false);
         }
       } catch (error) {
         console.error('Error checking orders:', error);
+        setIsInOrders(false);
       }
     };
 
@@ -189,16 +243,17 @@ export default function BikeDetailsPage() {
     setAddingToOrders(true);
 
     try {
-      if (isInOrders && userOrderId) {
+      if (isInOrders) {
         // Remove from orders
-        const response = await fetch(`/api/user-orders/${userOrderId}`, {
+        const response = await fetch('/api/user-orders', {
           method: 'DELETE',
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            user_id: user.id
+            user_id: user.id,
+            variant_id: variant.id
           }),
         });
 
@@ -206,13 +261,13 @@ export default function BikeDetailsPage() {
 
         if (response.ok && result.success) {
           setIsInOrders(false);
-          setUserOrderId(null);
           alert('Successfully removed from your orders!');
         } else {
           alert(result.error || 'Failed to remove from orders. Please try again.');
         }
       } else {
         // Add to orders
+        const variantImages = getCurrentVariantImages();
         const response = await fetch('/api/user-orders', {
           method: 'POST',
           headers: {
@@ -225,7 +280,7 @@ export default function BikeDetailsPage() {
             variant_name: variant.name,
             price: variant.price,
             brand_name: bike.brand?.name || '',
-            image_url: bike.images?.[0]?.url || null,
+            image_url: variantImages?.[0]?.url || bike.images?.[0]?.url || null,
             user_id: user.id
           }),
         });
@@ -234,7 +289,6 @@ export default function BikeDetailsPage() {
 
         if (response.ok && result.success) {
           setIsInOrders(true);
-          setUserOrderId(result.order.id);
           alert('Successfully added to your orders!');
         } else {
           alert(result.error || 'Failed to add to orders. Please try again.');
@@ -324,14 +378,23 @@ export default function BikeDetailsPage() {
           </div>
           
           <div className="flex items-center justify-between mt-4">
-            <h1 className="text-3xl font-bold text-gray-900">{bike.name}</h1>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                {bike.variants?.[selectedVariant]?.name || bike.name}
+              </h1>
+              {bike.variants && bike.variants.length > 1 && (
+                <p className="mt-1 text-sm text-gray-500">
+                  {bike.variants.length} variants available - <span className="text-primary">click below to switch</span>
+                </p>
+              )}
+            </div>
             <WishlistButton 
               bike={{
                 id: bike.id,
                 name: bike.name,
                 slug: bike.slug,
-                image: bike.images?.[0]?.url,
-                price: bike.variants?.[0]?.price,
+                image: getCurrentVariantImages()?.[0]?.url || bike.images?.[0]?.url,
+                price: bike.variants?.[selectedVariant]?.price || bike.variants?.[0]?.price,
                 brand: bike.brand
               }}
               variant="button"
@@ -359,44 +422,52 @@ export default function BikeDetailsPage() {
             <div className="overflow-hidden bg-white border rounded-lg shadow-sm">
               {/* Main Image */}
               <div className="relative h-[400px] bg-gray-100">
-                {bike.images && bike.images.length > 0 ? (
-                  <Image
-                    src={bike.images[activeImage].url}
-                    alt={bike.images[activeImage].alt || bike.name}
-                    fill
-                    className="object-contain"
-                  />
-                ) : (
-                  <Image
-                    src="/demo.avif"
-                    alt={bike.name}
-                    fill
-                    className="object-contain"
-                  />
-                )}
+                {(() => {
+                  const currentImages = getCurrentVariantImages();
+                  const currentVariant = bike.variants?.[selectedVariant];
+                  
+                  return currentImages && currentImages.length > 0 ? (
+                    <Image
+                      src={currentImages[Math.min(activeImage, currentImages.length - 1)].url}
+                      alt={`${bike.name} - ${currentVariant?.name || 'Unknown Variant'}`}
+                      fill
+                      className="object-contain"
+                    />
+                  ) : (
+                    <Image
+                      src="/demo.avif"
+                      alt={`${bike.name} - ${currentVariant?.name || 'Unknown Variant'}`}
+                      fill
+                      className="object-contain"
+                    />
+                  );
+                })()}
               </div>
               
-              {/* Thumbnails */}
-              {bike.images && bike.images.length > 1 && (
-                <div className="flex p-4 space-x-2 overflow-x-auto">
-                  {bike.images.map((image, index) => (
-                    <button
-                      key={image.id}
-                      onClick={() => setActiveImage(index)}
-                      className={`relative w-16 h-16 border rounded-md overflow-hidden ${
-                        index === activeImage ? 'border-primary' : 'border-gray-200'
-                      }`}
-                    >
-                      <Image
-                        src={image.url}
-                        alt={image.alt || `${bike.name} image ${index + 1}`}
-                        fill
-                        className="object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
+              {/* Thumbnails - Only show if there are multiple images for current variant */}
+              {(() => {
+                const currentImages = getCurrentVariantImages();
+                return currentImages && currentImages.length > 1 && (
+                  <div className="flex p-4 space-x-2 overflow-x-auto">
+                    {currentImages.map((image, index) => (
+                      <button
+                        key={image.id}
+                        onClick={() => setActiveImage(index)}
+                        className={`relative w-16 h-16 border rounded-md overflow-hidden ${
+                          index === activeImage ? 'border-primary' : 'border-gray-200'
+                        }`}
+                      >
+                        <Image
+                          src={image.url}
+                          alt={image.alt || `${bike.name} - ${bike.variants?.[selectedVariant]?.name} image ${index + 1}`}
+                          fill
+                          className="object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
             
             {/* Tabs */}
@@ -562,19 +633,6 @@ export default function BikeDetailsPage() {
                         </div>
                       ))}
                     </div>
-
-                    {/* Key Highlights Section */}
-                    <div className="mt-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 text-white">
-                      <h3 className="text-xl font-bold mb-4">Key Performance Highlights</h3>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {bike.specifications.slice(0, 4).map((spec) => (
-                          <div key={spec.name} className="text-center">
-                            <div className="text-2xl font-bold">{spec.value}</div>
-                            <div className="text-sm opacity-90">{spec.name}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
                   </div>
                 )}
                 
@@ -624,15 +682,44 @@ export default function BikeDetailsPage() {
               
               {bike.variants && bike.variants.length > 0 ? (
                 <div className="mt-2 space-y-2">
-                  {bike.variants.map(variant => (
-                    <div key={variant.id} className="flex justify-between p-3 border rounded-md">
-                      <span className="font-medium text-gray-700">{variant.name}</span>
-                      <span className="font-bold text-gray-900">₹ {variant.price.toLocaleString('en-IN')}</span>
-                    </div>
-                  ))}
+                  {bike.variants.map((variant, index) => {
+                    // Generate slug for each variant
+                    const variantSlug = `${bike.brand?.name || 'bike'}-${variant.name}`
+                      .toLowerCase()
+                      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+                      .replace(/\s+/g, '-') // Replace spaces with hyphens
+                      .replace(/-+/g, '-') // Replace multiple hyphens with single
+                      .trim();
+                    
+                    return (
+                      <div 
+                        key={variant.id} 
+                        className={`flex justify-between p-3 border rounded-md cursor-pointer transition-all hover:bg-gray-50 ${
+                          selectedVariant === index 
+                            ? 'border-primary bg-primary-50 shadow-sm' 
+                            : 'border-gray-200'
+                        }`}
+                        onClick={() => {
+                          // Navigate to the specific variant page
+                          router.push(`/bikes/${variantSlug}`);
+                        }}
+                      >
+                        <span className={`font-medium ${
+                          selectedVariant === index ? 'text-primary' : 'text-gray-700'
+                        }`}>
+                          {variant.name}
+                        </span>
+                        <span className={`font-bold ${
+                          selectedVariant === index ? 'text-primary' : 'text-gray-900'
+                        }`}>
+                          ₹ {variant.price.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                    );
+                  })}
                   
                   <p className="mt-2 text-xs text-gray-500">
-                    *Ex-showroom price. May vary based on location.
+                    *Ex-showroom price. May vary based on location. Click to view details.
                   </p>
                 </div>
               ) : (
@@ -667,31 +754,6 @@ export default function BikeDetailsPage() {
                 >
                   Book Test Ride
                 </button>
-              </div>
-            </div>
-            
-            {/* Key Highlights */}
-            <div className="p-4 mt-4 bg-white border rounded-lg shadow-sm">
-              <h2 className="text-lg font-semibold text-gray-900">Key Highlights</h2>
-              
-              <div className="mt-3 space-y-3">
-                {bike.specifications.filter(spec => 
-                  ['Engine', 'Mileage', 'Power', 'Torque', 'Fuel Capacity', 'Weight'].includes(spec.name)
-                ).map(spec => (
-                  <div key={spec.name} className="flex items-start">
-                    <div className="p-2 mr-3 text-primary bg-primary-50 rounded-md">
-                      {spec.name === 'Engine' && <FiSettings />}
-                      {spec.name === 'Mileage' && <FiBarChart />}
-                      {spec.name === 'Power' || spec.name === 'Torque' && <FiBarChart />}
-                      {spec.name === 'Fuel Capacity' && <FiInfo />}
-                      {spec.name === 'Weight' && <FiTag />}
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">{spec.name}</p>
-                      <p className="font-medium text-gray-900">{spec.value}</p>
-                    </div>
-                  </div>
-                ))}
               </div>
             </div>
             
