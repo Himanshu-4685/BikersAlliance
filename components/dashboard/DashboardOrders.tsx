@@ -38,7 +38,9 @@ export default function DashboardOrders() {
       
       try {
         setLoading(true);
-        const response = await fetch('/api/user-orders');
+        const response = await fetch(`/api/user-orders?user_id=${user.id}`, {
+          credentials: 'include'
+        });
         const result = await response.json();
 
         if (response.ok && result.success) {
@@ -63,6 +65,13 @@ export default function DashboardOrders() {
     try {
       const response = await fetch(`/api/user-orders/${orderId}`, {
         method: 'DELETE',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: user?.id
+        }),
       });
 
       const result = await response.json();

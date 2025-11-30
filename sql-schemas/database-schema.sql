@@ -103,6 +103,23 @@ CREATE TABLE public.images (
   CONSTRAINT images_pkey PRIMARY KEY (image_id),
   CONSTRAINT images_variant_id_fkey FOREIGN KEY (variant_id) REFERENCES public.variants(variant_id)
 );
+CREATE TABLE public.leads (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  phone text NOT NULL,
+  email text NOT NULL,
+  address text NOT NULL,
+  pincode text NOT NULL,
+  variant_id integer NOT NULL,
+  bike_name text NOT NULL,
+  variant_name text NOT NULL,
+  brand_name text NOT NULL,
+  lead_type text NOT NULL CHECK (lead_type = ANY (ARRAY['get_on_road_price'::text, 'book_test_ride'::text])),
+  status text DEFAULT 'new'::text CHECK (status = ANY (ARRAY['new'::text, 'contacted'::text, 'qualified'::text, 'closed'::text])),
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT leads_pkey PRIMARY KEY (id)
+);
 CREATE TABLE public.models (
   model_id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   brand_id uuid NOT NULL,
@@ -221,6 +238,33 @@ CREATE TABLE public.used_bikes (
   approved_at timestamp with time zone,
   sold_at timestamp with time zone,
   CONSTRAINT used_bikes_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.user_bike_submissions (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id integer NOT NULL,
+  used_bike_id uuid NOT NULL,
+  submission_status character varying DEFAULT 'active'::character varying CHECK (submission_status::text = ANY (ARRAY['active'::character varying, 'cancelled'::character varying, 'withdrawn'::character varying]::text[])),
+  notes text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_bike_submissions_pkey PRIMARY KEY (id),
+  CONSTRAINT user_bike_submissions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(user_id),
+  CONSTRAINT user_bike_submissions_used_bike_id_fkey FOREIGN KEY (used_bike_id) REFERENCES public.used_bikes(id)
+);
+CREATE TABLE public.user_orders (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  variant_id integer NOT NULL,
+  bike_name text NOT NULL,
+  variant_name text NOT NULL,
+  price numeric NOT NULL,
+  brand_name text NOT NULL,
+  image_url text,
+  status text DEFAULT 'pending'::text CHECK (status = ANY (ARRAY['pending'::text, 'confirmed'::text, 'cancelled'::text])),
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_orders_pkey PRIMARY KEY (id),
+  CONSTRAINT user_orders_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.users (
   user_id integer NOT NULL DEFAULT nextval('users_user_id_seq'::regclass),

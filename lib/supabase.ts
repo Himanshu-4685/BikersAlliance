@@ -326,6 +326,97 @@ export type Database = {
           is_published?: boolean;
         };
       };
+      leads: {
+        Row: {
+          id: string;
+          name: string;
+          phone: string;
+          email: string;
+          address: string;
+          pincode: string;
+          variant_id: number;
+          bike_name: string;
+          variant_name: string;
+          brand_name: string;
+          lead_type: 'get_on_road_price' | 'book_test_ride';
+          status: 'new' | 'contacted' | 'qualified' | 'closed';
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          phone: string;
+          email: string;
+          address: string;
+          pincode: string;
+          variant_id: number;
+          bike_name: string;
+          variant_name: string;
+          brand_name: string;
+          lead_type: 'get_on_road_price' | 'book_test_ride';
+          status?: 'new' | 'contacted' | 'qualified' | 'closed';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          phone?: string;
+          email?: string;
+          address?: string;
+          pincode?: string;
+          variant_id?: number;
+          bike_name?: string;
+          variant_name?: string;
+          brand_name?: string;
+          lead_type?: 'get_on_road_price' | 'book_test_ride';
+          status?: 'new' | 'contacted' | 'qualified' | 'closed';
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      user_orders: {
+        Row: {
+          id: string;
+          user_id: string;
+          variant_id: number;
+          bike_name: string;
+          variant_name: string;
+          price: number;
+          brand_name: string;
+          image_url: string | null;
+          status: 'pending' | 'confirmed' | 'cancelled';
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          variant_id: number;
+          bike_name: string;
+          variant_name: string;
+          price: number;
+          brand_name: string;
+          image_url?: string | null;
+          status?: 'pending' | 'confirmed' | 'cancelled';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          variant_id?: number;
+          bike_name?: string;
+          variant_name?: string;
+          price?: number;
+          brand_name?: string;
+          image_url?: string | null;
+          status?: 'pending' | 'confirmed' | 'cancelled';
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
     };
     views: {
       [_ in never]: never;

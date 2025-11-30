@@ -1,27 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase-server';
+import { createClient } from '@supabase/supabase-js';
+
+// Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+);
 
 export async function POST(request: NextRequest) {
   try {
-    const { variant_id, bike_name, variant_name, price, brand_name, image_url } = await request.json();
+    const { variant_id, bike_name, variant_name, price, brand_name, image_url, user_id } = await request.json();
+
+    console.log('POST /api/user-orders - Request data:', {
+      variant_id, bike_name, variant_name, price, brand_name, user_id
+    });
 
     // Input validation
-    if (!variant_id || !bike_name || !variant_name || !price || !brand_name) {
+    if (!variant_id || !bike_name || !variant_name || !price || !brand_name || !user_id) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields' },
         { status: 400 }
-      );
-    }
-
-    const supabase = createServerClient();
-    
-    // Get authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
       );
     }
 
@@ -29,7 +27,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase
       .from('user_orders')
       .insert({
-        user_id: user.id,
+        user_id: user_id,
         variant_id: parseInt(variant_id),
         bike_name,
         variant_name,
@@ -66,15 +64,16 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient();
-    
-    // Get authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    // Get user_id from query params
+    const { searchParams } = new URL(request.url);
+    const user_id = searchParams.get('user_id');
 
-    if (authError || !user) {
+    console.log('GET /api/user-orders - Request params:', { user_id });
+
+    if (!user_id) {
       return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
+        { success: false, error: 'User ID is required' },
+        { status: 400 }
       );
     }
 
@@ -82,8 +81,14 @@ export async function GET(request: NextRequest) {
     const { data: orders, error } = await supabase
       .from('user_orders')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', user_id)
       .order('created_at', { ascending: false });
+
+    console.log('Database query result:', { 
+      ordersCount: orders?.length || 0, 
+      error: error?.message,
+      user_id
+    });
 
     if (error) {
       console.error('Database error:', error);

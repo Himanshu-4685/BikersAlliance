@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase-server';
+import { createClient } from '@supabase/supabase-js';
+
+// Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+);
 
 export async function DELETE(
   request: NextRequest,
@@ -7,32 +13,23 @@ export async function DELETE(
 ) {
   try {
     const orderId = params.id;
+    const { user_id } = await request.json();
 
-    if (!orderId) {
+    if (!orderId || !user_id) {
       return NextResponse.json(
-        { success: false, error: 'Order ID is required' },
+        { success: false, error: 'Order ID and User ID are required' },
         { status: 400 }
       );
     }
 
-    const supabase = createServerClient();
-    
-    // Get authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
+    console.log('DELETE /api/user-orders/[id] - Request:', { orderId, user_id });
 
     // Delete the order (only if it belongs to the user)
     const { error } = await supabase
       .from('user_orders')
       .delete()
       .eq('id', orderId)
-      .eq('user_id', user.id);
+      .eq('user_id', user_id);
 
     if (error) {
       console.error('Database error:', error);

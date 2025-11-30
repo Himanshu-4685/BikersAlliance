@@ -193,6 +193,13 @@ export default function BikeDetailsPage() {
         // Remove from orders
         const response = await fetch(`/api/user-orders/${userOrderId}`, {
           method: 'DELETE',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            user_id: user.id
+          }),
         });
 
         const result = await response.json();
@@ -211,13 +218,15 @@ export default function BikeDetailsPage() {
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify({
             variant_id: variant.id,
             bike_name: bike.name,
             variant_name: variant.name,
             price: variant.price,
             brand_name: bike.brand?.name || '',
-            image_url: bike.images?.[0]?.url || null
+            image_url: bike.images?.[0]?.url || null,
+            user_id: user.id
           }),
         });
 
@@ -865,7 +874,7 @@ export default function BikeDetailsPage() {
             bikeInfo={{
               bikeName: bike.name,
               variantName: bike.variants[selectedVariant]?.name || '',
-              variantId: bike.variants[selectedVariant]?.id || '',
+              variantId: parseInt(bike.variants[selectedVariant]?.id || '0'),
               brandName: bike.brand?.name || ''
             }}
           />
