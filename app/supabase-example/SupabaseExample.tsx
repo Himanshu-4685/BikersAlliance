@@ -1,0 +1,366 @@
+'use client';
+
+import { useState, useEffect, FormEvent } from 'react';
+import { useAuth } from '@/context/AuthContext.supabase';
+import { createClient, storage, Database } from '@/lib/supabase-client';
+import Image from 'next/image';
+
+type Bike = {
+  id: string;
+  name: string;
+  brand: string;
+  price: number;
+  image_url?: string | null;
+};
+
+// Type for the data we insert to the bikes table
+type BikeInsert = Database['public']['tables']['bikes']['Insert'];
+
+export default function SupabaseExample() {
+  const { user, login, logout, register, isLoading } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [bikes, setBikes] = useState<Bike[]>([]);
+  const [newBikeName, setNewBikeName] = useState('');
+  const [bikeImage, setBikeImage] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  // Use a cast to ensure TypeScript recognizes the proper typing
+  const supabase = createClient();
+
+  // Fetch bikes when user is authenticated
+  useEffect(() => {
+    const fetchBikes = async () => {
+      if (user) {
+        try {
+          // Using any to bypass type issues for this example
+          const { data, error } = await (supabase as any)
+            .from('bikes')
+            .select(`
+              id,
+              name,
+              price,
+              image_url,
+              brands (
+                name
+              )
+            `)
+            .limit(5);
+
+          if (error) throw error;
+
+          const formattedData = data.map((item: any) => ({
+            id: item.id,
+            name: item.name,
+            brand: item.brands?.name || 'Unknown Brand',
+            price: item.price,
+            image_url: item.image_url,
+          }));
+
+          setBikes(formattedData);
+        } catch (err) {
+          console.error('Error fetching bikes:', err);
+          setErrorMessage('Failed to fetch bikes');
+        }
+      }
+    };
+
+    fetchBikes();
+  }, [user]);
+
+  const handleAuth = async (e: FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    try {
+      if (authMode === 'login') {
+        console.log('Attempting login with:', email, password);
+        const { success, error } = await login(email, password);
+        console.log('Login result:', { success, error });
+        if (!success && error) {
+          setErrorMessage(error);
+        } else {
+          setSuccessMessage('Login successful!');
+        }
+      } else {
+        const { success, error } = await register(email, password, fullName);
+        if (!success && error) {
+          setErrorMessage(error);
+        } else {
+          setSuccessMessage('Registration successful! Please check your email to verify your account.');
+          setAuthMode('login');
+        }
+      }
+    } catch (err) {
+      console.error('Auth error:', err);
+      setErrorMessage('Authentication error occurred');
+    }
+  };
+
+  const handleLogout = async () => {
+    setErrorMessage('');
+    setSuccessMessage('');
+    const { success, error } = await logout();
+    
+    if (!success && error) {
+      setErrorMessage(error);
+    } else {
+      setSuccessMessage('Logged out successfully!');
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setBikeImage(e.target.files[0]);
+    }
+  };
+
+  const handleAddBike = async (e: FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setSuccessMessage('');
+    
+    if (!user) {
+      setErrorMessage('You must be logged in to add a bike');
+      return;
+    }
+
+    if (!newBikeName) {
+      setErrorMessage('Please enter a bike name');
+      return;
+    }
+
+    try {
+      // Upload image if selected
+      let imageUrl = null;
+      if (bikeImage) {
+        const fileExt = bikeImage.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `bikes/${fileName}`;
+        
+        // Upload to Supabase Storage
+        await storage.uploadFile('bike-images', filePath, bikeImage);
+        imageUrl = storage.getPublicUrl('bike-images', filePath);
+      }
+
+      // Add bike to the database - we'll use any type temporarily to bypass type issues
+      // In a production app, you'd want to properly type this
+      const bikeData = {
+        name: newBikeName,
+        // Using a placeholder brand_id - you should have a proper selection in a real app
+        brand_id: 'default-brand-id',
+        // Using a placeholder category_id - you should have a proper selection in a real app
+        category_id: 'default-category-id',
+        price: 0, // Default price
+        description: 'New bike added from example page',
+        slug: newBikeName.toLowerCase().replace(/\s+/g, '-'),
+        is_electric: false,
+        image_url: imageUrl
+      };
+
+      // Using any to bypass type issues for this example
+      const { data, error } = await (supabase as any)
+        .from('bikes')
+        .insert(bikeData)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setSuccessMessage('Bike added successfully!');
+      setNewBikeName('');
+      setBikeImage(null);
+      
+      // Refresh bikes list with the newly added bike
+      setBikes(prev => [...prev, {
+        id: data.id || 'temp-id',
+        name: newBikeName,
+        brand: 'Default Brand',
+        price: 0,
+        image_url: imageUrl
+      }]);
+    } catch (err) {
+      console.error('Error adding bike:', err);
+      setErrorMessage('Failed to add bike');
+    }
+  };
+
+  return (
+    <>
+      {errorMessage && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+          {errorMessage}
+        </div>
+      )}
+      
+      {successMessage && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+          {successMessage}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Authentication Section */}
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold mb-4">Authentication</h2>
+          
+          {!user ? (
+            <>
+              <div className="mb-4 flex space-x-4">
+                <button
+                  className={`px-4 py-2 rounded ${authMode === 'login' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                  onClick={() => setAuthMode('login')}
+                >
+                  Login
+                </button>
+                <button
+                  className={`px-4 py-2 rounded ${authMode === 'register' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                  onClick={() => setAuthMode('register')}
+                >
+                  Register
+                </button>
+              </div>
+
+              <form onSubmit={handleAuth}>
+                <div className="mb-4">
+                  <label className="block text-gray-700 mb-2">Email</label>
+                  <input
+                    type="email"
+                    className="w-full px-3 py-2 border rounded"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-gray-700 mb-2">Password</label>
+                  <input
+                    type="password"
+                    className="w-full px-3 py-2 border rounded"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+
+                {authMode === 'register' && (
+                  <div className="mb-4">
+                    <label className="block text-gray-700 mb-2">Full Name</label>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 border rounded"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
+                    />
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Processing...' : authMode === 'login' ? 'Login' : 'Register'}
+                </button>
+              </form>
+            </>
+          ) : (
+            <div>
+              <p className="mb-4">
+                Logged in as: <strong>{user.fullName || user.email}</strong>
+              </p>
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Processing...' : 'Logout'}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Database & Storage Section */}
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold mb-4">Database & Storage</h2>
+          
+          {user ? (
+            <>
+              <form onSubmit={handleAddBike} className="mb-6">
+                <div className="mb-4">
+                  <label className="block text-gray-700 mb-2">Add New Bike</label>
+                  <input
+                    type="text"
+                    placeholder="Bike Name"
+                    className="w-full px-3 py-2 border rounded mb-2"
+                    value={newBikeName}
+                    onChange={(e) => setNewBikeName(e.target.value)}
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-gray-700 mb-2">Bike Image</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="w-full"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                  disabled={isLoading}
+                >
+                  Add Bike
+                </button>
+              </form>
+
+              <h3 className="font-semibold mb-2">Recent Bikes</h3>
+              {bikes.length > 0 ? (
+                <ul className="divide-y">
+                  {bikes.map((bike) => (
+                    <li key={bike.id} className="py-2">
+                      <div className="flex items-start">
+                        {bike.image_url && (
+                          <div className="w-16 h-16 mr-3 relative flex-shrink-0">
+                            <img
+                              src={bike.image_url}
+                              alt={bike.name}
+                              className="object-cover rounded"
+                              width={64}
+                              height={64}
+                            />
+                          </div>
+                        )}
+                        <div>
+                          <h4 className="font-medium">{bike.name}</h4>
+                          <p className="text-sm text-gray-500">Brand: {bike.brand}</p>
+                          <p className="text-sm text-gray-500">
+                            Price: ₹{bike.price.toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-500">No bikes found.</p>
+              )}
+            </>
+          ) : (
+            <p className="text-gray-500">Please login to manage bikes and upload images.</p>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}

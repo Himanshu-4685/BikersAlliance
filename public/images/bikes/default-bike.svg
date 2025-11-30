@@ -1,0 +1,43 @@
+<!-- Default bike placeholder SVG -->
+<svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="600" fill="#f8f9fa"/>
+  
+  <!-- Bike silhouette -->
+  <g transform="translate(100, 150)">
+    <!-- Rear wheel -->
+    <circle cx="120" cy="220" r="80" stroke="#dee2e6" stroke-width="8" fill="none"/>
+    <circle cx="120" cy="220" r="60" stroke="#adb5bd" stroke-width="4" fill="none"/>
+    <circle cx="120" cy="220" r="40" stroke="#6c757d" stroke-width="2" fill="none"/>
+    
+    <!-- Front wheel -->
+    <circle cx="480" cy="220" r="80" stroke="#dee2e6" stroke-width="8" fill="none"/>
+    <circle cx="480" cy="220" r="60" stroke="#adb5bd" stroke-width="4" fill="none"/>
+    <circle cx="480" cy="220" r="40" stroke="#6c757d" stroke-width="2" fill="none"/>
+    
+    <!-- Frame -->
+    <path d="M200 220 L300 120 L420 120 L480 180" stroke="#6c757d" stroke-width="6" fill="none"/>
+    <path d="M120 220 L200 220 L300 120" stroke="#6c757d" stroke-width="6" fill="none"/>
+    <path d="M200 220 L300 180 L420 180 L480 220" stroke="#6c757d" stroke-width="6" fill="none"/>
+    
+    <!-- Seat -->
+    <path d="M280 120 L380 120" stroke="#495057" stroke-width="12" stroke-linecap="round"/>
+    
+    <!-- Handlebars -->
+    <path d="M420 120 L420 100 L440 100" stroke="#6c757d" stroke-width="4" stroke-linecap="round"/>
+    <path d="M400 100 L420 100 L440 100" stroke="#6c757d" stroke-width="4" stroke-linecap="round"/>
+    
+    <!-- Engine -->
+    <rect x="250" y="180" width="80" height="60" rx="10" fill="#adb5bd"/>
+    
+    <!-- Exhaust -->
+    <path d="M330 200 L420 220 L450 215" stroke="#6c757d" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="400" y="450" text-anchor="middle" fill="#6c757d" font-family="Arial, sans-serif" font-size="24" font-weight="500">
+    Bike Image Coming Soon
+  </text>
+  <text x="400" y="480" text-anchor="middle" fill="#adb5bd" font-family="Arial, sans-serif" font-size="16">
+    Default placeholder image
+  </text>
+</svg>
