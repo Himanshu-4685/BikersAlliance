@@ -1,1 +1,58 @@
-"use strict";(()=>{var e={};e.id=404,e.ids=[404],e.modules={399:e=>{e.exports=require("next/dist/compiled/next-server/app-page.runtime.prod.js")},517:e=>{e.exports=require("next/dist/compiled/next-server/app-route.runtime.prod.js")},5528:e=>{e.exports=require("next/dist\\client\\components\\action-async-storage.external.js")},1877:e=>{e.exports=require("next/dist\\client\\components\\request-async-storage.external.js")},5319:e=>{e.exports=require("next/dist\\client\\components\\static-generation-async-storage.external.js")},3685:e=>{e.exports=require("http")},5687:e=>{e.exports=require("https")},5477:e=>{e.exports=require("punycode")},2781:e=>{e.exports=require("stream")},7310:e=>{e.exports=require("url")},9796:e=>{e.exports=require("zlib")},5123:(e,r,s)=>{s.r(r),s.d(r,{headerHooks:()=>d,originalPathname:()=>g,requestAsyncStorage:()=>c,routeModule:()=>u,serverHooks:()=>l,staticGenerationAsyncStorage:()=>p,staticGenerationBailout:()=>x});var t={};s.r(t),s.d(t,{GET:()=>GET});var o=s(884),i=s(6132),n=s(5798),a=s(7770);async function GET(e,{params:r}){try{let{slug:e}=r;if(!e)return n.Z.json({success:!1,error:"Bike slug is required"},{status:400});let s=(0,a.lx)(),{data:t,error:o}=await s.from("bikes").select("*").eq("slug",e).single();if(o){if("PGRST116"===o.code)return n.Z.json({success:!1,error:"Bike not found"},{status:404});return console.error("Error fetching bike details from Supabase:",o),n.Z.json({success:!1,error:"Failed to fetch bike details"},{status:500})}if(!t)return n.Z.json({success:!1,error:"Bike not found"},{status:404});return n.Z.json({success:!0,data:t})}catch(e){return console.error("Error handling request:",e),n.Z.json({success:!1,error:"Internal server error"},{status:500})}}let u=new o.AppRouteRouteModule({definition:{kind:i.x.APP_ROUTE,page:"/api/bikes/[slug]/route",pathname:"/api/bikes/[slug]",filename:"route",bundlePath:"app/api/bikes/[slug]/route"},resolvedPagePath:"C:\\Users\\himan\\Desktop\\bikersalliance\\Bike-website-main\\BikersAlliance\\app\\api\\bikes\\[slug]\\route.ts",nextConfigOutput:"",userland:t}),{requestAsyncStorage:c,staticGenerationAsyncStorage:p,serverHooks:l,headerHooks:d,staticGenerationBailout:x}=u,g="/api/bikes/[slug]/route"}};var r=require("../../../../webpack-runtime.js");r.C(e);var __webpack_exec__=e=>r(r.s=e),s=r.X(0,[657,449,606,596,170,770],()=>__webpack_exec__(5123));module.exports=s})();
+"use strict";(()=>{var e={};e.id=1404,e.ids=[1404,9394],e.modules={20399:e=>{e.exports=require("next/dist/compiled/next-server/app-page.runtime.prod.js")},30517:e=>{e.exports=require("next/dist/compiled/next-server/app-route.runtime.prod.js")},25528:e=>{e.exports=require("next/dist\\client\\components\\action-async-storage.external.js")},91877:e=>{e.exports=require("next/dist\\client\\components\\request-async-storage.external.js")},25319:e=>{e.exports=require("next/dist\\client\\components\\static-generation-async-storage.external.js")},75123:(e,r,a)=>{a.r(r),a.d(r,{headerHooks:()=>m,originalPathname:()=>_,requestAsyncStorage:()=>d,routeModule:()=>l,serverHooks:()=>u,staticGenerationAsyncStorage:()=>c,staticGenerationBailout:()=>g});var n={};a.r(n),a.d(n,{GET:()=>GET});var i=a(10884),o=a(16132),t=a(9394),s=a(58069);function getVariantImageUrl(e,r){return`${r}/storage/v1/object/public/image/variant_image/${e}.png`}function getDefaultImageUrl(){return"/images/bikes/default-bike.svg"}function parseAndGroupSpecs(e){if(!e||"object"!=typeof e)return{};let r={};return Object.entries(e).forEach(([e,a])=>{let n="general";e.toLowerCase().includes("engine")||e.toLowerCase().includes("power")||e.toLowerCase().includes("torque")?n="engine":e.toLowerCase().includes("dimension")||e.toLowerCase().includes("weight")||e.toLowerCase().includes("length")||e.toLowerCase().includes("width")||e.toLowerCase().includes("height")?n="dimensions":e.toLowerCase().includes("fuel")||e.toLowerCase().includes("tank")||e.toLowerCase().includes("mileage")?n="fuel":(e.toLowerCase().includes("brake")||e.toLowerCase().includes("suspension")||e.toLowerCase().includes("tyre")||e.toLowerCase().includes("wheel"))&&(n="features"),r[n]||(r[n]=[]),r[n].push({name:e.replace(/([A-Z])/g," $1").replace(/^./,e=>e.toUpperCase()),value:String(a)})}),r}async function GET(e,{params:r}){try{let{slug:e}=r;if(console.log("API: Received request for slug:",e),!e)return(0,s.VR)("Bike slug is required",400);let a=(0,t.lx)(),n="https://csvzysxiuuzcsmpknehi.supabase.co",i=null,o=null,l=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(e);if(console.log("API: Is UUID?",l),l){console.log("API: Fetching by variant ID");let r=await a.from("variants").select(`
+          variant_id,
+          variant_name,
+          on_road_price,
+          ex_showroom_price,
+          specifications,
+          models!inner(
+            model_id,
+            model_name,
+            description,
+            launch_date,
+            category_id,
+            brands!inner(
+              brand_id,
+              brand_name,
+              logo_url
+            ),
+            categories(
+              category_id,
+              category_name,
+              category_type
+            )
+          )
+        `).eq("variant_id",e);i=r.data,o=r.error}else{console.log("API: Fetching by slug");let r=e.split("-"),n=r[0],t=r.slice(1).join("-");console.log("API: Brand:",n,"Model:",t);let s=await a.from("variants").select(`
+          variant_id,
+          variant_name,
+          on_road_price,
+          ex_showroom_price,
+          specifications,
+          models!inner(
+            model_id,
+            model_name,
+            description,
+            launch_date,
+            category_id,
+            brands!inner(
+              brand_id,
+              brand_name,
+              logo_url
+            ),
+            categories(
+              category_id,
+              category_name,
+              category_type
+            )
+          )
+        `).ilike("models.brands.brand_name",`%${n}%`).ilike("models.model_name",`%${t}%`).order("on_road_price");i=s.data,o=s.error}if(console.log("API: Database result - variants count:",i?.length||0),o&&console.error("API: Database error:",o),o)return console.error("Error fetching bike details:",o),(0,s.VR)("Failed to fetch bike details",500);if(!i||0===i.length)return(0,s.aX)("Bike not found");let d=i[0],c=d.models,u=c.brands,m=c.categories,{data:g,error:_}=await a.from("variants").select(`
+        variant_id,
+        variant_name,
+        on_road_price,
+        models!inner(
+          model_id,
+          model_name,
+          brands!inner(
+            brand_name
+          )
+        )
+      `).eq("models.brands.brand_id",u.brand_id).neq("models.model_id",c.model_id).order("on_road_price").limit(6);_&&console.error("Error fetching similar bikes:",_);let p=i.map(e=>({id:e.variant_id,name:e.variant_name,price:e.on_road_price,exShowroomPrice:e.ex_showroom_price,imageUrl:getVariantImageUrl(e.variant_id,n),defaultImageUrl:getDefaultImageUrl(),specifications:parseAndGroupSpecs(e.specifications)})),b=(g||[]).map(e=>({id:e.variant_id,name:`${e.models.brands.brand_name} ${e.models.model_name}`,slug:`${e.models.brands.brand_name.toLowerCase()}-${e.models.model_name.toLowerCase()}`.replace(/\s+/g,"-"),price:e.on_road_price,imageUrl:getVariantImageUrl(e.variant_id,n),defaultImageUrl:getDefaultImageUrl()})),f={id:c.model_id,name:`${u.brand_name} ${c.model_name}`,slug:e,description:c.description,launchDate:c.launch_date,brand:{id:u.brand_id,name:u.brand_name,slug:u.brand_name.toLowerCase().replace(/\s+/g,"-"),logo:u.logo_url},category:m?{id:m.category_id,name:m.category_name,slug:m.category_name.toLowerCase().replace(/\s+/g,"-")}:null,variants:p,similarModels:b,images:p.map(e=>({id:e.id,url:e.imageUrl,alt:`${u.brand_name} ${c.model_name} ${e.name}`})),specifications:p.reduce((e,r)=>(Object.entries(r.specifications).forEach(([r,a])=>{a.forEach(a=>{let n=`${a.name.toLowerCase().replace(/\s+/g,"-")}-${r}`;e.find(e=>e.id===n)||e.push({id:n,name:a.name,value:a.value})})}),e),[]),features:[],rating:{average:0,count:0},reviews:[]};return(0,s.Xj)(f)}catch(e){return console.error("Error handling request:",e),(0,s.VR)("Internal server error",500)}}let l=new i.AppRouteRouteModule({definition:{kind:o.x.APP_ROUTE,page:"/api/bikes/[slug]/route",pathname:"/api/bikes/[slug]",filename:"route",bundlePath:"app/api/bikes/[slug]/route"},resolvedPagePath:"C:\\Users\\himan\\Desktop\\bikersalliance\\Bike-website-main\\BikersAlliance\\app\\api\\bikes\\[slug]\\route.ts",nextConfigOutput:"",userland:n}),{requestAsyncStorage:d,staticGenerationAsyncStorage:c,serverHooks:u,headerHooks:m,staticGenerationBailout:g}=l,_="/api/bikes/[slug]/route"},9394:(e,r,a)=>{a.d(r,{lx:()=>createServerClient});var n=a(21136);a(569);var i=a(24596);let createServerClient=()=>{let e=(0,i.cookies)();return(0,n.e)(e)}},10884:(e,r,a)=>{e.exports=a(30517)}};var r=require("../../../../webpack-runtime.js");r.C(e);var __webpack_exec__=e=>r(r.s=e),a=r.X(0,[657,6449,5798,3178,4596,4280,2170,8069],()=>__webpack_exec__(75123));module.exports=a})();

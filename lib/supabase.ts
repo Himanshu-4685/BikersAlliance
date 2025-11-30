@@ -61,28 +61,74 @@ export type Database = {
       };
       brands: {
         Row: {
-          id: string;
-          name: string;
+          brand_id: string;
+          brand_name: string;
           logo_url: string | null;
+          country: string | null;
+          description: string | null;
           created_at: string;
-          updated_at: string;
-          slug: string;
         };
         Insert: {
-          id?: string;
-          name: string;
+          brand_id?: string;
+          brand_name: string;
           logo_url?: string | null;
+          country?: string | null;
+          description?: string | null;
           created_at?: string;
-          updated_at?: string;
-          slug: string;
         };
         Update: {
-          id?: string;
-          name?: string;
+          brand_id?: string;
+          brand_name?: string;
           logo_url?: string | null;
+          country?: string | null;
+          description?: string | null;
           created_at?: string;
-          updated_at?: string;
-          slug?: string;
+        };
+      };
+      models: {
+        Row: {
+          model_id: number;
+          brand_id: string;
+          model_name: string | null;
+        };
+        Insert: {
+          model_id?: number;
+          brand_id: string;
+          model_name?: string | null;
+        };
+        Update: {
+          model_id?: number;
+          brand_id?: string;
+          model_name?: string | null;
+        };
+      };
+      variants: {
+        Row: {
+          variant_id: number;
+          model_id: number;
+          brand_id: string;
+          variant_name: string;
+          on_road_price: number | null;
+          created_at: string;
+          url: string | null;
+        };
+        Insert: {
+          variant_id?: number;
+          model_id: number;
+          brand_id: string;
+          variant_name: string;
+          on_road_price?: number | null;
+          created_at?: string;
+          url?: string | null;
+        };
+        Update: {
+          variant_id?: number;
+          model_id?: number;
+          brand_id?: string;
+          variant_name?: string;
+          on_road_price?: number | null;
+          created_at?: string;
+          url?: string | null;
         };
       };
       categories: {
@@ -106,6 +152,32 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           slug?: string;
+        };
+      };
+      newsletter_subscriptions: {
+        Row: {
+          id: string;
+          email: string;
+          subscribed_at: string;
+          status: 'active' | 'unsubscribed';
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          subscribed_at?: string;
+          status?: 'active' | 'unsubscribed';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          subscribed_at?: string;
+          status?: 'active' | 'unsubscribed';
+          created_at?: string;
+          updated_at?: string;
         };
       };
       users: {
@@ -132,6 +204,126 @@ export type Database = {
           avatar_url?: string | null;
           created_at?: string;
           updated_at?: string;
+        };
+      };
+      news: {
+        Row: {
+          id: string;
+          title: string;
+          slug: string;
+          excerpt: string | null;
+          content: string | null;
+          cover_image_url: string | null;
+          author: string | null;
+          published_at: string | null;
+          created_at: string;
+          updated_at: string;
+          is_published: boolean;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          slug: string;
+          excerpt?: string | null;
+          content?: string | null;
+          cover_image_url?: string | null;
+          author?: string | null;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          is_published?: boolean;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          slug?: string;
+          excerpt?: string | null;
+          content?: string | null;
+          cover_image_url?: string | null;
+          author?: string | null;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          is_published?: boolean;
+        };
+      };
+      videos: {
+        Row: {
+          id: string;
+          title: string;
+          slug: string;
+          description: string | null;
+          video_url: string | null;
+          thumbnail_url: string | null;
+          source: string | null;
+          published_at: string | null;
+          created_at: string;
+          updated_at: string;
+          is_published: boolean;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          slug: string;
+          description?: string | null;
+          video_url?: string | null;
+          thumbnail_url?: string | null;
+          source?: string | null;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          is_published?: boolean;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          slug?: string;
+          description?: string | null;
+          video_url?: string | null;
+          thumbnail_url?: string | null;
+          source?: string | null;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          is_published?: boolean;
+        };
+      };
+      web_stories: {
+        Row: {
+          id: string;
+          title: string;
+          slug: string;
+          cover_image_url: string | null;
+          pages: any;
+          author: string | null;
+          published_at: string | null;
+          created_at: string;
+          updated_at: string;
+          is_published: boolean;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          slug: string;
+          cover_image_url?: string | null;
+          pages?: any;
+          author?: string | null;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          is_published?: boolean;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          slug?: string;
+          cover_image_url?: string | null;
+          pages?: any;
+          author?: string | null;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          is_published?: boolean;
         };
       };
     };

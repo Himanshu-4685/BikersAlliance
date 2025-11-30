@@ -17,6 +17,7 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
   const [formErrors, setFormErrors] = useState<{
     fullName?: string;
     email?: string;
@@ -76,15 +77,23 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
+
     
     if (!validateForm()) {
       return;
     }
     
+    setIsLoading(true);
+    
     try {
-      setIsLoading(true);
-      await register(email, password, fullName);
-      router.push('/dashboard');
+      const result = await register(email, password, fullName);
+      
+      if (result.success) {
+        // Since email confirmation is disabled, redirect to dashboard immediately
+        router.push('/dashboard');
+      } else {
+        setErrorMessage(result.error || 'Failed to register. Please try again.');
+      }
     } catch (error: any) {
       console.error('Registration error:', error);
       setErrorMessage(error.message || 'Failed to register. Please try again.');

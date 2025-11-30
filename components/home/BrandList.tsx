@@ -18,11 +18,12 @@ const fallbackBrands = [
 // Helper function to convert brand name to slug for URL and image path
 function brandNameToSlug(brandName: string): string {
   return brandName
+    .trim() // Trim whitespace/newlines first
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except spaces and hyphens
     .replace(/\s+/g, '-') // Replace spaces with hyphens
     .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
-    .trim();
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
 }
 
 // Helper function to get fallback image path
@@ -174,135 +175,384 @@ export default function BrandList() {
       
       {/* Budget List */}
       {activeTab === 'budget' && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          <Link href="/bikes/budget/under-50000" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            Under ₹50,000
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          <Link href="/bikes/budget/under-50000" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">₹50K</div>
+              <div className="text-xs text-gray-600">Under ₹50,000</div>
+            </div>
           </Link>
-          <Link href="/bikes/budget/50000-70000" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            ₹50,000 - ₹70,000
+          <Link href="/bikes/budget/50000-70000" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">₹50-70K</div>
+              <div className="text-xs text-gray-600">₹50,000 - ₹70,000</div>
+            </div>
           </Link>
-          <Link href="/bikes/budget/70000-100000" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            ₹70,000 - ₹1 Lakh
+          <Link href="/bikes/budget/70000-100000" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">₹70K-1L</div>
+              <div className="text-xs text-gray-600">₹70,000 - ₹1 Lakh</div>
+            </div>
           </Link>
-          <Link href="/bikes/budget/100000-125000" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            ₹1 Lakh - ₹1.25 Lakh
+          <Link href="/bikes/budget/100000-125000" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">₹1-1.25L</div>
+              <div className="text-xs text-gray-600">₹1 Lakh - ₹1.25 Lakh</div>
+            </div>
           </Link>
-          <Link href="/bikes/budget/125000-150000" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            ₹1.25 Lakh - ₹1.5 Lakh
+          <Link href="/bikes/budget/125000-150000" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">₹1.25-1.5L</div>
+              <div className="text-xs text-gray-600">₹1.25 Lakh - ₹1.5 Lakh</div>
+            </div>
           </Link>
-          <Link href="/bikes/budget/150000-200000" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            ₹1.5 Lakh - ₹2 Lakh
+          <Link href="/bikes/budget/150000-200000" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">₹1.5-2L</div>
+              <div className="text-xs text-gray-600">₹1.5 Lakh - ₹2 Lakh</div>
+            </div>
           </Link>
-          <Link href="/bikes/budget/200000-250000" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            ₹2 Lakh - ₹2.5 Lakh
+          <Link href="/bikes/budget/200000-250000" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">₹2-2.5L</div>
+              <div className="text-xs text-gray-600">₹2 Lakh - ₹2.5 Lakh</div>
+            </div>
           </Link>
-          <Link href="/bikes/budget/above-250000" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            Above ₹2.5 Lakh
+          <Link href="/bikes/budget/above-250000" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">₹2.5L+</div>
+              <div className="text-xs text-gray-600">Above ₹2.5 Lakh</div>
+            </div>
           </Link>
         </div>
       )}
       
       {/* Bike Type List */}
       {activeTab === 'type' && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          <Link href="/bikes/type/commuter" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            Commuter
+        <div className="grid grid-cols-5 gap-4 sm:grid-cols-7 md:grid-cols-8 lg:grid-cols-10">
+          <Link href="/bikes/type/commuter" className="flex flex-col items-center p-3 text-xs transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="w-8 h-8 mb-1 flex items-center justify-center">
+              <Image 
+                src="/images/Body_style/commuter.svg" 
+                alt="Commuter bikes" 
+                width={32} 
+                height={32}
+                className="transition-transform duration-200 group-hover:scale-110"
+              />
+            </div>
+            <span className="text-center text-gray-700 group-hover:text-primary">Commuter</span>
           </Link>
-          <Link href="/bikes/type/sports" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            Sports
+          <Link href="/bikes/type/sports" className="flex flex-col items-center p-3 text-xs transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="w-8 h-8 mb-1 flex items-center justify-center">
+              <Image 
+                src="/images/Body_style/sports.svg" 
+                alt="Sports bikes" 
+                width={32} 
+                height={32}
+                className="transition-transform duration-200 group-hover:scale-110"
+              />
+            </div>
+            <span className="text-center text-gray-700 group-hover:text-primary">Sports</span>
           </Link>
-          <Link href="/bikes/type/cruiser" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            Cruiser
+          <Link href="/bikes/type/cruiser" className="flex flex-col items-center p-3 text-xs transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="w-8 h-8 mb-1 flex items-center justify-center">
+              <Image 
+                src="/images/Body_style/cruiser.svg" 
+                alt="Cruiser bikes" 
+                width={32} 
+                height={32}
+                className="transition-transform duration-200 group-hover:scale-110"
+              />
+            </div>
+            <span className="text-center text-gray-700 group-hover:text-primary">Cruiser</span>
           </Link>
-          <Link href="/bikes/type/adventure" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            Adventure & Touring
+          <Link href="/bikes/type/adventure" className="flex flex-col items-center p-3 text-xs transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="w-8 h-8 mb-1 flex items-center justify-center">
+              <Image 
+                src="/images/Body_style/adventure-tourer.svg" 
+                alt="Adventure & Touring bikes" 
+                width={32} 
+                height={32}
+                className="transition-transform duration-200 group-hover:scale-110"
+              />
+            </div>
+            <span className="text-center text-gray-700 group-hover:text-primary">Adventure</span>
           </Link>
-          <Link href="/bikes/type/scooter" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            Scooter
+          <Link href="/bikes/type/scooter" className="flex flex-col items-center p-3 text-xs transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="w-8 h-8 mb-1 flex items-center justify-center">
+              <Image 
+                src="/images/Body_style/scooters.svg" 
+                alt="Scooters" 
+                width={32} 
+                height={32}
+                className="transition-transform duration-200 group-hover:scale-110"
+              />
+            </div>
+            <span className="text-center text-gray-700 group-hover:text-primary">Scooter</span>
           </Link>
-          <Link href="/bikes/type/off-road" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            Off-Road
+          <Link href="/bikes/type/off-road" className="flex flex-col items-center p-3 text-xs transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="w-8 h-8 mb-1 flex items-center justify-center">
+              <Image 
+                src="/images/Body_style/off-road.svg" 
+                alt="Off-Road bikes" 
+                width={32} 
+                height={32}
+                className="transition-transform duration-200 group-hover:scale-110"
+              />
+            </div>
+            <span className="text-center text-gray-700 group-hover:text-primary">Off-Road</span>
           </Link>
-          <Link href="/bikes/type/electric" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            Electric
+          <Link href="/bikes/type/electric" className="flex flex-col items-center p-3 text-xs transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="w-8 h-8 mb-1 flex items-center justify-center">
+              <Image 
+                src="/images/Body_style/electric-bikes.svg" 
+                alt="Electric bikes" 
+                width={32} 
+                height={32}
+                className="transition-transform duration-200 group-hover:scale-110"
+              />
+            </div>
+            <span className="text-center text-gray-700 group-hover:text-primary">Electric</span>
           </Link>
-          <Link href="/bikes/type/moped" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            Moped
+          <Link href="/bikes/type/moped" className="flex flex-col items-center p-3 text-xs transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="w-8 h-8 mb-1 flex items-center justify-center">
+              <Image 
+                src="/images/Body_style/moped.svg" 
+                alt="Moped bikes" 
+                width={32} 
+                height={32}
+                className="transition-transform duration-200 group-hover:scale-110"
+              />
+            </div>
+            <span className="text-center text-gray-700 group-hover:text-primary">Moped</span>
+          </Link>
+          <Link href="/bikes/type/sports-naked" className="flex flex-col items-center p-3 text-xs transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="w-8 h-8 mb-1 flex items-center justify-center">
+              <Image 
+                src="/images/Body_style/sports-naked.svg" 
+                alt="Sports Naked bikes" 
+                width={32} 
+                height={32}
+                className="transition-transform duration-200 group-hover:scale-110"
+              />
+            </div>
+            <span className="text-center text-gray-700 group-hover:text-primary">Naked</span>
+          </Link>
+          <Link href="/bikes/type/super" className="flex flex-col items-center p-3 text-xs transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="w-8 h-8 mb-1 flex items-center justify-center">
+              <Image 
+                src="/images/Body_style/super.svg" 
+                alt="Super bikes" 
+                width={32} 
+                height={32}
+                className="transition-transform duration-200 group-hover:scale-110"
+              />
+            </div>
+            <span className="text-center text-gray-700 group-hover:text-primary">Super</span>
+          </Link>
+          <Link href="/bikes/type/tourer" className="flex flex-col items-center p-3 text-xs transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="w-8 h-8 mb-1 flex items-center justify-center">
+              <Image 
+                src="/images/Body_style/tourer.svg" 
+                alt="Tourer bikes" 
+                width={32} 
+                height={32}
+                className="transition-transform duration-200 group-hover:scale-110"
+              />
+            </div>
+            <span className="text-center text-gray-700 group-hover:text-primary">Tourer</span>
+          </Link>
+          <Link href="/bikes/type/sports-tourer" className="flex flex-col items-center p-3 text-xs transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="w-8 h-8 mb-1 flex items-center justify-center">
+              <Image 
+                src="/images/Body_style/sports-tourer.svg" 
+                alt="Sports Tourer bikes" 
+                width={32} 
+                height={32}
+                className="transition-transform duration-200 group-hover:scale-110"
+              />
+            </div>
+            <span className="text-center text-gray-700 group-hover:text-primary">Touring</span>
+          </Link>
+          <Link href="/bikes/type/scrambler" className="flex flex-col items-center p-3 text-xs transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="w-8 h-8 mb-1 flex items-center justify-center">
+              <Image 
+                src="/images/Body_style/scrambler.svg" 
+                alt="Scrambler bikes" 
+                width={32} 
+                height={32}
+                className="transition-transform duration-200 group-hover:scale-110"
+              />
+            </div>
+            <span className="text-center text-gray-700 group-hover:text-primary">Scrambler</span>
+          </Link>
+          <Link href="/bikes/type/street" className="flex flex-col items-center p-3 text-xs transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="w-8 h-8 mb-1 flex items-center justify-center">
+              <Image 
+                src="/images/Body_style/street.svg" 
+                alt="Street bikes" 
+                width={32} 
+                height={32}
+                className="transition-transform duration-200 group-hover:scale-110"
+              />
+            </div>
+            <span className="text-center text-gray-700 group-hover:text-primary">Street</span>
+          </Link>
+          <Link href="/bikes/type/cafe-racer" className="flex flex-col items-center p-3 text-xs transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="w-8 h-8 mb-1 flex items-center justify-center">
+              <Image 
+                src="/images/Body_style/cafe-racer.svg" 
+                alt="Cafe Racer bikes" 
+                width={32} 
+                height={32}
+                className="transition-transform duration-200 group-hover:scale-110"
+              />
+            </div>
+            <span className="text-center text-gray-700 group-hover:text-primary">Cafe Racer</span>
+          </Link>
+          <Link href="/bikes/type/dirt" className="flex flex-col items-center p-3 text-xs transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="w-8 h-8 mb-1 flex items-center justify-center">
+              <Image 
+                src="/images/Body_style/dirt.svg" 
+                alt="Dirt bikes" 
+                width={32} 
+                height={32}
+                className="transition-transform duration-200 group-hover:scale-110"
+              />
+            </div>
+            <span className="text-center text-gray-700 group-hover:text-primary">Dirt</span>
+          </Link>
+          <Link href="/bikes/type/roadster" className="flex flex-col items-center p-3 text-xs transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="w-8 h-8 mb-1 flex items-center justify-center">
+              <Image 
+                src="/images/Body_style/roadster.svg" 
+                alt="Roadster bikes" 
+                width={32} 
+                height={32}
+                className="transition-transform duration-200 group-hover:scale-110"
+              />
+            </div>
+            <span className="text-center text-gray-700 group-hover:text-primary">Roadster</span>
           </Link>
         </div>
       )}
       
       {/* Mileage List */}
       {activeTab === 'mileage' && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-          <Link href="/bikes/mileage/under-30" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            Under 30 kmpl
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          <Link href="/bikes/mileage/under-30" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">&lt;30</div>
+              <div className="text-xs text-gray-600">Under 30 kmpl</div>
+            </div>
           </Link>
-          <Link href="/bikes/mileage/30-40" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            30 - 40 kmpl
+          <Link href="/bikes/mileage/30-40" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">30-40</div>
+              <div className="text-xs text-gray-600">30 - 40 kmpl</div>
+            </div>
           </Link>
-          <Link href="/bikes/mileage/40-50" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            40 - 50 kmpl
+          <Link href="/bikes/mileage/40-50" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">40-50</div>
+              <div className="text-xs text-gray-600">40 - 50 kmpl</div>
+            </div>
           </Link>
-          <Link href="/bikes/mileage/50-60" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            50 - 60 kmpl
+          <Link href="/bikes/mileage/50-60" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">50-60</div>
+              <div className="text-xs text-gray-600">50 - 60 kmpl</div>
+            </div>
           </Link>
-          <Link href="/bikes/mileage/above-60" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            Above 60 kmpl
+          <Link href="/bikes/mileage/above-60" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">60+</div>
+              <div className="text-xs text-gray-600">Above 60 kmpl</div>
+            </div>
           </Link>
         </div>
       )}
       
       {/* Engine Displacement List */}
       {activeTab === 'displacement' && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-          <Link href="/bikes/displacement/under-125cc" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            Under 125cc
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+          <Link href="/bikes/displacement/under-125cc" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">&lt;125cc</div>
+              <div className="text-xs text-gray-600">Under 125cc</div>
+            </div>
           </Link>
-          <Link href="/bikes/displacement/125cc-150cc" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            125cc - 150cc
+          <Link href="/bikes/displacement/125cc-150cc" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">125-150cc</div>
+              <div className="text-xs text-gray-600">125cc - 150cc</div>
+            </div>
           </Link>
-          <Link href="/bikes/displacement/150cc-200cc" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            150cc - 200cc
+          <Link href="/bikes/displacement/150cc-200cc" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">150-200cc</div>
+              <div className="text-xs text-gray-600">150cc - 200cc</div>
+            </div>
           </Link>
-          <Link href="/bikes/displacement/200cc-250cc" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            200cc - 250cc
+          <Link href="/bikes/displacement/200cc-250cc" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">200-250cc</div>
+              <div className="text-xs text-gray-600">200cc - 250cc</div>
+            </div>
           </Link>
-          <Link href="/bikes/displacement/250cc-300cc" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            250cc - 300cc
+          <Link href="/bikes/displacement/250cc-300cc" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">250-300cc</div>
+              <div className="text-xs text-gray-600">250cc - 300cc</div>
+            </div>
           </Link>
-          <Link href="/bikes/displacement/300cc-500cc" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            300cc - 500cc
+          <Link href="/bikes/displacement/300cc-500cc" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">300-500cc</div>
+              <div className="text-xs text-gray-600">300cc - 500cc</div>
+            </div>
           </Link>
-          <Link href="/bikes/displacement/above-500cc" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            Above 500cc
+          <Link href="/bikes/displacement/above-500cc" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">500cc+</div>
+              <div className="text-xs text-gray-600">Above 500cc</div>
+            </div>
           </Link>
         </div>
       )}
       
       {/* Engine Type List */}
       {activeTab === 'engine' && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-          <Link href="/bikes/engine/4-stroke" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            4-Stroke
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          <Link href="/bikes/engine/4-stroke" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">4S</div>
+              <div className="text-xs text-gray-600">4-Stroke</div>
+            </div>
           </Link>
-          <Link href="/bikes/engine/2-stroke" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            2-Stroke
+          <Link href="/bikes/engine/2-stroke" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">2S</div>
+              <div className="text-xs text-gray-600">2-Stroke</div>
+            </div>
           </Link>
-          <Link href="/bikes/engine/electric" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            Electric
+          <Link href="/bikes/engine/electric" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">⚡</div>
+              <div className="text-xs text-gray-600">Electric</div>
+            </div>
           </Link>
-          <Link href="/bikes/engine/fuel-injection" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            Fuel Injection
+          <Link href="/bikes/engine/single-cylinder" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">1-CYL</div>
+              <div className="text-xs text-gray-600">Single Cylinder</div>
+            </div>
           </Link>
-          <Link href="/bikes/engine/carburetor" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            Carburetor
-          </Link>
-          <Link href="/bikes/engine/single-cylinder" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            Single Cylinder
-          </Link>
-          <Link href="/bikes/engine/multi-cylinder" className="p-3 text-sm transition-colors bg-white rounded-lg hover:bg-gray-50 hover:text-primary">
-            Multi Cylinder
+          <Link href="/bikes/engine/multi-cylinder" className="flex flex-col items-center p-3 text-sm transition-all bg-white border border-gray-100 rounded-lg hover:shadow-md group">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-gray-900 group-hover:text-primary mb-1">MULTI</div>
+              <div className="text-xs text-gray-600">Multi Cylinder</div>
+            </div>
           </Link>
         </div>
       )}

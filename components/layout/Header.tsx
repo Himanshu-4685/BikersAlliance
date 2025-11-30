@@ -3,19 +3,22 @@
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { FiMenu, FiX, FiUser, FiHeart, FiSearch, FiChevronDown } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext.supabase';
+import { useWishlist } from '@/context/WishlistContext';
 import UserProfile from '@/components/auth/UserProfile';
+import SearchSuggestions from '@/components/common/SearchSuggestions';
+import SearchBar from '@/components/common/SearchBar';
+import { SearchSuggestion } from '@/utils/api/search';
 
 // Navigation items with dropdowns
 const navItems = [
   { 
     label: 'BIKES', 
-    href: '/bikes',
+    href: '/bikes/all',
     hasDropdown: true,
     dropdownItems: [
-      { label: 'New Bikes', href: '/bikes/new' },
       { label: 'Best Bikes', href: '/bikes/best', hasSubDropdown: true, 
         subItems: [
           { label: 'Royal Enfield Hunter 350', href: '/bikes/royal-enfield-hunter-350' },
@@ -26,8 +29,8 @@ const navItems = [
           { label: 'All Best Bikes', href: '/bikes/best' },
         ]
       },
-      { label: 'Upcoming Bikes', href: '/bikes/upcoming' },
-      { label: 'New Bike Launches', href: '/bikes/launches' },
+      { label: 'Upcoming Bikes', href: '/upcoming-bikes' },
+      { label: 'New Bike Launches', href: '/latest-bikes' },
       { label: 'Compare Bikes', href: '/compare' },
       { label: 'Popular Brands', href: '/brands', hasSubDropdown: true,
         subItems: [
@@ -48,7 +51,6 @@ const navItems = [
     href: '/scooters',
     hasDropdown: true,
     dropdownItems: [
-      { label: 'New Scooters', href: '/scooters/new' },
       { label: 'Best Scooters', href: '/scooters/best', hasSubDropdown: true,
         subItems: [
           { label: 'Honda Activa 6G', href: '/scooters/honda-activa-6g' },
@@ -59,8 +61,8 @@ const navItems = [
           { label: 'All Best Scooters', href: '/scooters/best' },
         ]
       },
-      { label: 'Upcoming Scooters', href: '/scooters/upcoming' },
-      { label: 'New Scooter Launches', href: '/scooters/launches' },
+      { label: 'Upcoming Scooters', href: '/upcoming-bikes' },
+      { label: 'New Scooter Launches', href: '/latest-bikes' },
     ]
   },
   { 
@@ -68,16 +70,6 @@ const navItems = [
     href: '/electric',
     hasDropdown: true,
     dropdownItems: [
-      { label: 'Electric Bikes', href: '/electric/bikes' },
-      { label: 'Electric Scooters', href: '/electric/scooters', hasSubDropdown: true,
-        subItems: [
-          { label: 'Yulu Wynn', href: '/electric/scooters/yulu-wynn' },
-          { label: 'TVS iQube', href: '/electric/scooters/tvs-iqube' },
-          { label: 'Honda Activa e', href: '/electric/scooters/honda-activa-e' },
-          { label: 'All Electric Scooters', href: '/electric/scooters' },
-        ]
-      },
-      { label: 'Electric Cycles', href: '/electric/cycles' },
       { label: 'Electric Bike Charging Stations', href: '/electric/charging-stations' },
     ]
   },
@@ -88,6 +80,7 @@ const navItems = [
     dropdownItems: [
       { label: 'Finance Discount Offers', href: '/finance/offers' },
       { label: 'EMI Calculator', href: '/finance/emi-calculator' },
+      { label: 'Loan Eligibility', href: '/finance/eligibility' },
     ]
   },
   { 
@@ -114,8 +107,9 @@ const navItems = [
 
 export default function Header() {
   const { user } = useAuth();
+  const { wishlistCount } = useWishlist();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({});
   const [openSubDropdowns, setOpenSubDropdowns] = useState<Record<string, number | null>>({});
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
@@ -174,11 +168,7 @@ export default function Header() {
     }, 200);
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Implement search functionality
-    console.log('Searching for:', searchQuery);
-  };
+
   
   return (
     <header className="sticky top-0 z-50 bg-white shadow-md">
@@ -204,23 +194,7 @@ export default function Header() {
             
             {/* Search Bar - visible on desktop, hidden on mobile */}
             <div className="hidden md:flex flex-1 mx-8">
-              <form onSubmit={handleSearch} className="w-full max-w-2xl">
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search Bikes or Scooters eg. YZF R15 V3, Activa 6G"
-                    className="w-full py-2 pl-4 pr-12 text-sm text-gray-900 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
-                  />
-                  <button
-                    type="submit"
-                    className="absolute inset-y-0 right-0 flex items-center px-4"
-                  >
-                    <FiSearch className="w-4 h-4 text-gray-500" />
-                  </button>
-                </div>
-              </form>
+              <SearchBar />
             </div>
             
             {/* Action Buttons */}
@@ -369,12 +343,20 @@ export default function Header() {
             
             {/* Action Buttons - moved to the right side of navigation */}
             <div className="flex items-center space-x-4">
-              <Link href="/wishlist" className="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-700 hover:text-primary">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"></path>
-                </svg>
+              {/* Wishlist Icon */}
+              <Link
+                href={user ? "/dashboard/shortlisted" : "/login"}
+                className="relative flex items-center justify-center w-10 h-10 text-gray-600 hover:text-primary transition-colors"
+                title={user ? "View wishlist" : "Login to view wishlist"}
+              >
+                <FiHeart className="w-5 h-5" />
+                {user && wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full">
+                    {wishlistCount > 99 ? '99+' : wishlistCount}
+                  </span>
+                )}
               </Link>
-              
+
               {user ? (
                 <UserProfile />
               ) : (

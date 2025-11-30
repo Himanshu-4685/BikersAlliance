@@ -11,6 +11,7 @@ import BrandFilter from '@/components/filters/BrandFilter';
 import CategoryFilter from '@/components/filters/CategoryFilter';
 import PriceFilter from '@/components/filters/PriceFilter';
 import EngineFilter from '@/components/filters/EngineFilter';
+import EngineTypeFilter from '@/components/filters/EngineTypeFilter';
 import MileageFilter from '@/components/filters/MileageFilter';
 import SortSelector from '@/components/filters/SortSelector';
 
@@ -63,12 +64,14 @@ export default function BikesPage() {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   
   // Get current filters from URL
+  const currentSearch = searchParams.get('search');
   const currentBrand = searchParams.get('brand');
   const currentCategory = searchParams.get('category');
+  const currentEngineType = searchParams.get('engineType');
   const currentMinPrice = searchParams.get('minPrice');
   const currentMaxPrice = searchParams.get('maxPrice');
-  const currentMinEngineCapacity = searchParams.get('minEngineCapacity');
-  const currentMaxEngineCapacity = searchParams.get('maxEngineCapacity');
+  const currentMinDisplacement = searchParams.get('minDisplacement');
+  const currentMaxDisplacement = searchParams.get('maxDisplacement');
   const currentMinMileage = searchParams.get('minMileage');
   const currentSortBy = searchParams.get('sortBy') || 'price';
   const currentSortOrder = searchParams.get('sortOrder') || 'asc';
@@ -82,12 +85,14 @@ export default function BikesPage() {
       // Construct query parameters
       const params = new URLSearchParams();
       
+      if (currentSearch) params.append('search', currentSearch);
       if (currentBrand) params.append('brand', currentBrand);
       if (currentCategory) params.append('category', currentCategory);
+      if (currentEngineType) params.append('engineType', currentEngineType);
       if (currentMinPrice) params.append('minPrice', currentMinPrice);
       if (currentMaxPrice) params.append('maxPrice', currentMaxPrice);
-      if (currentMinEngineCapacity) params.append('minEngineCapacity', currentMinEngineCapacity);
-      if (currentMaxEngineCapacity) params.append('maxEngineCapacity', currentMaxEngineCapacity);
+      if (currentMinDisplacement) params.append('minDisplacement', currentMinDisplacement);
+      if (currentMaxDisplacement) params.append('maxDisplacement', currentMaxDisplacement);
       if (currentMinMileage) params.append('minMileage', currentMinMileage);
       params.append('sortBy', currentSortBy);
       params.append('sortOrder', currentSortOrder);
@@ -113,12 +118,14 @@ export default function BikesPage() {
     
     fetchBikes();
   }, [
+    currentSearch,
     currentBrand,
     currentCategory,
+    currentEngineType,
     currentMinPrice,
     currentMaxPrice,
-    currentMinEngineCapacity,
-    currentMaxEngineCapacity,
+    currentMinDisplacement,
+    currentMaxDisplacement,
     currentMinMileage,
     currentSortBy,
     currentSortOrder,
@@ -156,10 +163,11 @@ export default function BikesPage() {
   const hasActiveFilters = Boolean(
     currentBrand ||
     currentCategory ||
+    currentEngineType ||
     currentMinPrice ||
     currentMaxPrice ||
-    currentMinEngineCapacity ||
-    currentMaxEngineCapacity ||
+    currentMinDisplacement ||
+    currentMaxDisplacement ||
     currentMinMileage ||
     (currentSortBy && currentSortBy !== 'price') ||
     (currentSortOrder && currentSortOrder !== 'asc')
@@ -176,12 +184,18 @@ export default function BikesPage() {
             <span className="text-gray-900">Bikes</span>
           </div>
           <h1 className="mt-4 text-3xl font-bold text-gray-900">
-            {currentCategory ? `${currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1)} Bikes` : 
+            {currentSearch ? `Search Results for "${currentSearch}"` :
+             currentCategory ? `${currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1)} Bikes` : 
              currentBrand ? `${currentBrand.charAt(0).toUpperCase() + currentBrand.slice(1)} Bikes` : 
              'All Bikes'}
           </h1>
           <p className="mt-2 text-gray-600">
             {pagination.total} {pagination.total === 1 ? 'bike' : 'bikes'} found
+            {currentSearch && (
+              <span className="ml-2 text-sm">
+                for <strong>"{currentSearch}"</strong>
+              </span>
+            )}
           </p>
         </div>
       </div>
@@ -235,6 +249,12 @@ export default function BikesPage() {
                   onChange={(category) => updateFilters({ category })}
                 />
                 
+                {/* Engine Type Filter */}
+                <EngineTypeFilter 
+                  selectedEngineType={currentEngineType || ''} 
+                  onChange={(engineType) => updateFilters({ engineType })}
+                />
+                
                 {/* Price Filter */}
                 <PriceFilter 
                   minPrice={currentMinPrice ? parseInt(currentMinPrice) : undefined}
@@ -245,13 +265,13 @@ export default function BikesPage() {
                   })}
                 />
                 
-                {/* Engine Capacity Filter */}
+                {/* Displacement Filter */}
                 <EngineFilter 
-                  minEngineCapacity={currentMinEngineCapacity ? parseInt(currentMinEngineCapacity) : undefined}
-                  maxEngineCapacity={currentMaxEngineCapacity ? parseInt(currentMaxEngineCapacity) : undefined}
+                  minDisplacement={currentMinDisplacement ? parseInt(currentMinDisplacement) : undefined}
+                  maxDisplacement={currentMaxDisplacement ? parseInt(currentMaxDisplacement) : undefined}
                   onChange={(min, max) => updateFilters({ 
-                    minEngineCapacity: min?.toString() || null, 
-                    maxEngineCapacity: max?.toString() || null 
+                    minDisplacement: min?.toString() || null, 
+                    maxDisplacement: max?.toString() || null 
                   })}
                 />
                 
@@ -299,6 +319,15 @@ export default function BikesPage() {
                     }}
                   />
                   
+                  {/* Engine Type Filter */}
+                  <EngineTypeFilter 
+                    selectedEngineType={currentEngineType || ''} 
+                    onChange={(engineType) => {
+                      updateFilters({ engineType });
+                      setShowMobileFilters(false);
+                    }}
+                  />
+                  
                   {/* Price Filter */}
                   <PriceFilter 
                     minPrice={currentMinPrice ? parseInt(currentMinPrice) : undefined}
@@ -312,14 +341,14 @@ export default function BikesPage() {
                     }}
                   />
                   
-                  {/* Engine Capacity Filter */}
+                  {/* Displacement Filter */}
                   <EngineFilter 
-                    minEngineCapacity={currentMinEngineCapacity ? parseInt(currentMinEngineCapacity) : undefined}
-                    maxEngineCapacity={currentMaxEngineCapacity ? parseInt(currentMaxEngineCapacity) : undefined}
+                    minDisplacement={currentMinDisplacement ? parseInt(currentMinDisplacement) : undefined}
+                    maxDisplacement={currentMaxDisplacement ? parseInt(currentMaxDisplacement) : undefined}
                     onChange={(min, max) => {
                       updateFilters({ 
-                        minEngineCapacity: min?.toString() || null, 
-                        maxEngineCapacity: max?.toString() || null 
+                        minDisplacement: min?.toString() || null, 
+                        maxDisplacement: max?.toString() || null 
                       });
                       setShowMobileFilters(false);
                     }}
@@ -397,9 +426,13 @@ export default function BikesPage() {
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           />
                         ) : (
-                          <div className="flex items-center justify-center w-full h-full bg-gray-100">
-                            <p className="text-gray-400">No image</p>
-                          </div>
+                          <Image
+                            src="/demo.avif"
+                            alt={bike.name}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          />
                         )}
                       </div>
                       

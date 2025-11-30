@@ -1,0 +1,13 @@
+"use strict";(()=>{var e={};e.id=5625,e.ids=[5625,9394],e.modules={20399:e=>{e.exports=require("next/dist/compiled/next-server/app-page.runtime.prod.js")},30517:e=>{e.exports=require("next/dist/compiled/next-server/app-route.runtime.prod.js")},25528:e=>{e.exports=require("next/dist\\client\\components\\action-async-storage.external.js")},91877:e=>{e.exports=require("next/dist\\client\\components\\request-async-storage.external.js")},25319:e=>{e.exports=require("next/dist\\client\\components\\static-generation-async-storage.external.js")},11483:(e,r,t)=>{t.r(r),t.d(r,{headerHooks:()=>u,originalPathname:()=>m,requestAsyncStorage:()=>c,routeModule:()=>d,serverHooks:()=>p,staticGenerationAsyncStorage:()=>l,staticGenerationBailout:()=>x});var a={};t.r(a),t.d(a,{GET:()=>GET});var s=t(10884),o=t(16132),i=t(95798),n=t(9394);async function GET(){try{let e=(0,n.lx)(),{data:r,error:t}=await e.from("variants").select(`
+        variant_id,
+        variant_name,
+        specs!inner(body_type)
+      `).eq("specs.body_type","Roadster Bikes").limit(10),{data:a,error:s}=await e.from("variants").select(`
+        variant_id,
+        variant_name,
+        specs(body_type)
+      `).ilike("specs.body_type","%Roadster Bikes%").limit(10),{data:o,error:d}=await e.from("variants").select(`
+        variant_id,
+        variant_name,
+        specs(body_type)
+      `).ilike("specs.body_type","%roadster%").limit(10);return console.log("Exact match results:",r),console.log("ILIKE results:",a),console.log("Any roadster results:",o),i.Z.json({exactMatch:r,exactError:t,ilikeMatch:a,ilikeError:s,anyRoadster:o,anyError:d})}catch(e){return console.error("Error in roadster debug:",e),i.Z.json({error:"Failed to debug roadster"},{status:500})}}let d=new s.AppRouteRouteModule({definition:{kind:o.x.APP_ROUTE,page:"/api/debug-roadster/route",pathname:"/api/debug-roadster",filename:"route",bundlePath:"app/api/debug-roadster/route"},resolvedPagePath:"C:\\Users\\himan\\Desktop\\bikersalliance\\Bike-website-main\\BikersAlliance\\app\\api\\debug-roadster\\route.ts",nextConfigOutput:"",userland:a}),{requestAsyncStorage:c,staticGenerationAsyncStorage:l,serverHooks:p,headerHooks:u,staticGenerationBailout:x}=d,m="/api/debug-roadster/route"},9394:(e,r,t)=>{t.d(r,{lx:()=>createServerClient});var a=t(21136);t(569);var s=t(24596);let createServerClient=()=>{let e=(0,s.cookies)();return(0,a.e)(e)}},10884:(e,r,t)=>{e.exports=t(30517)}};var r=require("../../../webpack-runtime.js");r.C(e);var __webpack_exec__=e=>r(r.s=e),t=r.X(0,[657,6449,5798,3178,4596,4280,2170],()=>__webpack_exec__(11483));module.exports=t})();

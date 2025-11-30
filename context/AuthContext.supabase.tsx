@@ -160,16 +160,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, error: error.message };
       }
 
-      // In some Supabase configurations, users need to confirm email first
-      if (data.user && !data.user.email_confirmed_at) {
-        return { 
-          success: true, 
-          error: 'Please check your email to confirm your registration before logging in.' 
-        };
+      // Since email confirmation is disabled, user should be logged in immediately
+      if (data.user) {
+        setUser(mapUser(data.user));
+        return { success: true };
       }
 
-      setUser(mapUser(data.user));
-      return { success: true };
+      return { success: false, error: 'Failed to create user account' };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create account';
       setError(errorMessage);

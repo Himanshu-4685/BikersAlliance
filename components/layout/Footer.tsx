@@ -7,12 +7,57 @@ import { FiMail, FiPhone, FiMapPin, FiFacebook, FiTwitter, FiInstagram, FiYoutub
 
 export default function Footer() {
   const [email, setEmail] = useState('');
+  const [isSubscribing, setIsSubscribing] = useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<{
+    type: 'success' | 'error' | null;
+    message: string;
+  }>({ type: null, message: '' });
   
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement newsletter subscription functionality
-    alert(`Thank you for subscribing with ${email}!`);
-    setEmail('');
+    
+    if (!email || !email.includes('@')) {
+      setSubscriptionStatus({
+        type: 'error',
+        message: 'Please enter a valid email address'
+      });
+      return;
+    }
+
+    setIsSubscribing(true);
+    setSubscriptionStatus({ type: null, message: '' });
+
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSubscriptionStatus({
+          type: 'success',
+          message: 'Successfully subscribed! Check your email for a welcome message.'
+        });
+        setEmail('');
+      } else {
+        setSubscriptionStatus({
+          type: 'error',
+          message: data.error || 'Failed to subscribe. Please try again.'
+        });
+      }
+    } catch (error) {
+      setSubscriptionStatus({
+        type: 'error',
+        message: 'Network error. Please try again.'
+      });
+    } finally {
+      setIsSubscribing(false);
+    }
   };
   
   return (
@@ -81,13 +126,18 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/dealers" className="text-sm text-gray-300 hover:text-white">
-                  Dealer Locator
+                <Link href="/showrooms" className="text-sm text-gray-300 hover:text-white">
+                  Showrooms
                 </Link>
               </li>
               <li>
                 <Link href="/news" className="text-sm text-gray-300 hover:text-white">
                   Bike News
+                </Link>
+              </li>
+              <li>
+                <Link href="/newsletter" className="text-sm text-gray-300 hover:text-white">
+                  Newsletter
                 </Link>
               </li>
             </ul>
@@ -131,6 +181,18 @@ export default function Footer() {
               Subscribe to our newsletter for the latest updates on new bikes,
               reviews and automotive news.
             </p>
+            
+            {/* Status Messages */}
+            {subscriptionStatus.type && (
+              <div className={`mb-3 p-2 rounded text-sm ${
+                subscriptionStatus.type === 'success' 
+                  ? 'bg-green-100 text-green-800 border border-green-200' 
+                  : 'bg-red-100 text-red-800 border border-red-200'
+              }`}>
+                {subscriptionStatus.message}
+              </div>
+            )}
+            
             <form onSubmit={handleSubscribe} className="flex flex-col space-y-2">
               <input
                 type="email"
@@ -139,12 +201,18 @@ export default function Footer() {
                 placeholder="Your email address"
                 className="px-3 py-2 text-sm text-gray-900 bg-white border-none rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 required
+                disabled={isSubscribing}
               />
               <button
                 type="submit"
-                className="px-3 py-2 text-sm font-medium text-white transition-colors bg-primary rounded-md hover:bg-primary-600"
+                disabled={isSubscribing}
+                className={`px-3 py-2 text-sm font-medium text-white transition-colors rounded-md ${
+                  isSubscribing 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-primary hover:bg-primary-600'
+                }`}
               >
-                Subscribe
+                {isSubscribing ? 'Subscribing...' : 'Subscribe'}
               </button>
             </form>
           </div>

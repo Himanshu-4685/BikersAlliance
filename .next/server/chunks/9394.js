@@ -1,0 +1,1 @@
+"use strict";exports.id=9394,exports.ids=[9394],exports.modules={9394:(e,r,t)=>{t.d(r,{lx:()=>createServerClient});var s=t(21136);t(569);var i=t(24596);let createServerClient=()=>{let e=(0,i.cookies)();return(0,s.e)(e)}}};

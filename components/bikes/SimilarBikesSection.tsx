@@ -51,9 +51,13 @@ export default function SimilarBikesSection({
                   sizes="(max-width: 768px) 100vw, 25vw"
                 />
               ) : (
-                <div className="flex items-center justify-center w-full h-full bg-gray-100">
-                  <p className="text-gray-400">No image</p>
-                </div>
+                <Image
+                  src="/demo.avif"
+                  alt={bike.name}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 25vw"
+                />
               )}
             </div>
             
