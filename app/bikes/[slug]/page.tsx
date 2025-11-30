@@ -21,10 +21,14 @@ import {
   FiClock,
   FiCheck,
   FiX,
-  FiArrowRight
+  FiArrowRight,
+  FiShoppingCart
 } from 'react-icons/fi';
 import SimilarBikesSection from '@/components/bikes/SimilarBikesSection';
 import WishlistButton from '@/components/common/WishlistButton';
+import LeadFormPopup from '@/components/bikes/LeadFormPopup';
+import { useAuth } from '@/context/AuthContext.supabase';
+import { useRouter } from 'next/navigation';
 
 // Types
 interface BikeDetails {
@@ -97,6 +101,8 @@ interface SimilarModel {
 
 export default function BikeDetailsPage() {
   const { slug } = useParams() as { slug: string };
+  const { user } = useAuth();
+  const router = useRouter();
   const [bike, setBike] = useState<BikeDetails | null>(null);
   const [similarModels, setSimilarModels] = useState<SimilarModel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -105,6 +111,11 @@ export default function BikeDetailsPage() {
   const [selectedVariant, setSelectedVariant] = useState(0);
   const [showEMICalculator, setShowEMICalculator] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showLeadForm, setShowLeadForm] = useState(false);
+  const [leadFormType, setLeadFormType] = useState<'get_on_road_price' | 'book_test_ride'>('get_on_road_price');
+  const [addingToOrders, setAddingToOrders] = useState(false);
+  const [isInOrders, setIsInOrders] = useState(false);
+  const [userOrderId, setUserOrderId] = useState<string | null>(null);
   
   // Fetch bike details
   useEffect(() => {
@@ -127,11 +138,118 @@ export default function BikeDetailsPage() {
         setLoading(false);
       }
     };
-    
+
     fetchBikeDetails();
   }, [slug]);
-  
-  if (loading) {
+
+  // Check if bike is already in user's orders
+  useEffect(() => {
+    const checkIfInOrders = async () => {
+      if (!user || !bike) return;
+
+      try {
+        const response = await fetch('/api/user-orders');
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          const currentVariant = bike.variants[selectedVariant];
+          const existingOrder = result.orders.find((order: any) => 
+            order.variant_id === currentVariant?.id
+          );
+
+          if (existingOrder) {
+            setIsInOrders(true);
+            setUserOrderId(existingOrder.id);
+          } else {
+            setIsInOrders(false);
+            setUserOrderId(null);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking orders:', error);
+      }
+    };
+
+    checkIfInOrders();
+  }, [user, bike, selectedVariant]);
+
+  // Handle add to orders
+  const handleAddToOrders = async () => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
+    if (!bike || !bike.variants || bike.variants.length === 0) {
+      alert('No variant information available');
+      return;
+    }
+
+    const variant = bike.variants[selectedVariant];
+    setAddingToOrders(true);
+
+    try {
+      if (isInOrders && userOrderId) {
+        // Remove from orders
+        const response = await fetch(`/api/user-orders/${userOrderId}`, {
+          method: 'DELETE',
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          setIsInOrders(false);
+          setUserOrderId(null);
+          alert('Successfully removed from your orders!');
+        } else {
+          alert(result.error || 'Failed to remove from orders. Please try again.');
+        }
+      } else {
+        // Add to orders
+        const response = await fetch('/api/user-orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            variant_id: variant.id,
+            bike_name: bike.name,
+            variant_name: variant.name,
+            price: variant.price,
+            brand_name: bike.brand?.name || '',
+            image_url: bike.images?.[0]?.url || null
+          }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          setIsInOrders(true);
+          setUserOrderId(result.order.id);
+          alert('Successfully added to your orders!');
+        } else {
+          alert(result.error || 'Failed to add to orders. Please try again.');
+        }
+      }
+    } catch (error) {
+      console.error('Error handling orders:', error);
+      alert('Network error. Please check your connection and try again.');
+    } finally {
+      setAddingToOrders(false);
+    }
+  };
+
+  // Handle get on road price
+  const handleGetOnRoadPrice = () => {
+    setLeadFormType('get_on_road_price');
+    setShowLeadForm(true);
+  };
+
+  // Handle book test ride
+  const handleBookTestRide = () => {
+    setLeadFormType('book_test_ride');
+    setShowLeadForm(true);
+  };  if (loading) {
     return <BikeDetailsSkeleton />;
   }
   
@@ -513,10 +631,31 @@ export default function BikeDetailsPage() {
               )}
               
               <div className="flex flex-col gap-2 mt-4">
-                <button className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary-600">
+                <button 
+                  onClick={handleAddToOrders}
+                  disabled={addingToOrders}
+                  className={`flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
+                    isInOrders 
+                      ? 'text-white bg-red-600 hover:bg-red-700' 
+                      : 'text-white bg-green-600 hover:bg-green-700'
+                  }`}
+                >
+                  <FiShoppingCart className="mr-2" size={16} />
+                  {addingToOrders 
+                    ? (isInOrders ? 'Removing...' : 'Adding...') 
+                    : (isInOrders ? 'Remove from Orders' : 'Add to Orders')
+                  }
+                </button>
+                <button 
+                  onClick={handleGetOnRoadPrice}
+                  className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary-600"
+                >
                   Get On Road Price
                 </button>
-                <button className="px-4 py-2 text-sm font-medium border border-primary text-primary rounded-md hover:bg-primary-50">
+                <button 
+                  onClick={handleBookTestRide}
+                  className="px-4 py-2 text-sm font-medium border border-primary text-primary rounded-md hover:bg-primary-50"
+                >
                   Book Test Ride
                 </button>
               </div>
@@ -715,6 +854,21 @@ export default function BikeDetailsPage() {
               </div>
             </div>
           </div>
+        )}
+        
+        {/* Lead Form Popup */}
+        {bike && bike.variants && bike.variants.length > 0 && (
+          <LeadFormPopup
+            isOpen={showLeadForm}
+            onClose={() => setShowLeadForm(false)}
+            formType={leadFormType}
+            bikeInfo={{
+              bikeName: bike.name,
+              variantName: bike.variants[selectedVariant]?.name || '',
+              variantId: bike.variants[selectedVariant]?.id || '',
+              brandName: bike.brand?.name || ''
+            }}
+          />
         )}
       </div>
     </div>

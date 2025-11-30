@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { 
@@ -9,8 +8,6 @@ import {
   FiCheck, 
   FiX, 
   FiEye, 
-  FiEdit3,
-  FiArrowLeft,
   FiCalendar,
   FiDollarSign,
   FiMapPin,
@@ -54,19 +51,11 @@ interface BikeSubmission {
   used_bikes: UsedBike;
 }
 
-export default function ActivityPage() {
-  const { user, isLoading } = useAuth();
-  const router = useRouter();
+export default function DashboardActivity() {
+  const { user } = useAuth();
   const [submissions, setSubmissions] = useState<BikeSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, isLoading, router]);
 
   // Fetch user submissions
   useEffect(() => {
@@ -179,40 +168,35 @@ export default function ActivityPage() {
     }
   };
 
-  // Show loading state while checking authentication
-  if (isLoading || loading) {
+  if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="w-16 h-16 border-t-4 border-b-4 border-primary rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+      <div className="bg-white rounded-lg shadow">
+        <div className="p-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">My Activity</h2>
+          <div className="flex justify-center py-12">
+            <div className="w-8 h-8 border-t-2 border-b-2 border-primary rounded-full animate-spin"></div>
+          </div>
         </div>
       </div>
     );
   }
 
-  if (!user) {
-    return null;
-  }
-
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="container py-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-lg shadow p-8 text-center">
-              <div className="text-red-500 mb-4">
-                <FiX className="w-16 h-16 mx-auto" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Activity</h2>
-              <p className="text-gray-600 mb-6">{error}</p>
-              <button
-                onClick={() => window.location.reload()}
-                className="px-6 py-3 bg-primary text-white rounded-md hover:bg-primary-dark"
-              >
-                Try Again
-              </button>
+      <div className="bg-white rounded-lg shadow">
+        <div className="p-6">
+          <div className="text-center py-16">
+            <div className="text-red-500 mb-4">
+              <FiX className="w-16 h-16 mx-auto" />
             </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Activity</h2>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-3 bg-primary text-white rounded-md hover:bg-primary-dark"
+            >
+              Try Again
+            </button>
           </div>
         </div>
       </div>
@@ -220,74 +204,74 @@ export default function ActivityPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container py-8">
-        <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center">
-              <Link
-                href="/dashboard"
-                className="flex items-center text-gray-600 hover:text-gray-900 mr-4"
-              >
-                <FiArrowLeft className="w-5 h-5 mr-2" />
-                Back to Dashboard
-              </Link>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">My Activity</h1>
-                <p className="text-gray-600">Track your bike selling submissions</p>
-              </div>
+    <div className="bg-white rounded-lg shadow">
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">My Activity</h2>
+            <p className="text-gray-600 mt-1">Track your bike selling submissions</p>
+          </div>
+          <Link
+            href="/sell-bike"
+            className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 font-medium text-sm"
+          >
+            Sell Another Bike
+          </Link>
+        </div>
+
+        {submissions.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <FiSettings className="w-12 h-12 text-gray-400" />
             </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">No Activity Yet</h2>
+            <p className="text-gray-600 mb-8">
+              You haven't submitted any bikes for sale yet. Start by listing your bike!
+            </p>
             <Link
               href="/sell-bike"
-              className="px-6 py-3 bg-red-500 text-white rounded-md hover:bg-red-600 font-medium"
+              className="inline-flex items-center px-6 py-3 bg-red-500 text-white rounded-md hover:bg-red-600 font-medium"
             >
-              Sell Another Bike
+              Sell Your Bike
             </Link>
           </div>
-
-          {/* Content */}
-          {submissions.length === 0 ? (
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-              <div className="p-12 text-center">
-                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <FiSettings className="w-12 h-12 text-gray-400" />
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">No Activity Yet</h2>
-                <p className="text-gray-600 mb-8">
-                  You haven't submitted any bikes for sale yet. Start by listing your bike!
-                </p>
-                <Link
-                  href="/sell-bike"
-                  className="inline-flex items-center px-6 py-3 bg-red-500 text-white rounded-md hover:bg-red-600 font-medium"
-                >
-                  Sell Your Bike
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {submissions.map((submission) => {
-                const bike = submission.used_bikes;
-                return (
-                  <div key={submission.id} className="bg-white rounded-lg shadow overflow-hidden">
+        ) : (
+          <div className="space-y-4">
+            {submissions.map((submission) => {
+              const bike = submission.used_bikes;
+              return (
+                <div key={submission.id} className="border rounded-lg p-4">
+                  <div className="flex flex-col md:flex-row gap-4">
                     {/* Bike Image */}
-                    <div className="relative h-48 bg-gray-200">
-                      {bike.photos && bike.photos.length > 0 ? (
-                        <Image
-                          src={bike.photos[0]}
-                          alt={`${bike.brand} ${bike.model}`}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center h-full text-gray-400">
-                          <FiEye className="w-12 h-12" />
+                    <div className="flex-shrink-0 w-full md:w-32">
+                      <div className="relative h-24 md:h-24 bg-gray-200 rounded-lg overflow-hidden">
+                        {bike.photos && bike.photos.length > 0 ? (
+                          <Image
+                            src={bike.photos[0]}
+                            alt={`${bike.brand} ${bike.model}`}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="flex items-center justify-center h-full text-gray-400">
+                            <FiEye className="w-8 h-8" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Bike Details */}
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900">
+                            {bike.brand} {bike.model}
+                            {bike.variant && ` ${bike.variant}`}
+                          </h3>
+                          <p className="text-gray-600">{bike.year} • {bike.category}</p>
                         </div>
-                      )}
-                      
-                      {/* Status Badge */}
-                      <div className="absolute top-4 right-4">
+                        
+                        {/* Status Badge */}
                         <div className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(bike.status)}`}>
                           <div className="flex items-center">
                             {getStatusIcon(bike.status)}
@@ -295,28 +279,16 @@ export default function ActivityPage() {
                           </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Bike Details */}
-                    <div className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <h3 className="text-xl font-bold text-gray-900">
-                            {bike.brand} {bike.model}
-                            {bike.variant && ` ${bike.variant}`}
-                          </h3>
-                          <p className="text-gray-600">{bike.year} • {bike.category}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-2xl font-bold text-red-600">
-                            {formatPrice(bike.expected_price)}
-                          </p>
-                          <p className="text-sm text-gray-500">{bike.condition} condition</p>
-                        </div>
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-xl font-bold text-red-600">
+                          {formatPrice(bike.expected_price)}
+                        </p>
+                        <p className="text-sm text-gray-500">{bike.condition} condition</p>
                       </div>
 
                       {/* Key Details */}
-                      <div className="grid grid-cols-2 gap-4 mb-4 text-sm text-gray-600">
+                      <div className="grid grid-cols-2 gap-4 mb-3 text-sm text-gray-600">
                         <div className="flex items-center">
                           <FiMapPin className="w-4 h-4 mr-2" />
                           {bike.city}, {bike.state}
@@ -328,7 +300,7 @@ export default function ActivityPage() {
                       </div>
 
                       {/* Submission Info */}
-                      <div className="border-t pt-4">
+                      <div className="border-t pt-3">
                         <div className="flex items-center justify-between text-sm">
                           <div>
                             <p className="text-gray-600">
@@ -337,11 +309,6 @@ export default function ActivityPage() {
                             {bike.status === 'approved' && bike.approved_at && (
                               <p className="text-green-600">
                                 Approved on {formatDate(bike.approved_at)}
-                              </p>
-                            )}
-                            {bike.status === 'sold' && bike.sold_at && (
-                              <p className="text-blue-600">
-                                Sold on {formatDate(bike.sold_at)}
                               </p>
                             )}
                           </div>
@@ -387,11 +354,11 @@ export default function ActivityPage() {
                       </div>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
