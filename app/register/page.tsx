@@ -26,7 +26,7 @@ export default function RegisterPage() {
   }>({});
   
   const router = useRouter();
-  const { register } = useAuth();
+  const { register, signInWithGoogle } = useAuth();
 
   const validateForm = (): boolean => {
     let isValid = true;
@@ -97,6 +97,25 @@ export default function RegisterPage() {
     } catch (error: any) {
       console.error('Registration error:', error);
       setErrorMessage(error.message || 'Failed to register. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignUp = async () => {
+    console.log('Google Sign Up button clicked'); // Debug log
+    setErrorMessage('');
+    setIsLoading(true);
+
+    try {
+      const { success, error } = await signInWithGoogle();
+      if (!success && error) {
+        setErrorMessage(error);
+      }
+      // If successful, the user will be redirected by Supabase
+    } catch (error) {
+      console.error('Google sign up error:', error);
+      setErrorMessage('Failed to sign up with Google');
     } finally {
       setIsLoading(false);
     }
@@ -266,10 +285,16 @@ export default function RegisterPage() {
 
             <button
               type="button"
-              className="w-full flex items-center justify-center border border-gray-300 rounded-md py-2 px-4 hover:bg-gray-50"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleGoogleSignUp();
+              }}
+              disabled={isLoading}
+              className="w-full flex items-center justify-center border border-gray-300 rounded-md py-2 px-4 hover:bg-gray-50 disabled:opacity-50 cursor-pointer transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
             >
               <FcGoogle className="w-5 h-5 mr-2" />
-              Sign up with Google
+              {isLoading ? 'Signing up...' : 'Sign up with Google'}
             </button>
 
             <p className="text-center mt-4 text-sm text-gray-600">

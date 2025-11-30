@@ -20,7 +20,7 @@ export default function LoginPage() {
   }>({});
   
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, signInWithGoogle } = useAuth();
 
   const validateForm = (): boolean => {
     const errors: { email?: string; password?: string } = {};
@@ -79,16 +79,11 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Replace with your actual Google OAuth implementation
-      // For now, we'll redirect to a simulated OAuth flow
-      window.location.href = `/auth/callback?provider=google&simulatedAuth=true`;
-      return; // Early return since we're redirecting
-      
-      // The code below won't execute due to the redirect
-      const errorObject = { message: 'Authentication failed' };
-      if (errorObject) {
-        setErrorMessage(errorObject.message);
+      const { success, error } = await signInWithGoogle();
+      if (!success && error) {
+        setErrorMessage(error);
       }
+      // If successful, the user will be redirected by Supabase
     } catch (error) {
       setErrorMessage('Failed to sign in with Google');
     } finally {

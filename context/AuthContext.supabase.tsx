@@ -19,6 +19,7 @@ interface AuthContextType {
   supabase: ReturnType<typeof createBrowserClient> | null;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   register: (email: string, password: string, fullName: string) => Promise<{ success: boolean; error?: string }>;
+  signInWithGoogle: () => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<{ success: boolean; error?: string }>;
   resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
   updateProfile: (data: Partial<AuthUser>) => Promise<{ success: boolean; error?: string }>;
@@ -236,6 +237,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Google OAuth sign in
+  const signInWithGoogle = async (): Promise<{ success: boolean; error?: string }> => {
+    setError(null);
+
+    if (!supabase) {
+      return { success: false, error: 'Authentication service not available' };
+    }
+
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+
+      if (error) {
+        setError(error.message);
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to sign in with Google';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  };
+
   // Update user profile
   const updateProfile = async (data: Partial<AuthUser>): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
@@ -278,6 +308,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase,
     login,
     register,
+    signInWithGoogle,
     logout,
     resetPassword,
     updateProfile
