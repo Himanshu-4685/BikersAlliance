@@ -43,7 +43,18 @@ export async function GET(
 
     const { data: spec, error } = await supabase
       .from('specs')
-      .select('*')
+      .select(`
+        *,
+        variants!inner(
+          variant_name,
+          models!inner(
+            model_name,
+            brands!inner(
+              brand_name
+            )
+          )
+        )
+      `)
       .eq('variant_id', variantId)
       .single();
 
@@ -55,9 +66,20 @@ export async function GET(
       );
     }
 
+    // Flatten the response data
+    const specification = {
+      ...spec,
+      variant_name: spec.variants?.variant_name,
+      model_name: spec.variants?.models?.model_name,
+      brand_name: spec.variants?.models?.brands?.brand_name
+    };
+
+    // Remove nested objects
+    delete specification.variants;
+
     return NextResponse.json({
       success: true,
-      specification: spec
+      specification
     });
 
   } catch (error) {
@@ -106,12 +128,27 @@ export async function PUT(
 
     const body = await request.json();
 
+    // Remove read-only fields that shouldn't be updated
+    const {
+      variant_name,
+      model_name,
+      brand_name,
+      variants,
+      ...updateData
+    } = body;
+
+    // Clean up empty strings to null
+    const cleanedData = Object.keys(updateData).reduce((acc, key) => {
+      acc[key] = updateData[key] === '' ? null : updateData[key];
+      return acc;
+    }, {} as any);
+
     const supabase = createServerClient();
 
     // Update specification
-    const { data: updatedSpec, error } = await (supabase as any)
+    const { data: updatedSpec, error } = await supabase
       .from('specs')
-      .update(body)
+      .update(cleanedData)
       .eq('variant_id', variantId)
       .select()
       .single();

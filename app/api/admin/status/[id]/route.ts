@@ -73,9 +73,23 @@ export async function GET(
       );
     }
 
+    // Format the response to match what the edit form expects
+    const formattedStatus = {
+      ...status,
+      status_type: status.status,  // Map status to status_type for form compatibility
+      brand_name: status.brands?.brand_name,
+      model_name: status.models?.model_name,
+      variant_name: status.variants?.variant_name
+    };
+
+    // Remove nested objects
+    delete formattedStatus.brands;
+    delete formattedStatus.models;
+    delete formattedStatus.variants;
+
     return NextResponse.json({
       success: true,
-      status: status
+      status: formattedStatus
     });
 
   } catch (error) {
@@ -123,30 +137,42 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { brand_id, model_id, variant_id, status, price_range, expected_launch, launch_date } = body;
+    console.log('Received update data:', body);
+    
+    // Prioritize status_type over status field (status_type is what the form sends)
+    const status = body.status_type || body.status;
+    const { brand_id, model_id, variant_id, price_range, expected_launch, launch_date } = body;
 
-    if (!brand_id || !model_id || !variant_id || !status) {
+    // Only require status field for validation
+    if (!status) {
       return NextResponse.json(
-        { success: false, error: 'Brand ID, Model ID, Variant ID and status are required' },
+        { success: false, error: 'Status is required' },
         { status: 400 }
       );
     }
 
     const supabase = createServerClient();
 
+    // Prepare update data, only including fields that are provided
+    const updateData: any = {
+      status,
+      updated_at: new Date().toISOString()
+    };
+    
+    // Only add fields if they are provided
+    if (brand_id) updateData.brand_id = brand_id;
+    if (model_id) updateData.model_id = model_id;
+    if (variant_id) updateData.variant_id = variant_id;
+    if (price_range !== undefined) updateData.price_range = price_range || null;
+    if (expected_launch !== undefined) updateData.expected_launch = expected_launch || null;
+    if (launch_date !== undefined) updateData.launch_date = launch_date || null;
+
+    console.log('Updating status with data:', updateData);
+
     // Update status
-    const { data: updatedStatus, error } = await (supabase as any)
+    const { data: updatedStatus, error } = await supabase
       .from('status')
-      .update({
-        brand_id,
-        model_id,
-        variant_id,
-        status,
-        price_range,
-        expected_launch,
-        launch_date,
-        updated_at: new Date().toISOString()
-      })
+      .update(updateData)
       .eq('status_id', statusId)
       .select()
       .single();
