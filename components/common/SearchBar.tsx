@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import { FiSearch } from 'react-icons/fi';
 import { createClient } from "@/utils/supabase/client";
-import { generateSlug } from '@/lib/slug-utils';
 
 interface Variant {
   variant_id: number;
@@ -64,9 +63,9 @@ export default function SearchBar() {
   }, [query]);
 
   const handleSelect = (variant: Variant) => {
-    const slug = generateSlug(variant.variant_name);
-    router.push(`/bikes/${slug}`);
-    setQuery(variant.variant_name);
+    // Navigate to bike details using variant id
+    router.push(`/bikes/${variant.variant_id}`);
+    setQuery("");
     setShowDropdown(false);
   };
 
@@ -112,8 +111,8 @@ export default function SearchBar() {
       
       // If there are variant results, go to the first one
       if (results.length > 0) {
-        const slug = generateSlug(results[0].variant_name);
-        router.push(`/bikes/${slug}`);
+        // Open first matching variant by its id
+        router.push(`/bikes/${results[0].variant_id}`);
       } else {
         // Otherwise, go to search results page with query
         router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
@@ -128,9 +127,14 @@ export default function SearchBar() {
     }
   };
 
-  const handleBlur = () => {
+  const handleBlur = (e: React.FocusEvent) => {
+    // Don't hide if clicking on a result item
+    const relatedTarget = e.relatedTarget as HTMLElement;
+    if (relatedTarget && relatedTarget.closest('.search-dropdown')) {
+      return;
+    }
     // Delay hiding results to allow clicking on them
-    setTimeout(() => setShowDropdown(false), 200);
+    setTimeout(() => setShowDropdown(false), 150);
   };
 
   // Highlight matching text in results
@@ -172,7 +176,7 @@ export default function SearchBar() {
         
       {/* Search Results */}
       {(loading || showDropdown) && (
-        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 z-50 max-h-60 overflow-y-auto">
+        <div className="search-dropdown absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 z-50 max-h-60 overflow-y-auto">
           {loading && (
             <div className="px-4 py-3 text-sm text-gray-500 flex items-center">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
@@ -184,7 +188,7 @@ export default function SearchBar() {
             <div
               key={variant.variant_id}
               className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex justify-between items-center border-b border-gray-100 last:border-b-0 transition-colors"
-              onClick={() => handleSelect(variant)}
+              onMouseDown={() => handleSelect(variant)}
             >
               <span className="text-sm text-gray-900 font-medium">
                 {highlightMatch(variant.variant_name, query)}
