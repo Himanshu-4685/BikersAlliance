@@ -105,7 +105,7 @@ export default function BikeGrid({ bikes, loading = false }: BikeGridProps) {
               <span className="text-sm text-gray-600">{bike.brand.name}</span>
             </div>
             
-            <Link href={`/bikes/${bike.slug}`} className="block">
+            <Link href={`/bikes/${bike.id}`} className="block">
               <h3 className="font-medium text-lg text-gray-900 mb-2 hover:text-primary line-clamp-2">
                 {bike.name}
               </h3>
@@ -142,7 +142,7 @@ export default function BikeGrid({ bikes, loading = false }: BikeGridProps) {
             
             {/* CTA */}
             <Link 
-              href={`/bikes/${bike.slug}`}
+              href={`/bikes/${bike.id}`}
               className="block w-full px-4 py-2 mt-4 text-sm text-center text-primary transition-colors border border-primary rounded-md hover:bg-primary hover:text-white"
             >
               View Specifications & Price

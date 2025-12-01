@@ -75,18 +75,24 @@ function parseAndGroupSpecs(specs: any) {
   const grouped: Record<string, Array<{ name: string; value: string }>> = {};
   
   Object.entries(specs).forEach(([key, value]) => {
-    // Categorize specs based on key patterns
-    let category = 'general';
+    // Skip general specs and transmission specs
+    const keyLower = key.toLowerCase();
     
-    if (key.toLowerCase().includes('engine') || key.toLowerCase().includes('power') || key.toLowerCase().includes('torque')) {
+    // Categorize specs based on key patterns, excluding general and transmission
+    let category = null;
+    
+    if (keyLower.includes('engine') || keyLower.includes('power') || keyLower.includes('torque')) {
       category = 'engine';
-    } else if (key.toLowerCase().includes('dimension') || key.toLowerCase().includes('weight') || key.toLowerCase().includes('length') || key.toLowerCase().includes('width') || key.toLowerCase().includes('height')) {
+    } else if (keyLower.includes('dimension') || keyLower.includes('weight') || keyLower.includes('length') || keyLower.includes('width') || keyLower.includes('height')) {
       category = 'dimensions';
-    } else if (key.toLowerCase().includes('fuel') || key.toLowerCase().includes('tank') || key.toLowerCase().includes('mileage')) {
+    } else if (keyLower.includes('fuel') || keyLower.includes('tank') || keyLower.includes('mileage')) {
       category = 'fuel';
-    } else if (key.toLowerCase().includes('brake') || key.toLowerCase().includes('suspension') || key.toLowerCase().includes('tyre') || key.toLowerCase().includes('wheel')) {
+    } else if (keyLower.includes('brake') || keyLower.includes('suspension') || keyLower.includes('tyre') || keyLower.includes('wheel')) {
       category = 'features';
     }
+    
+    // Skip if no category assigned (effectively filtering out general and transmission specs)
+    if (!category) return;
     
     if (!grouped[category]) {
       grouped[category] = [];
@@ -107,138 +113,84 @@ export async function GET(
 ) {
   try {
     const { slug } = params;
-    console.log('API: Received request for slug:', slug);
+    console.log('API: Received request for variant ID:', slug);
     
     if (!slug) {
-      return errorResponse('Bike slug is required', 400);
+      return errorResponse('Variant ID is required', 400);
+    }
+
+    // Validate that it's either a valid UUID format or a numeric ID
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+    const isNumeric = /^\d+$/.test(slug);
+    
+    if (!isUUID && !isNumeric) {
+      return errorResponse('Invalid variant ID format', 400);
     }
 
     const supabase = createServerClient();
     
-    // Get Supabase URL for image construction
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    console.log('API: Fetching bike details by variant ID');
     
-    let variants: Variant[] | null = null;
-    let error: any = null;
-
-    // Check if slug is a UUID (variant ID) or a regular slug
-    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
-    console.log('API: Is UUID?', isUUID);
-
-    if (isUUID) {
-      console.log('API: Fetching by variant ID');
-      // Handle variant ID lookup
-      const result = await supabase
-        .from('variants')
-        .select(`
-          variant_id,
-          variant_name,
-          on_road_price,
-          ex_showroom_price,
-          specifications,
-          models!inner(
-            model_id,
-            model_name,
-            description,
-            launch_date,
-            category_id,
-            brands!inner(
-              brand_id,
-              brand_name,
-              logo_url
-            ),
-            categories(
-              category_id,
-              category_name,
-              category_type
-            )
+    // Fetch bike details with comprehensive data including images
+    const { data: variants, error } = await supabase
+      .from('variants')
+      .select(`
+        variant_id,
+        variant_name,
+        on_road_price,
+        url,
+        models!inner(
+          model_id,
+          model_name,
+          brands!inner(
+            brand_id,
+            brand_name,
+            logo_url
           )
-        `)
-        .eq('variant_id', slug);
-      
-      variants = result.data;
-      error = result.error;
-    } else {
-      console.log('API: Fetching by slug');
-      // Handle regular slug lookup
-      // Parse slug to extract brand and model - handle different slug formats
-      const slugParts = slug.split('-');
-      let brandName, modelName;
-      
-      // Try different parsing strategies
-      if (slugParts.length >= 2) {
-        // Common format: brand-model or brand-model-variant
-        brandName = slugParts[0];
-        // For models with multiple words, join them
-        if (slugParts.length === 2) {
-          modelName = slugParts[1];
-        } else {
-          // For slugs like 'kawasaki-ninja-h2-r', try different combinations
-          modelName = slugParts.slice(1).join(' ');
-        }
-      } else {
-        brandName = slug;
-        modelName = '';
-      }
-      
-      console.log('API: Parsed slug - Brand:', brandName, 'Model:', modelName);
-      
-      // Fetch bike details with comprehensive data including images
-      const result = await supabase
-        .from('variants')
-        .select(`
-          variant_id,
-          variant_name,
-          on_road_price,
-          ex_showroom_price,
-          specifications,
-          url,
-          images(
-            image_id,
-            url,
-            alt_text
-          ),
-          models!inner(
-            model_id,
-            model_name,
-            description,
-            launch_date,
-            category_id,
-            brands!inner(
-              brand_id,
-              brand_name,
-              logo_url
-            ),
-            categories(
-              category_id,
-              category_name,
-              category_type
-            )
-          )
-        `)
-        .or(`models.brands.brand_name.ilike.%${brandName}%,models.model_name.ilike.%${modelName}%,url.ilike.%${slug}%`)
-        .order('on_road_price') as { data: Variant[] | null; error: any };
-      
-      variants = result.data;
-      error = result.error;
-    }
+        )
+      `)
+      .eq('variant_id', parseInt(slug))
+      .single() as { data: any, error: any };
 
-    console.log('API: Database result - variants count:', variants?.length || 0);
     if (error) {
-      console.error('API: Database error:', error);
-    }    if (error) {
       console.error('Error fetching bike details:', error);
+      if (error.code === 'PGRST116') {
+        return notFoundResponse('Bike not found');
+      }
       return errorResponse('Failed to fetch bike details', 500);
     }
     
-    if (!variants || variants.length === 0) {
+    if (!variants) {
       return notFoundResponse('Bike not found');
     }
     
-    const firstVariant = variants[0];
-    const model = firstVariant.models;
+    const variant = variants;
+    const model = variant.models;
     const brand = model.brands;
-    const category = model.categories;
+
+    // Fetch images separately
+    const { data: images } = await supabase
+      .from('images')
+      .select('image_id, url, alt_text')
+      .eq('variant_id', parseInt(slug)) as { data: any };
+
+    // Fetch specifications separately
+    const { data: specs } = await supabase
+      .from('specs')
+      .select('*')
+      .eq('variant_id', parseInt(slug))
+      .single() as { data: any };
+
+    // Fetch all variants of the same model
+    const { data: allModelVariants } = await supabase
+      .from('variants')
+      .select(`
+        variant_id,
+        variant_name,
+        on_road_price
+      `)
+      .eq('model_id', model.model_id)
+      .order('on_road_price') as { data: any };
     
     // Fetch similar bikes from the same brand
     const { data: similarVariants, error: similarError } = await supabase
@@ -255,77 +207,86 @@ export async function GET(
           )
         )
       `)
-      .eq('models.brands.brand_id', brand.brand_id)
-      .neq('models.model_id', model.model_id)
+      .eq('brand_id', brand.brand_id)
+      .neq('variant_id', variant.variant_id)
       .order('on_road_price')
-      .limit(6) as { data: SimilarVariant[] | null; error: any };
+      .limit(6) as { data: any, error: any };
     
     if (similarError) {
       console.error('Error fetching similar bikes:', similarError);
     }
     
-    // Format variants data
-    const formattedVariants = variants.map(variant => ({
-      id: variant.variant_id,
+    // Format single variant data
+    const formattedVariant = {
+      id: variant.variant_id.toString(),
       name: variant.variant_name,
-      price: variant.on_road_price,
-      exShowroomPrice: variant.ex_showroom_price,
-      imageUrl: getVariantImageUrl(variant, supabaseUrl),
+      price: variant.on_road_price || 0,
+      imageUrl: images && images.length > 0 ? images[0].url : getDefaultImageUrl(),
       defaultImageUrl: getDefaultImageUrl(),
-      specifications: parseAndGroupSpecs(variant.specifications)
-    }));
+      specifications: parseAndGroupSpecs(specs || {})
+    };
     
-    // Format similar bikes
-    const formattedSimilarBikes = (similarVariants || []).map(variant => ({
-      id: variant.variant_id,
-      name: `${variant.models.brands.brand_name} ${variant.models.model_name}`,
-      slug: `${variant.models.brands.brand_name.toLowerCase()}-${variant.models.model_name.toLowerCase()}`.replace(/\s+/g, '-'),
-      price: variant.on_road_price,
-      imageUrl: getVariantImageUrl(variant, supabaseUrl),
-      defaultImageUrl: getDefaultImageUrl()
+    // Fetch images for similar bikes
+    const formattedSimilarBikes = await Promise.all((similarVariants || []).map(async (similarVariant: any) => {
+      const { data: similarImages } = await supabase
+        .from('images')
+        .select('url')
+        .eq('variant_id', similarVariant.variant_id)
+        .limit(1) as { data: any };
+
+      return {
+        id: similarVariant.variant_id.toString(),
+        name: similarVariant.variant_name.includes(similarVariant.models.brands.brand_name) ? 
+          similarVariant.variant_name : 
+          `${similarVariant.models.brands.brand_name} ${similarVariant.variant_name}`,
+        slug: similarVariant.variant_id.toString(),
+        price: similarVariant.on_road_price || 0,
+        image: similarImages && similarImages.length > 0 ? similarImages[0].url : getDefaultImageUrl(),
+        brand: {
+          name: similarVariant.models.brands.brand_name
+        }
+      };
     }));
     
     // Construct the response
     const bikeDetails = {
-      id: model.model_id,
-      name: `${brand.brand_name} ${model.model_name}`,
-      slug: slug,
-      description: model.description,
-      launchDate: model.launch_date,
+      id: variant.variant_id.toString(),
+      name: variant.variant_name.includes(brand.brand_name) ? variant.variant_name : `${brand.brand_name} ${variant.variant_name}`,
+      slug: variant.variant_id.toString(),
+      description: null, // Models table doesn't have description in our schema
+      launchDate: null, // Models table doesn't have launch_date in our schema
       brand: {
         id: brand.brand_id,
         name: brand.brand_name,
         slug: brand.brand_name.toLowerCase().replace(/\s+/g, '-'),
         logo: brand.logo_url
       },
-      category: category ? {
-        id: category.category_id,
-        name: category.category_name,
-        slug: category.category_name.toLowerCase().replace(/\s+/g, '-')
-      } : null,
-      variants: formattedVariants,
-      similarModels: formattedSimilarBikes,
-      images: formattedVariants.map(variant => ({
-        id: variant.id,
-        url: variant.imageUrl,
-        alt: `${brand.brand_name} ${model.model_name} ${variant.name}`
+      category: null, // We don't have categories in our current schema
+      variants: (allModelVariants || []).map((modelVariant: any) => ({
+        id: modelVariant.variant_id.toString(),
+        name: modelVariant.variant_name.includes(brand.brand_name) ? 
+          modelVariant.variant_name : 
+          `${brand.brand_name} ${modelVariant.variant_name}`,
+        price: modelVariant.on_road_price || 0
       })),
-      // Flatten specifications into array format
-      specifications: formattedVariants.reduce((allSpecs, variant) => {
-        Object.entries(variant.specifications).forEach(([category, specs]) => {
-          (specs as Array<{ name: string; value: string }>).forEach(spec => {
-            const specId = `${spec.name.toLowerCase().replace(/\s+/g, '-')}-${category}`;
-            if (!allSpecs.find(s => s.id === specId)) {
-              allSpecs.push({
-                id: specId,
-                name: spec.name,
-                value: spec.value
-              });
-            }
-          });
-        });
-        return allSpecs;
-      }, [] as Array<{ id: string; name: string; value: string }>),
+      similarModels: formattedSimilarBikes,
+      images: images && images.length > 0 ? images.map((img: any, index: number) => ({
+        id: img.image_id.toString(),
+        url: img.url,
+        defaultUrl: img.url,
+        alt: img.alt_text || `${brand.brand_name} ${model.model_name} ${variant.variant_name} - Image ${index + 1}`
+      })) : [{
+        id: 'default',
+        url: getDefaultImageUrl(),
+        defaultUrl: getDefaultImageUrl(),
+        alt: `${brand.brand_name} ${model.model_name} ${variant.variant_name}`
+      }],
+      // Flatten specifications into array format from single variant
+      specifications: specs ? Object.entries(specs).filter(([key, value]) => key !== 'variant_id' && value).map(([key, value]) => ({
+        id: key.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+        name: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        value: String(value)
+      })) : [],
       features: [], // TODO: Add features data when available
       rating: {
         average: 0,
@@ -334,7 +295,10 @@ export async function GET(
       reviews: []
     };
     
-    return successResponse(bikeDetails);
+    return successResponse({
+      model: bikeDetails,
+      similarModels: formattedSimilarBikes
+    });
     
   } catch (error) {
     console.error('Error handling request:', error);

@@ -17,7 +17,7 @@ export default function BikeCard({ bike, viewMode = 'grid', showBrand = false, s
   if (viewMode === 'list') {
     return (
       <div className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow duration-200 flex p-4">
-        <Link href={`/bikes/${bike.slug}`} className="flex w-full">
+        <Link href={`/bikes/${bike.id}`} className="flex w-full">
           <div className="flex-shrink-0 w-48 relative">
             <Image
               src={bike.image}
@@ -72,7 +72,7 @@ export default function BikeCard({ bike, viewMode = 'grid', showBrand = false, s
     <div className="flex-none w-[270px] snap-start">
       <div className="overflow-hidden transition-shadow bg-white border border-gray-200 rounded-lg hover:shadow-md">
         {/* Bike Image */}
-        <Link href={`/bikes/${bike.slug}`} className="block">
+        <Link href={`/bikes/${bike.id}`} className="block">
           <div className="relative h-48 overflow-hidden bg-gray-100">
             <Image
               src={bike.image}
@@ -95,7 +95,7 @@ export default function BikeCard({ bike, viewMode = 'grid', showBrand = false, s
         
         {/* Bike Info */}
         <div className="p-4">
-          <Link href={`/bikes/${bike.slug}`} className="block">
+          <Link href={`/bikes/${bike.id}`} className="block">
             <h3 className="mb-2 text-lg font-medium text-gray-900 hover:text-primary">
               {bike.name}
             </h3>
@@ -131,7 +131,7 @@ export default function BikeCard({ bike, viewMode = 'grid', showBrand = false, s
           
           {/* CTA */}
           <Link 
-            href={`/bikes/${bike.slug}`}
+            href={`/bikes/${bike.id}`}
             className="block w-full px-4 py-2 mt-4 text-sm text-center text-primary transition-colors border border-primary rounded-md hover:bg-primary hover:text-white"
           >
             View Specifications & Price

@@ -251,7 +251,7 @@ export default function DynamicBikeStatus({
               <div className="overflow-hidden transition-shadow bg-white border border-gray-200 rounded-lg hover:shadow-md">
                 {/* Bike Image */}
                 <Link 
-                  href={`/bikes/${bike.variant.slug}`} 
+                  href={`/bikes/${bike.variant.id}`} 
                   className="block"
                 >
                   <div className="relative h-48 overflow-hidden bg-gray-100">
@@ -273,7 +273,7 @@ export default function DynamicBikeStatus({
                 {/* Bike Info */}
                 <div className="p-4">
                   <Link 
-                    href={`/bikes/${bike.variant.slug}`} 
+                    href={`/bikes/${bike.variant.id}`} 
                     className="block"
                   >
                     <h3 className="mb-2 text-lg font-medium text-gray-900 hover:text-primary">
@@ -327,7 +327,7 @@ export default function DynamicBikeStatus({
                     </button>
                   ) : (
                     <Link 
-                      href={`/bikes/${bike.variant.slug}`}
+                      href={`/bikes/${bike.variant.id}`}
                       className="block w-full px-4 py-2 mt-4 text-sm text-center text-primary transition-colors border border-primary rounded-md hover:bg-primary hover:text-white"
                     >
                       View Details

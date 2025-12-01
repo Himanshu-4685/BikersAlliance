@@ -101,7 +101,7 @@ interface SimilarModel {
 }
 
 export default function BikeDetailsPage() {
-  const { slug } = useParams() as { slug: string };
+  const { slug } = useParams() as { slug: string }; // slug is now variant_id
   const { user } = useAuth();
   const router = useRouter();
   const [bike, setBike] = useState<BikeDetails | null>(null);
@@ -109,7 +109,7 @@ export default function BikeDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
   const [activeTab, setActiveTab] = useState('specs');
-  const [selectedVariant, setSelectedVariant] = useState(0);
+
   const [showEMICalculator, setShowEMICalculator] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showLeadForm, setShowLeadForm] = useState(false);
@@ -120,9 +120,9 @@ export default function BikeDetailsPage() {
 
   // Get images for the currently selected variant
   const getCurrentVariantImages = () => {
-    if (!bike || !bike.variants || selectedVariant >= bike.variants.length) return [];
+    if (!bike || !bike.variants) return [];
     
-    const currentVariant = bike.variants[selectedVariant];
+    const currentVariant = bike.variants.find(v => v.id === bike.id) || bike.variants[0];
     const variantName = currentVariant?.name?.toLowerCase() || '';
     
     // Try to match images based on variant name patterns
@@ -158,33 +158,12 @@ export default function BikeDetailsPage() {
   useEffect(() => {
     const fetchBikeDetails = async () => {
       try {
-        const response = await fetch(`/api/models/${slug}`);
+        const response = await fetch(`/api/bikes/${slug}`);
         const result = await response.json();
         
         if (result.success) {
           setBike(result.data.model);
           setSimilarModels(result.data.similarModels || []);
-          
-          // Find the specific variant that matches the slug
-          const targetVariantName = slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-          
-          const matchingVariantIndex = result.data.model.variants.findIndex((variant: any) => {
-            const variantNameLower = variant.name.toLowerCase();
-            const targetNameLower = targetVariantName.toLowerCase();
-            
-            // Try different matching strategies for specific variant names
-            return (
-              variantNameLower.includes('h2 r') ||
-              variantNameLower.includes('h2r') ||
-              variantNameLower === targetNameLower ||
-              variantNameLower.includes(targetNameLower.split(' ').slice(-2).join(' ')) ||
-              // For exact matches like "Kawasaki Ninja H2 R"
-              variantNameLower.replace(/\s+/g, ' ').trim() === targetNameLower.replace(/\s+/g, ' ').trim()
-            );
-          });
-          
-          // Set the selected variant to the matching one, or default to first
-          setSelectedVariant(matchingVariantIndex >= 0 ? matchingVariantIndex : 0);
         } else {
           console.error('Failed to fetch bike details:', result.error);
           notFound();
@@ -210,9 +189,9 @@ export default function BikeDetailsPage() {
         const result = await response.json();
 
         if (response.ok && result.success) {
-          const currentVariant = bike.variants[selectedVariant];
+          const currentVariant = bike.variants?.find(v => v.id === bike.id);
           const existingOrder = result.orders.find((order: any) => 
-            order.variant_id === parseInt(currentVariant?.id)
+            order.variant_id === parseInt(currentVariant?.id || '0')
           );
 
           setIsInOrders(!!existingOrder);
@@ -226,7 +205,7 @@ export default function BikeDetailsPage() {
     };
 
     checkIfInOrders();
-  }, [user, bike, selectedVariant]);
+  }, [user, bike]);
 
   // Handle add to orders
   const handleAddToOrders = async () => {
@@ -240,7 +219,12 @@ export default function BikeDetailsPage() {
       return;
     }
 
-    const variant = bike.variants[selectedVariant];
+    const variant = bike.variants?.find(v => v.id === bike.id) || bike.variants?.[0];
+
+    if (!variant) {
+      alert('Variant information not available');
+      return;
+    }
     setAddingToOrders(true);
 
     try {
@@ -375,13 +359,13 @@ export default function BikeDetailsPage() {
                 <FiChevronRight className="mx-2" />
               </>
             )}
-            <span className="text-gray-900">{bike.name}</span>
+            <span className="text-gray-900">{bike.variants?.find(v => v.id === bike.id)?.name || bike.name}</span>
           </div>
           
           <div className="flex items-center justify-between mt-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                {bike.variants?.[selectedVariant]?.name || bike.name}
+                {bike.variants?.find(v => v.id === bike.id)?.name || bike.name}
               </h1>
               {bike.variants && bike.variants.length > 1 && (
                 <p className="mt-1 text-sm text-gray-500">
@@ -395,7 +379,7 @@ export default function BikeDetailsPage() {
                 name: bike.name,
                 slug: bike.slug,
                 image: getCurrentVariantImages()?.[0]?.url || bike.images?.[0]?.url,
-                price: bike.variants?.[selectedVariant]?.price || bike.variants?.[0]?.price,
+                price: bike.variants?.find(v => v.id === bike.id)?.price || bike.variants?.[0]?.price,
                 brand: bike.brand
               }}
               variant="button"
@@ -425,7 +409,7 @@ export default function BikeDetailsPage() {
               <div className="relative h-[400px] bg-gray-100">
                 {(() => {
                   const currentImages = getCurrentVariantImages();
-                  const currentVariant = bike.variants?.[selectedVariant];
+                  const currentVariant = bike.variants?.find(v => v.id === bike.id);
                   
                   return currentImages && currentImages.length > 0 ? (
                     <Image
@@ -460,7 +444,7 @@ export default function BikeDetailsPage() {
                       >
                         <Image
                           src={image.url}
-                          alt={image.alt || `${bike.name} - ${bike.variants?.[selectedVariant]?.name} image ${index + 1}`}
+                          alt={image.alt || `${bike.name} - ${bike.variants?.find(v => v.id === bike.id)?.name} image ${index + 1}`}
                           fill
                           className="object-cover"
                         />
@@ -572,25 +556,7 @@ export default function BikeDetailsPage() {
                         </div>
                       )}
 
-                      {/* Transmission Specifications */}
-                      {groupedSpecs.transmission && (
-                        <div className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-lg p-6">
-                          <div className="flex items-center mb-4">
-                            <div className="p-2 bg-orange-500 rounded-lg">
-                              <FiSettings className="w-5 h-5 text-white" />
-                            </div>
-                            <h3 className="ml-3 text-lg font-semibold text-orange-900">Transmission</h3>
-                          </div>
-                          <div className="space-y-3">
-                            {groupedSpecs.transmission.map((spec) => (
-                              <div key={spec.name} className="flex justify-between items-center py-2 border-b border-orange-100 last:border-b-0">
-                                <span className="text-sm font-medium text-orange-700">{spec.name}</span>
-                                <span className="text-sm font-bold text-orange-900">{spec.value}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+
 
                       {/* Chassis Specifications */}
                       {groupedSpecs.chassis && (
@@ -614,7 +580,7 @@ export default function BikeDetailsPage() {
 
                       {/* All Other Specifications */}
                       {Object.entries(groupedSpecs).filter(([category]) => 
-                        !['engine', 'mileage', 'dimensions', 'transmission', 'chassis'].includes(category)
+                        !['engine', 'mileage', 'dimensions', 'transmission', 'chassis', 'general'].includes(category)
                       ).map(([category, specs]) => (
                         <div key={category} className="bg-gradient-to-br from-gray-50 to-slate-50 border border-gray-200 rounded-lg p-6">
                           <div className="flex items-center mb-4">
@@ -684,34 +650,30 @@ export default function BikeDetailsPage() {
               {bike.variants && bike.variants.length > 0 ? (
                 <div className="mt-2 space-y-2">
                   {bike.variants.map((variant, index) => {
-                    // Generate slug for each variant
-                    const variantSlug = `${bike.brand?.name || 'bike'}-${variant.name}`
-                      .toLowerCase()
-                      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-                      .replace(/\s+/g, '-') // Replace spaces with hyphens
-                      .replace(/-+/g, '-') // Replace multiple hyphens with single
-                      .trim();
+                    const isCurrentVariant = variant.id === bike.id;
                     
                     return (
                       <div 
                         key={variant.id} 
                         className={`flex justify-between p-3 border rounded-md cursor-pointer transition-all hover:bg-gray-50 ${
-                          selectedVariant === index 
+                          isCurrentVariant
                             ? 'border-primary bg-primary-50 shadow-sm' 
                             : 'border-gray-200'
                         }`}
                         onClick={() => {
-                          // Navigate to the specific variant page
-                          router.push(`/bikes/${variantSlug}`);
+                          // Navigate to the specific variant page using variant ID
+                          if (!isCurrentVariant) {
+                            router.push(`/bikes/${variant.id}`);
+                          }
                         }}
                       >
                         <span className={`font-medium ${
-                          selectedVariant === index ? 'text-primary' : 'text-gray-700'
+                          isCurrentVariant ? 'text-primary' : 'text-gray-700'
                         }`}>
                           {variant.name}
                         </span>
                         <span className={`font-bold ${
-                          selectedVariant === index ? 'text-primary' : 'text-gray-900'
+                          isCurrentVariant ? 'text-primary' : 'text-gray-900'
                         }`}>
                           ₹ {variant.price.toLocaleString('en-IN')}
                         </span>
@@ -788,17 +750,17 @@ export default function BikeDetailsPage() {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <h4 className="font-semibold text-blue-900 mb-2">EMI Calculator</h4>
                   <p className="text-sm text-blue-700 mb-3">
-                    Calculate your monthly EMI for {bike.name}
+                    Calculate your monthly EMI for {bike.variants?.find(v => v.id === bike.id)?.name || bike.name}
                   </p>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span>Ex-showroom Price:</span>
-                      <span className="font-semibold">₹{bike.variants[0].price?.toLocaleString('en-IN')}</span>
+                      <span className="font-semibold">₹{(bike.variants?.find(v => v.id === bike.id)?.price || bike.variants?.[0]?.price || 0).toLocaleString('en-IN')}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Estimated EMI (5 years):</span>
                       <span className="font-semibold text-green-600">
-                        ₹{Math.round((bike.variants[0].price || 0) / 60).toLocaleString('en-IN')}/month
+                        ₹{Math.round((bike.variants?.find(v => v.id === bike.id)?.price || bike.variants?.[0]?.price || 0) / 60).toLocaleString('en-IN')}/month
                       </span>
                     </div>
                   </div>
@@ -820,7 +782,10 @@ export default function BikeDetailsPage() {
         )}
         
         {/* Reviews Section */}
-        <ReviewsAndRatingsSection bike={bike} />
+        <ReviewsAndRatingsSection 
+          bike={bike} 
+          currentVariantId={bike.variants?.find(v => v.id === bike.id)?.id || bike.variants?.[0]?.id} 
+        />
         
         {/* Dealers Section */}
         {bike.brand && (
@@ -873,8 +838,8 @@ export default function BikeDetailsPage() {
             formType={leadFormType}
             bikeInfo={{
               bikeName: bike.name,
-              variantName: bike.variants[selectedVariant]?.name || '',
-              variantId: parseInt(bike.variants[selectedVariant]?.id || '0'),
+              variantName: bike.variants?.find(v => v.id === bike.id)?.name || '',
+              variantId: parseInt(bike.variants?.find(v => v.id === bike.id)?.id || '0'),
               brandName: bike.brand?.name || ''
             }}
           />

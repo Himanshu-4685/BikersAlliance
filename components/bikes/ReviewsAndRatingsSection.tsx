@@ -36,24 +36,26 @@ interface Bike {
 
 interface ReviewsAndRatingsSectionProps {
   bike: Bike;
+  currentVariantId?: string | number;
 }
 
-export default function ReviewsAndRatingsSection({ bike }: ReviewsAndRatingsSectionProps) {
+export default function ReviewsAndRatingsSection({ bike, currentVariantId }: ReviewsAndRatingsSectionProps) {
   const [reviews, setReviews] = useState<Review[]>(bike.reviews || []);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [rating, setRating] = useState(bike.rating || { average: 0, count: 0 });
 
-  // Fetch reviews for the current bike
+  // Fetch reviews for the current variant
   const fetchReviews = async () => {
-    if (!bike.variants?.[0]?.id) return;
+    const variantId = currentVariantId || bike.variants?.[0]?.id;
+    if (!variantId) return;
 
     setLoading(true);
     setError('');
     
     try {
-      const response = await fetch(`/api/reviews?variant_id=${bike.variants[0].id}&limit=10`);
+      const response = await fetch(`/api/reviews?variant_id=${variantId}&limit=10`);
       const data = await response.json();
       
       if (data.success) {
@@ -80,7 +82,7 @@ export default function ReviewsAndRatingsSection({ bike }: ReviewsAndRatingsSect
   // Fetch reviews on component mount
   useEffect(() => {
     fetchReviews();
-  }, [bike.variants]);
+  }, [bike.variants, currentVariantId]);
 
   const handleReviewSubmitted = () => {
     setShowReviewForm(false);
@@ -110,7 +112,7 @@ export default function ReviewsAndRatingsSection({ bike }: ReviewsAndRatingsSect
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Reviews & Ratings</h2>
-          <p className="text-gray-600 mt-1">Share your experience with {bike.name}</p>
+          <p className="text-gray-600 mt-1">Share your experience with {bike.variants?.find(v => v.id === currentVariantId)?.name || bike.name}</p>
         </div>
         
         {rating.count > 0 && (
@@ -142,7 +144,7 @@ export default function ReviewsAndRatingsSection({ bike }: ReviewsAndRatingsSect
           </button>
         ) : (
           <ReviewForm
-            variantId={typeof bike.variants?.[0]?.id === 'string' ? parseInt(bike.variants[0].id) : bike.variants?.[0]?.id || 0}
+            variantId={typeof currentVariantId === 'string' ? parseInt(currentVariantId) : currentVariantId || (typeof bike.variants?.[0]?.id === 'string' ? parseInt(bike.variants[0].id) : bike.variants?.[0]?.id || 0)}
             onReviewSubmitted={handleReviewSubmitted}
             onCancel={() => setShowReviewForm(false)}
           />
@@ -220,7 +222,7 @@ export default function ReviewsAndRatingsSection({ bike }: ReviewsAndRatingsSect
             <FiStar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No Reviews Yet</h3>
             <p className="text-gray-500 mb-6">
-              Be the first to share your experience with {bike.name}
+              Be the first to share your experience with {bike.variants?.find(v => v.id === currentVariantId)?.name || bike.name}
             </p>
             {!showReviewForm && (
               <button

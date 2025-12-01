@@ -231,7 +231,7 @@ export default function LatestBikesPage() {
                     className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
                   >
                     {/* Bike Image */}
-                    <Link href={`/bikes/${bike.variant.slug}`} className="block">
+                    <Link href={`/bikes/${bike.variant.id}`} className="block">
                       <div className="relative h-48 bg-gray-100">
                         <Image
                           src={bike.variant.images?.[0]?.url || '/demo.avif'}
@@ -251,7 +251,7 @@ export default function LatestBikesPage() {
 
                     {/* Bike Info */}
                     <div className="p-4">
-                      <Link href={`/bikes/${bike.variant.slug}`} className="block">
+                      <Link href={`/bikes/${bike.variant.id}`} className="block">
                         <h3 className="text-lg font-medium text-gray-900 hover:text-primary mb-2">
                           {bike.variant.name}
                         </h3>
