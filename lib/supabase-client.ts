@@ -178,6 +178,7 @@ export type Database = {
       };
       users: {
         Row: {
+          user_id: string;
           id: string;
           email: string;
           full_name: string | null;
@@ -186,6 +187,7 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          user_id?: string;
           id: string;
           email: string;
           full_name?: string | null;
@@ -194,6 +196,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          user_id?: string;
           id?: string;
           email?: string;
           full_name?: string | null;
@@ -411,6 +414,64 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           is_published?: boolean;
+        };
+      };
+      reviews: {
+        Row: {
+          review_id: number;
+          variant_id: number;
+          user_id: string;
+          rating: number;
+          title: string | null;
+          body: string;
+          created_at: string;
+        };
+        Insert: {
+          review_id?: number;
+          variant_id: number;
+          user_id: string;
+          rating: number;
+          title?: string | null;
+          body: string;
+          created_at?: string;
+        };
+        Update: {
+          review_id?: number;
+          variant_id?: number;
+          user_id?: string;
+          rating?: number;
+          title?: string | null;
+          body?: string;
+          created_at?: string;
+        };
+      };
+      admin: {
+        Row: {
+          id: number;
+          email: string;
+          name: string;
+          password_hash: string;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: number;
+          email: string;
+          name: string;
+          password_hash: string;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: number;
+          email?: string;
+          name?: string;
+          password_hash?: string;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
         };
       };
     };

@@ -27,6 +27,7 @@ import {
 import SimilarBikesSection from '@/components/bikes/SimilarBikesSection';
 import WishlistButton from '@/components/common/WishlistButton';
 import LeadFormPopup from '@/components/bikes/LeadFormPopup';
+import ReviewsAndRatingsSection from '@/components/bikes/ReviewsAndRatingsSection';
 import { useAuth } from '@/context/AuthContext.supabase';
 import { useRouter } from 'next/navigation';
 
@@ -819,70 +820,7 @@ export default function BikeDetailsPage() {
         )}
         
         {/* Reviews Section */}
-        {bike.rating && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Reviews & Ratings</h2>
-              <div className="flex items-center space-x-2">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <FiStar
-                      key={i}
-                      className={`w-5 h-5 ${
-                        i < (bike.rating?.average || 0)
-                          ? 'text-yellow-400 fill-current'
-                          : 'text-gray-300'
-                      }`}
-                    />
-                  ))}
-                </div>
-                <span className="font-semibold">{bike.rating.average}/5</span>
-                <span className="text-gray-500">({bike.rating.count} reviews)</span>
-              </div>
-            </div>
-            
-            {bike.reviews && bike.reviews.length > 0 ? (
-              <div className="space-y-4">
-                {bike.reviews.slice(0, 3).map((review: any, index: number) => (
-                  <div key={index} className="border-b border-gray-200 pb-4 last:border-b-0">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h4 className="font-semibold">{review.userName}</h4>
-                        <div className="flex">
-                          {[...Array(5)].map((_, i) => (
-                            <FiStar
-                              key={i}
-                              className={`w-4 h-4 ${
-                                i < review.rating
-                                  ? 'text-yellow-400 fill-current'
-                                  : 'text-gray-300'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <span className="text-sm text-gray-500">
-                        {new Date(review.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <p className="text-gray-600">{review.content}</p>
-                  </div>
-                ))}
-                <button className="w-full mt-4 bg-gray-100 text-gray-700 py-2 rounded-md hover:bg-gray-200 transition-colors">
-                  View All Reviews
-                </button>
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <FiStar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">No reviews yet. Be the first to review!</p>
-                <button className="mt-4 bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700">
-                  Write a Review
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+        <ReviewsAndRatingsSection bike={bike} />
         
         {/* Dealers Section */}
         {bike.brand && (

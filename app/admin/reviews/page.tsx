@@ -6,7 +6,7 @@ import { useAdminAuth } from '@/context/AdminAuthContext';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminHeader from '@/components/admin/AdminHeader';
 import DataTable from '@/components/admin/DataTable';
-import { FiEdit, FiTrash2, FiEye, FiStar } from 'react-icons/fi';
+import { FiEdit, FiTrash2, FiEye, FiStar, FiPlus } from 'react-icons/fi';
 
 interface Review {
   review_id: number;
@@ -61,10 +61,12 @@ export default function AdminReviewsPage() {
 
       if (response.ok) {
         const data = await response.json();
+        console.log('Admin reviews response:', data);
         setReviews(data.reviews || []);
         setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));
       } else {
-        console.error('Failed to fetch reviews');
+        const errorData = await response.json();
+        console.error('Failed to fetch reviews:', response.status, errorData);
       }
     } catch (error) {
       console.error('Error fetching reviews:', error);
@@ -202,11 +204,18 @@ export default function AdminReviewsPage() {
         <main className="flex-1 overflow-auto p-6">
           <div className="max-w-7xl mx-auto">
             {/* Header */}
-            <div className="mb-6">
+            <div className="mb-6 flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Reviews Management</h1>
                 <p className="text-gray-600">Manage user reviews and ratings</p>
               </div>
+              <button
+                onClick={() => router.push('/admin/reviews/new')}
+                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <FiPlus className="w-4 h-4 mr-2" />
+                New Review
+              </button>
             </div>
 
             {/* Search */}

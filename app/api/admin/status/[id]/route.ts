@@ -75,17 +75,17 @@ export async function GET(
 
     // Format the response to match what the edit form expects
     const formattedStatus = {
-      ...status,
-      status_type: status.status,  // Map status to status_type for form compatibility
-      brand_name: status.brands?.brand_name,
-      model_name: status.models?.model_name,
-      variant_name: status.variants?.variant_name
+      ...(status as any),
+      status_type: (status as any).status,  // Map status to status_type for form compatibility
+      brand_name: (status as any).brands?.brand_name,
+      model_name: (status as any).models?.model_name,
+      variant_name: (status as any).variants?.variant_name
     };
 
     // Remove nested objects
-    delete formattedStatus.brands;
-    delete formattedStatus.models;
-    delete formattedStatus.variants;
+    delete (formattedStatus as any).brands;
+    delete (formattedStatus as any).models;
+    delete (formattedStatus as any).variants;
 
     return NextResponse.json({
       success: true,
@@ -170,7 +170,7 @@ export async function PUT(
     console.log('Updating status with data:', updateData);
 
     // Update status
-    const { data: updatedStatus, error } = await supabase
+    const { data: updatedStatus, error } = await (supabase as any)
       .from('status')
       .update(updateData)
       .eq('status_id', statusId)

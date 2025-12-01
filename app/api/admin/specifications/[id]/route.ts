@@ -68,14 +68,14 @@ export async function GET(
 
     // Flatten the response data
     const specification = {
-      ...spec,
-      variant_name: spec.variants?.variant_name,
-      model_name: spec.variants?.models?.model_name,
-      brand_name: spec.variants?.models?.brands?.brand_name
+      ...(spec as any),
+      variant_name: (spec as any).variants?.variant_name,
+      model_name: (spec as any).variants?.models?.model_name,
+      brand_name: (spec as any).variants?.models?.brands?.brand_name
     };
 
     // Remove nested objects
-    delete specification.variants;
+    delete (specification as any).variants;
 
     return NextResponse.json({
       success: true,
@@ -146,7 +146,7 @@ export async function PUT(
     const supabase = createServerClient();
 
     // Update specification
-    const { data: updatedSpec, error } = await supabase
+    const { data: updatedSpec, error } = await (supabase as any)
       .from('specs')
       .update(cleanedData)
       .eq('variant_id', variantId)
