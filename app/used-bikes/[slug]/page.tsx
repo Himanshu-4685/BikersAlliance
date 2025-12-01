@@ -1,7 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { cookies } from 'next/headers';
 
 // Types
 interface UsedBike {
@@ -34,29 +33,75 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default async function CityUsedBikesPage({ params }: { params: { slug: string } }) {
-  // Fetch used bikes from API
+  // Fetch used bikes directly from Supabase
   let usedBikes: UsedBike[] = [];
   let cityName = '';
   let totalCount = 0;
   
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/used-bikes/cities/${params.slug}`, {
-      next: { revalidate: 3600 } // Revalidate every hour
-    });
+    const { createServerClient } = await import('@/lib/supabase-server');
+    const supabase = createServerClient();
     
-    if (response.ok) {
-      const result = await response.json();
-      if (result.success) {
-        usedBikes = result.data.bikes;
-        cityName = result.data.city.name;
-        totalCount = result.data.pagination.total;
-      }
+    // Convert slug back to city name
+    cityName = params.slug
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+
+    // Get used bikes for the specific city (case-insensitive)
+    const { data: bikes, error } = await supabase
+      .from('used_bikes')
+      .select(`
+        id,
+        brand,
+        model,
+        variant,
+        year,
+        expected_price,
+        km_driven,
+        city,
+        state,
+        condition,
+        photos,
+        created_at,
+        fuel_type,
+        transmission,
+        ownership
+      `)
+      .eq('status', 'approved')
+      .ilike('city', cityName) // Use case-insensitive matching
+      .is('sold_at', null) // Only show unsold bikes
+      .order('created_at', { ascending: false })
+      .limit(12);
+
+    if (!error && bikes) {
+      // Format the used bikes data
+      usedBikes = bikes.map((bike: any) => ({
+        id: bike.id,
+        title: `${bike.brand} ${bike.model}${bike.variant ? ` ${bike.variant}` : ''}`,
+        price: bike.expected_price,
+        year: bike.year,
+        kilometers: bike.km_driven,
+        city: bike.city,
+        state: bike.state,
+        condition: bike.condition,
+        fuelType: bike.fuel_type,
+        transmission: bike.transmission,
+        ownership: bike.ownership,
+        image: bike.photos && bike.photos.length > 0 ? bike.photos[0] : '/images/bikes/default-bike.svg',
+        photos: bike.photos || [],
+        createdAt: bike.created_at
+      }));
+      
+      totalCount = bikes.length;
+    } else if (error) {
+      console.error('Error fetching used bikes:', error);
     }
   } catch (error) {
     console.error('Error fetching used bikes:', error);
   }
 
-  // Fallback if no data from API
+  // Fallback if no data
   if (!cityName) {
     cityName = params.slug
       .split('-')
@@ -64,44 +109,7 @@ export default async function CityUsedBikesPage({ params }: { params: { slug: st
       .join(' ');
   }
 
-  // Mock fallback data if API returns empty
-  if (usedBikes.length === 0) {
-    usedBikes = [
-      {
-        id: '1',
-        title: 'Royal Enfield Classic 350',
-        price: 110000,
-        year: 2020,
-        kilometers: 15000,
-        city: cityName,
-        state: 'Unknown',
-        condition: 'Good',
-        fuelType: 'Petrol',
-        transmission: 'Manual',
-        ownership: 'First Owner',
-        image: '/images/bikes/royal-enfield-classic-350.jpg',
-        photos: [],
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: '2',
-        title: 'Bajaj Pulsar 150',
-        price: 55000,
-        year: 2019,
-        kilometers: 25000,
-        city: cityName,
-        state: 'Unknown',
-        condition: 'Good',
-        fuelType: 'Petrol',
-        transmission: 'Manual',
-        ownership: 'Second Owner',
-        image: '/images/bikes/bajaj-pulsar-150.jpg',
-        photos: [],
-        createdAt: new Date().toISOString()
-      }
-    ];
-    totalCount = usedBikes.length;
-  }
+
 
   return (
     <div className="container py-8">
