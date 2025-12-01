@@ -159,10 +159,13 @@ export default function AddUsedBikePage() {
     setSubmitError('');
 
     try {
-      const response = await fetch('/api/sell-bike', {
+      const adminToken = localStorage.getItem('adminToken');
+      
+      const response = await fetch('/api/admin/used-bikes', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminToken}`
         },
         body: JSON.stringify({
           ...formData,

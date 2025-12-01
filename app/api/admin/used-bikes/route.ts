@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createClient } from '@/utils/supabase/server';
+import jwt from 'jsonwebtoken';
 
 // GET endpoint for admin to fetch all used bike listings
 export async function GET(request: NextRequest) {
@@ -215,6 +216,184 @@ export async function DELETE(request: NextRequest) {
 
   } catch (err) {
     console.error('API /admin/used-bikes DELETE error:', err);
+    return NextResponse.json({
+      success: false,
+      error: 'Unexpected server error. Please try again.'
+    }, { status: 500 });
+  }
+}
+
+// POST endpoint for admin to create new used bike listings
+export async function POST(request: NextRequest) {
+  try {
+    // Verify admin authentication
+    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json({
+        success: false,
+        error: 'Admin authentication required'
+      }, { status: 401 });
+    }
+
+    try {
+      jwt.verify(token, process.env.ADMIN_JWT_SECRET!);
+    } catch (error) {
+      return NextResponse.json({
+        success: false,
+        error: 'Invalid admin token'
+      }, { status: 401 });
+    }
+
+    const cookieStore = cookies();
+    const supabase = createClient(cookieStore);
+
+    const body = await request.json();
+    const {
+      // Bike Details
+      brand,
+      model,
+      variant,
+      year,
+      category,
+      fuelType,
+      transmission,
+      kmDriven,
+      ownership,
+      
+      // Pricing and Condition
+      expectedPrice,
+      condition,
+      description,
+      
+      // Contact Details
+      ownerName,
+      email,
+      phone,
+      city,
+      state,
+      
+      // Documents
+      hasRC,
+      hasInsurance,
+      hasPUC,
+      
+      // Photos
+      photos,
+      
+      // Admin fields
+      status = 'approved' // Admin created bikes are approved by default
+    } = body;
+
+    // Validate required fields
+    const requiredFields = {
+      brand, model, year, category, fuelType, transmission, kmDriven, 
+      ownership, expectedPrice, condition, ownerName, email, phone, city, state
+    };
+
+    const missingFields = Object.entries(requiredFields)
+      .filter(([_, value]) => !value || value === '')
+      .map(([key]) => key);
+
+    if (missingFields.length > 0) {
+      return NextResponse.json({
+        success: false,
+        error: `Missing required fields: ${missingFields.join(', ')}`
+      }, { status: 400 });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json({
+        success: false,
+        error: 'Invalid email format'
+      }, { status: 400 });
+    }
+
+    // Validate phone format (basic validation for Indian numbers)
+    const phoneRegex = /^(\+91|91)?[6-9]\d{9}$/;
+    if (!phoneRegex.test(phone.replace(/[\s-]/g, ''))) {
+      return NextResponse.json({
+        success: false,
+        error: 'Invalid phone number format'
+      }, { status: 400 });
+    }
+
+    // Validate year
+    const currentYear = new Date().getFullYear();
+    if (year < 1990 || year > currentYear) {
+      return NextResponse.json({
+        success: false,
+        error: 'Invalid manufacturing year'
+      }, { status: 400 });
+    }
+
+    // Validate price
+    if (expectedPrice < 1000 || expectedPrice > 10000000) {
+      return NextResponse.json({
+        success: false,
+        error: 'Invalid price range'
+      }, { status: 400 });
+    }
+
+    // Normalize city name to proper case
+    const normalizeCity = (cityName: string) => {
+      return cityName
+        .toLowerCase()
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    };
+
+    const insertData = {
+      brand,
+      model,
+      variant: variant || null,
+      year: parseInt(year),
+      category,
+      fuel_type: fuelType,
+      transmission,
+      km_driven: parseInt(kmDriven),
+      ownership,
+      expected_price: parseInt(expectedPrice),
+      condition,
+      description: description || null,
+      owner_name: ownerName,
+      email,
+      phone,
+      city: normalizeCity(city),
+      state,
+      has_rc: hasRC || false,
+      has_insurance: hasInsurance || false,
+      has_puc: hasPUC || false,
+      photos: photos || [],
+      status: status, // Admin can set status directly
+      verified: true, // Admin created bikes are verified
+      approved_at: status === 'approved' ? new Date().toISOString() : null
+    };
+
+    const { data, error } = await (supabase as any)
+      .from('used_bikes')
+      .insert(insertData)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error inserting used bike (admin):', error);
+      return NextResponse.json({
+        success: false,
+        error: 'Failed to create bike listing'
+      }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Bike listing created successfully',
+      data
+    });
+
+  } catch (err) {
+    console.error('API /admin/used-bikes POST error:', err);
     return NextResponse.json({
       success: false,
       error: 'Unexpected server error. Please try again.'
