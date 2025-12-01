@@ -19,11 +19,13 @@ import {
   FiChevronLeft,
   FiChevronRight,
   FiLogOut,
-  FiShoppingCart
+  FiShoppingCart,
+  FiUserCheck
 } from 'react-icons/fi';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: FiHome },
+  { name: 'Leads', href: '/admin/leads', icon: FiUserCheck },
   { name: 'Brands', href: '/admin/brands', icon: FiTruck },
   { name: 'Models', href: '/admin/models', icon: FiShoppingBag },
   { name: 'Variants', href: '/admin/variants', icon: FiEye },
