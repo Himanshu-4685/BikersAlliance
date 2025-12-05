@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAdminAuth } from '@/context/AdminAuthContext';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminHeader from '@/components/admin/AdminHeader';
 import { FiSave, FiArrowLeft, FiUpload } from 'react-icons/fi';
+import { storageManager } from '@/utils/supabase-storage';
 
 interface Brand {
   brand_id: string;
@@ -36,7 +37,9 @@ export default function EditBrandPage() {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!isLoading && !admin) {
@@ -96,6 +99,75 @@ export default function EditBrandPage() {
         [name]: ''
       }));
     }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setErrors(prev => ({ ...prev, logo_url: 'Please select an image file' }));
+      return;
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setErrors(prev => ({ ...prev, logo_url: 'File size must be less than 5MB' }));
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setErrors(prev => ({ ...prev, logo_url: '' }));
+
+      // Ensure Brand_image folder exists
+      try {
+        const { folders } = await storageManager.listImageFolders();
+        const brandFolderExists = folders.some(folder => folder.name === 'Brand_image');
+        
+        if (!brandFolderExists) {
+          console.log('Creating Brand_image folder...');
+          await storageManager.createFolder('Brand_image');
+        }
+      } catch (folderError) {
+        console.warn('Could not ensure folder exists:', folderError);
+      }
+
+      // Generate unique filename
+      const timestamp = Date.now();
+      const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const cleanBrandName = formData.brand_name.toLowerCase().replace(/[^a-z0-9]/g, '_').substring(0, 20);
+      const fileName = `${cleanBrandName}_${timestamp}.${extension}`;
+
+      // Upload to Brand_image folder
+      const result = await storageManager.uploadFile('Brand_image', fileName, file);
+
+      if (result.success && result.url) {
+        console.log('Upload successful. URL:', result.url);
+        // Update form data with the uploaded URL
+        setFormData(prev => ({
+          ...prev,
+          logo_url: result.url
+        }));
+      } else {
+        console.error('Upload failed:', result.error);
+        setErrors(prev => ({ ...prev, logo_url: result.error || 'Upload failed' }));
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      setErrors(prev => ({ ...prev, logo_url: 'Upload failed. Please try again.' }));
+    } finally {
+      setUploading(false);
+      // Clear the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
   };
 
   const validateForm = (): boolean => {
@@ -239,6 +311,7 @@ export default function EditBrandPage() {
                 <div>
                   <label htmlFor="logo_url" className="block text-sm font-medium text-gray-700 mb-2">
                     Logo URL
+                    <span className="text-xs text-gray-500 ml-2">(Enter URL or upload an image)</span>
                   </label>
                   <div className="flex space-x-2">
                     <input
@@ -250,18 +323,33 @@ export default function EditBrandPage() {
                       className={`flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                         errors.logo_url ? 'border-red-500' : 'border-gray-300'
                       }`}
-                      placeholder="https://example.com/logo.png"
+                      placeholder="https://example.com/logo.png or upload an image"
+                    />
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileUpload}
+                      accept="image/*"
+                      className="hidden"
                     />
                     <button
                       type="button"
-                      className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 flex items-center space-x-2"
-                      disabled
+                      onClick={handleUploadClick}
+                      disabled={uploading || !formData.brand_name.trim()}
+                      className={`px-4 py-2 rounded-md flex items-center space-x-2 ${
+                        uploading || !formData.brand_name.trim()
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                      }`}
                     >
                       <FiUpload className="w-4 h-4" />
-                      <span>Upload</span>
+                      <span>{uploading ? 'Uploading...' : 'Upload'}</span>
                     </button>
                   </div>
                   {errors.logo_url && <p className="mt-1 text-sm text-red-600">{errors.logo_url}</p>}
+                  {!formData.brand_name.trim() && (
+                    <p className="mt-1 text-xs text-gray-500">Brand name is required to enable image upload</p>
+                  )}
                   {formData.logo_url && (
                     <div className="mt-2">
                       <img
