@@ -91,7 +91,7 @@ export default function NewBrandPage() {
         // Update form data with the uploaded URL
         setFormData(prev => ({
           ...prev,
-          logo_url: result.url
+          logo_url: result.url!
         }));
       } else {
         console.error('Upload failed:', result.error);
