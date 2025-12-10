@@ -7,9 +7,11 @@ interface Brand {
   id: string;
   name: string;
   slug: string;
-  logoUrl: string;
-  country: string;
-  _count: {
+  logo?: string;
+  logoUrl?: string;
+  country?: string;
+  count?: number;
+  _count?: {
     models: number;
   };
 }
@@ -28,7 +30,7 @@ export default function BrandCard({ brand, viewMode = 'grid' }: BrandCardProps) 
       <Link href={`/brands/${brand.slug}`} className={viewMode === 'grid' ? "block" : "flex items-center w-full"}>
         <div className={viewMode === 'grid' ? "mb-4" : "flex-shrink-0 mr-4"}>
           <Image
-            src={brand.logoUrl || '/demo.avif'}
+            src={brand.logoUrl || brand.logo || '/demo.avif'}
             alt={`${brand.name} logo`}
             width={viewMode === 'grid' ? 80 : 60}
             height={viewMode === 'grid' ? 80 : 60}
@@ -45,7 +47,7 @@ export default function BrandCard({ brand, viewMode = 'grid' }: BrandCardProps) 
             </p>
           )}
           <p className="text-xs text-gray-400">
-            {brand._count.models} models
+            {brand._count?.models || brand.count || 0} models
           </p>
         </div>
       </Link>

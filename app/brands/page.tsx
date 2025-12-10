@@ -11,9 +11,11 @@ interface Brand {
   id: string;
   name: string;
   slug: string;
-  logoUrl: string;
-  country: string;
-  _count: {
+  logo?: string;
+  logoUrl?: string;
+  country?: string;
+  count?: number;
+  _count?: {
     models: number;
   };
 }
@@ -40,9 +42,17 @@ export default function BrandsPage() {
         const data = await response.json();
         
         if (data.success) {
-          setBrands(data.data.brands);
-          setFilteredBrands(data.data.brands);
-          setTotalPages(Math.ceil(data.data.brands.length / brandsPerPage));
+          // Transform API response to match component expectations
+          const transformedBrands = data.data.brands.map((brand: any) => ({
+            ...brand,
+            logoUrl: brand.logo || brand.logoUrl || '/demo.avif',
+            _count: {
+              models: brand.count || brand._count?.models || 0
+            }
+          }));
+          setBrands(transformedBrands);
+          setFilteredBrands(transformedBrands);
+          setTotalPages(Math.ceil(transformedBrands.length / brandsPerPage));
         } else {
           setError(data.message || 'Failed to fetch brands');
         }
