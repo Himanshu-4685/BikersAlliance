@@ -28,6 +28,7 @@ import SimilarBikesSection from '@/components/bikes/SimilarBikesSection';
 import WishlistButton from '@/components/common/WishlistButton';
 import LeadFormPopup from '@/components/bikes/LeadFormPopup';
 import ReviewsAndRatingsSection from '@/components/bikes/ReviewsAndRatingsSection';
+import DynamicDealersSection from '@/components/bikes/DynamicDealersSection';
 import { useAuth } from '@/context/AuthContext.supabase';
 import { useRouter } from 'next/navigation';
 
@@ -788,47 +789,7 @@ export default function BikeDetailsPage() {
         />
         
         {/* Dealers Section */}
-        {bike.brand && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 className="text-2xl font-bold mb-6">Authorized Dealers</h2>
-            <div className="text-center py-8">
-              <FiMapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500 mb-4">Find {bike.brand.name} dealers near you</p>
-              <div className="space-y-3">
-                <div className="flex items-center justify-center space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <FiMapPin className="w-5 h-5 text-red-600" />
-                    <span className="text-gray-700">Select your city</span>
-                  </div>
-                  <select className="border border-gray-300 rounded-md px-3 py-2 bg-white">
-                    <option>Choose city...</option>
-                    <option>Delhi</option>
-                    <option>Mumbai</option>
-                    <option>Bangalore</option>
-                    <option>Chennai</option>
-                    <option>Hyderabad</option>
-                    <option>Pune</option>
-                  </select>
-                </div>
-                <button className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors">
-                  Find Dealers
-                </button>
-              </div>
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-600">
-                  <div className="flex items-center space-x-2">
-                    <FiPhone className="w-4 h-4" />
-                    <span>Call: 1800-XXX-XXXX</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <FiMail className="w-4 h-4" />
-                    <span>Email: dealers@{bike.brand.slug}.com</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <DynamicDealersSection />
         
         {/* Lead Form Popup */}
         {bike && bike.variants && bike.variants.length > 0 && (

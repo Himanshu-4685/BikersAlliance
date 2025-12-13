@@ -20,7 +20,8 @@ import {
   FiChevronRight,
   FiLogOut,
   FiShoppingCart,
-  FiUserCheck
+  FiUserCheck,
+  FiMapPin
 } from 'react-icons/fi';
 
 const navigation = [
@@ -30,6 +31,7 @@ const navigation = [
   { name: 'Models', href: '/admin/models', icon: FiShoppingBag },
   { name: 'Variants', href: '/admin/variants', icon: FiEye },
   { name: 'Specifications', href: '/admin/specifications', icon: FiSettings },
+  { name: 'Dealers', href: '/admin/dealers', icon: FiMapPin },
   { name: 'Status & Launches', href: '/admin/status', icon: FiActivity },
   { name: 'Bookings', href: '/admin/bookings', icon: FiBookOpen },
   { name: 'Used Bikes', href: '/admin/used-bikes', icon: FiShoppingCart },
