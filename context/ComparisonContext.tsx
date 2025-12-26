@@ -18,6 +18,7 @@ interface ComparisonContextType {
   comparisonList: Bike[];
   maxComparisons: number;
   addToComparison: (bike: Bike) => void;
+  addMultipleToComparison: (bikes: Bike[]) => void; // New method for adding multiple bikes
   removeFromComparison: (bikeId: string) => void;
   clearComparison: () => void;
   isInComparison: (bikeId: string) => boolean;
@@ -73,6 +74,16 @@ export const ComparisonProvider = ({ children }: { children: ReactNode }) => {
       alert(`You can compare up to ${maxComparisons} bikes at a time`);
     }
   };
+
+  const addMultipleToComparison = (bikes: Bike[]) => {
+    // Filter out bikes that are already in comparison and respect max limit
+    const uniqueBikes = bikes.filter(bike => !isInComparison(bike.id));
+    const bikesToAdd = uniqueBikes.slice(0, maxComparisons - comparisonList.length);
+    
+    if (bikesToAdd.length > 0) {
+      setComparisonList([...comparisonList, ...bikesToAdd]);
+    }
+  };
   
   const removeFromComparison = (bikeId: string) => {
     setComparisonList(comparisonList.filter(bike => bike.id !== bikeId));
@@ -108,6 +119,7 @@ export const ComparisonProvider = ({ children }: { children: ReactNode }) => {
         comparisonList,
         maxComparisons,
         addToComparison,
+        addMultipleToComparison,
         removeFromComparison,
         clearComparison,
         isInComparison,
