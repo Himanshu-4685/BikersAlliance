@@ -72,12 +72,12 @@ const twoWheelerNews = [
 ];
 
 const bikeCategories = [
-  { name: 'Commuter Bikes', icon: '🏍️' },
-  { name: 'Sports Bikes', icon: '🏁' },
-  { name: 'Cruiser Bikes', icon: '🛣️' },
-  { name: 'Electric Bikes', icon: '⚡' },
-  { name: 'Adventure Bikes', icon: '🏔️' },
-  { name: 'Scooters', icon: '🛵' }
+  { name: 'Commuter Bikes', icon: '🏍️', slug: 'commuter' },
+  { name: 'Sports Bikes', icon: '🏁', slug: 'sports-bike' },
+  { name: 'Cruiser Bikes', icon: '🛣️', slug: 'cruiser' },
+  { name: 'Electric Bikes', icon: '⚡', slug: 'electric' },
+  { name: 'Adventure Bikes', icon: '🏔️', slug: 'adventure' },
+  { name: 'Scooters', icon: '🛵', slug: 'scooter' }
 ];
 
 export default function BikeFuelCalculatorPage() {
@@ -347,7 +347,7 @@ export default function BikeFuelCalculatorPage() {
                     {bikeCategories.map((category, index) => (
                       <Link 
                         key={index} 
-                        href={`/bikes?category=${category.name.toLowerCase().replace(' ', '-')}`}
+                        href={`/bikes/type/${category.slug}`}
                         className="p-3 border border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-colors text-center"
                       >
                         <div className="text-2xl mb-1">{category.icon}</div>

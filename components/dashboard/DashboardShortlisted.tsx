@@ -161,7 +161,7 @@ export default function DashboardShortlisted() {
                   </p>
                 </div>
                 <Link 
-                  href="/bikes"
+                  href="/bikes/all"
                   className="px-4 py-2 text-primary border border-primary rounded-md hover:bg-primary hover:text-white transition-colors"
                 >
                   Add More Vehicles
