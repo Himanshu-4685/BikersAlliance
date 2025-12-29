@@ -173,9 +173,12 @@ export default async function CityUsedBikesPage({ params }: { params: { slug: st
                 <span>{bike.city}, {bike.state}</span>
               </div>
               
-              <button className="w-full py-2 text-white bg-primary rounded-md hover:bg-primary-dark transition-colors">
+              <Link 
+                href={`/used-bikes/details/${bike.id}`}
+                className="block w-full py-2 text-white bg-primary rounded-md hover:bg-primary-dark transition-colors text-center"
+              >
                 View Details
-              </button>
+              </Link>
             </div>
           </div>
         ))}
