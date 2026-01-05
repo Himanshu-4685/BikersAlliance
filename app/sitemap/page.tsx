@@ -55,13 +55,12 @@ export default function SitemapPage() {
     {
       title: "Categories",
       links: [
-        { href: "/body-types", label: "Body Types" },
-        { href: "/body-types/cruiser", label: "Cruiser Bikes" },
-        { href: "/body-types/sports", label: "Sports Bikes" },
-        { href: "/body-types/commuter", label: "Commuter Bikes" },
-        { href: "/body-types/adventure", label: "Adventure Bikes" },
-        { href: "/body-types/naked", label: "Naked Bikes" },
-        { href: "/body-types/touring", label: "Touring Bikes" },
+        { href: "/bikes/type/cruiser", label: "Cruiser Bikes" },
+        { href: "/bikes/type/sports", label: "Sports Bikes" },
+        { href: "/bikes/type/commuter", label: "Commuter Bikes" },
+        { href: "/bikes/type/adventure", label: "Adventure Bikes" },
+        { href: "/bikes/type/naked", label: "Naked Bikes" },
+        { href: "/bikes/type/touring", label: "Touring Bikes" },
       ]
     },
     {

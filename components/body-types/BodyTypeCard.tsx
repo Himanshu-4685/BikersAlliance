@@ -11,7 +11,7 @@ interface BodyTypeCardProps {
 export default function BodyTypeCard({ bodyType, viewMode, icon = '🏍️' }: BodyTypeCardProps) {
   return (
     <Link
-      href={`/body-types/${bodyType.slug}`}
+      href={`/bikes/type/${bodyType.slug}`}
       className={`block bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 group ${
         viewMode === 'grid' ? 'p-6' : 'p-4'
       }`}

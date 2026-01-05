@@ -158,7 +158,7 @@ export default function BodyTypePage() {
           <nav className="flex items-center space-x-2 text-sm text-gray-600">
             <Link href="/" className="hover:text-blue-600">Home</Link>
             <FiChevronRight className="w-4 h-4" />
-            <Link href="/body-types" className="hover:text-blue-600">Body Types</Link>
+            <Link href="/bikes/type" className="hover:text-blue-600">Body Types</Link>
             <FiChevronRight className="w-4 h-4" />
             <span className="text-gray-900 font-medium">{bodyTypeName}</span>
           </nav>

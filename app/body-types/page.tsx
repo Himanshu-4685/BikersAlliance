@@ -181,13 +181,15 @@ export default function BodyTypesPage() {
               : 'space-y-4'
           }`}>
             {filteredBodyTypes.map((bodyType) => (
-              <BodyTypeCard
-                key={bodyType.slug}
-                bodyType={bodyType}
-                viewMode={viewMode}
-                icon={getBodyTypeIcon(bodyType.name)}
-              />
-            ))}
+              bodyType && bodyType.name && bodyType.slug ? (
+                <BodyTypeCard
+                  key={bodyType.slug}
+                  bodyType={bodyType}
+                  viewMode={viewMode}
+                  icon={getBodyTypeIcon(bodyType.name)}
+                />
+              ) : null
+            )).filter(Boolean)}
           </div>
         )}
       </div>
@@ -201,12 +203,13 @@ export default function BodyTypesPage() {
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {bodyTypes
+                .filter(bodyType => bodyType && bodyType.name && bodyType.slug)
                 .sort((a, b) => b.count - a.count)
                 .slice(0, 8)
                 .map((bodyType) => (
                   <Link
                     key={bodyType.slug}
-                    href={`/body-types/${bodyType.slug}`}
+                    href={`/bikes/type/${bodyType.slug}`}
                     className="text-center p-4 rounded-lg hover:bg-gray-50 transition-colors group"
                   >
                     <div className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-200">

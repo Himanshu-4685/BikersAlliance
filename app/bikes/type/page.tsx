@@ -183,21 +183,22 @@ export default function BikeTypesPage() {
               : 'space-y-4'
           }`}>
             {filteredBodyTypes.map((bodyType) => (
-              <Link
-                key={bodyType.slug}
-                href={`/bikes/type/${bodyType.slug}`}
-                className={`block bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 group ${
-                  viewMode === 'grid' ? 'p-6' : 'p-4'
-                }`}
-              >
-                {viewMode === 'grid' ? (
-                  // Grid view
-                  <div className="text-center">
-                    <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-200">
-                      {getBodyTypeIcon(bodyType.name)}
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600">
-                      {bodyType.name}
+              bodyType && bodyType.name && bodyType.slug ? (
+                <Link
+                  key={bodyType.slug}
+                  href={`/bikes/type/${bodyType.slug}`}
+                  className={`block bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 group ${
+                    viewMode === 'grid' ? 'p-6' : 'p-4'
+                  }`}
+                >
+                  {viewMode === 'grid' ? (
+                    // Grid view
+                    <div className="text-center">
+                      <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-200">
+                        {getBodyTypeIcon(bodyType.name)}
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600">
+                        {bodyType.name}
                     </h3>
                     <p className="text-gray-600 text-sm">
                       {bodyType.count} bike{bodyType.count !== 1 ? 's' : ''}
@@ -224,7 +225,8 @@ export default function BikeTypesPage() {
                   </div>
                 )}
               </Link>
-            ))}
+            ) : null
+            )).filter(Boolean)}
           </div>
         )}
       </div>
@@ -238,6 +240,7 @@ export default function BikeTypesPage() {
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {bodyTypes
+                .filter(bodyType => bodyType && bodyType.name && bodyType.slug)
                 .sort((a, b) => b.count - a.count)
                 .slice(0, 8)
                 .map((bodyType) => (
