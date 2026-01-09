@@ -8,6 +8,7 @@ import { FiChevronRight, FiFilter, FiX } from 'react-icons/fi';
 
 // Filter components
 import BrandFilter from '@/components/filters/BrandFilter';
+import Pagination from '@/components/ui/Pagination';
 import PriceFilter from '@/components/filters/PriceFilter';
 import EngineFilter from '@/components/filters/EngineFilter';
 import MileageFilter from '@/components/filters/MileageFilter';
@@ -169,18 +170,6 @@ export default function ScootersPage() {
     updateFilter('page', page.toString());
   };
 
-  // Generate pagination numbers
-  const getPaginationNumbers = () => {
-    const numbers = [];
-    const maxPages = Math.min(pagination.totalPages, 5);
-    
-    for (let i = 1; i <= maxPages; i++) {
-      numbers.push(i);
-    }
-    
-    return numbers;
-  };
-
   // Check if any filters are active
   const hasActiveFilters = currentBrand || currentMinPrice || 
     currentMaxPrice || currentMinDisplacement || currentMaxDisplacement || 
@@ -319,7 +308,7 @@ export default function ScootersPage() {
                   {scooters.map((scooter) => (
                     <Link 
                       key={scooter.variant_id} 
-                      href={`/scooters/${scooter.variant_url}`} 
+                      href={`/bikes/${scooter.variant_id}`} 
                       className="overflow-hidden transition-shadow bg-white border rounded-lg hover:shadow-md"
                     >
                       {/* Scooter Image */}
@@ -358,29 +347,23 @@ export default function ScootersPage() {
                         </div>
                         
                         {/* Specs */}
-                        <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-gray-500">
+                        <div className="mt-3 grid grid-cols-2 gap-2">
                           {scooter.displacement && (
-                            <div>
-                              <div className="font-medium">Engine</div>
-                              <div>{scooter.displacement}cc</div>
+                            <div className="text-sm">
+                              <span className="text-gray-500">Engine: </span>
+                              <span className="font-medium">{scooter.displacement}cc</span>
                             </div>
                           )}
                           {scooter.city_mileage && (
-                            <div>
-                              <div className="font-medium">Mileage</div>
-                              <div>{scooter.city_mileage}</div>
+                            <div className="text-sm">
+                              <span className="text-gray-500">Mileage: </span>
+                              <span className="font-medium">{scooter.city_mileage}</span>
                             </div>
                           )}
                           {scooter.peak_power && (
-                            <div>
-                              <div className="font-medium">Power</div>
-                              <div>{scooter.peak_power}</div>
-                            </div>
-                          )}
-                          {scooter.engine_type && (
-                            <div>
-                              <div className="font-medium">Engine Type</div>
-                              <div>{scooter.engine_type}</div>
+                            <div className="text-sm">
+                              <span className="text-gray-500">Power: </span>
+                              <span className="font-medium">{scooter.peak_power}</span>
                             </div>
                           )}
                         </div>
@@ -389,42 +372,22 @@ export default function ScootersPage() {
                   ))}
                 </div>
 
-                {/* Pagination */}
-                {pagination.totalPages > 1 && (
-                  <div className="flex items-center justify-center mt-8 space-x-2">
-                    {pagination.page > 1 && (
-                      <button
-                        onClick={() => handlePageChange(pagination.page - 1)}
-                        className="px-3 py-1 text-sm border rounded hover:bg-gray-50"
-                      >
-                        Previous
-                      </button>
-                    )}
-                    
-                    {getPaginationNumbers().map((pageNum) => (
-                      <button
-                        key={pageNum}
-                        onClick={() => handlePageChange(pageNum)}
-                        className={`px-3 py-1 text-sm border rounded ${
-                          pagination.page === pageNum
-                            ? 'bg-primary text-white border-primary'
-                            : 'hover:bg-gray-50'
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    ))}
-                    
-                    {pagination.page < pagination.totalPages && (
-                      <button
-                        onClick={() => handlePageChange(pagination.page + 1)}
-                        className="px-3 py-1 text-sm border rounded hover:bg-gray-50"
-                      >
-                        Next
-                      </button>
-                    )}
+                {/* Pagination Info */}
+                {pagination.total > 0 && (
+                  <div className="mt-6 text-center">
+                    <p className="text-sm text-gray-600">
+                      Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} scooters
+                    </p>
                   </div>
                 )}
+
+                {/* Pagination */}
+                <Pagination
+                  currentPage={pagination.page}
+                  totalPages={pagination.totalPages}
+                  onPageChange={handlePageChange}
+                  className="mt-8"
+                />
               </>
             ) : (
               /* No Results */

@@ -196,8 +196,20 @@ export default function ShowroomsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-900 to-blue-700 text-white py-16">
-        <div className="container">
+      <section className="relative bg-gradient-to-r from-blue-900 to-blue-700 text-white py-16 overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0 opacity-50">
+          <Image
+            src="/s.avif"
+            alt="Motorcycle Showroom"
+            fill
+            className="object-cover"
+            priority
+          />
+        </div>
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/70 to-blue-700/70"></div>
+        <div className="container relative z-20">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
               Find Motorcycle Showrooms
@@ -235,122 +247,18 @@ export default function ShowroomsPage() {
       </section>
 
       <div className="container py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filters Sidebar */}
-          <div className="lg:w-80">
-            <div className="bg-white rounded-lg shadow-sm border p-6 sticky top-8">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
-                {hasActiveFilters && (
-                  <button
-                    onClick={clearFilters}
-                    className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
-                  >
-                    <FiX className="w-4 h-4" />
-                    Clear All
-                  </button>
-                )}
-              </div>
-
-              <div className="space-y-6">
-                {/* City Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    City
-                  </label>
-                  <select
-                    value={selectedCity}
-                    onChange={(e) => {
-                      setSelectedCity(e.target.value);
-                      setTimeout(handleFilterChange, 100);
-                    }}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="">All Cities</option>
-                    {filters.cities.map(city => (
-                      <option key={city} value={city}>{city}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Brand Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Brand
-                  </label>
-                  <select
-                    value={selectedBrand}
-                    onChange={(e) => {
-                      setSelectedBrand(e.target.value);
-                      setTimeout(handleFilterChange, 100);
-                    }}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="">All Brands</option>
-                    {filters.brands.map(brand => (
-                      <option key={brand.id} value={brand.slug}>{brand.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Feature Filters */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Features
-                  </label>
-                  <div className="space-y-3">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={showFeatured}
-                        onChange={(e) => {
-                          setShowFeatured(e.target.checked);
-                          setTimeout(handleFilterChange, 100);
-                        }}
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                      />
-                      <span className="ml-2 text-sm text-gray-700">Featured Showrooms</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={showVerified}
-                        onChange={(e) => {
-                          setShowVerified(e.target.checked);
-                          setTimeout(handleFilterChange, 100);
-                        }}
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                      />
-                      <span className="ml-2 text-sm text-gray-700">Verified Dealers</span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
+        <div>
           {/* Main Content */}
-          <div className="flex-1">
+          <div>
             {/* Results Header */}
             <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-              <div className="flex flex-col md:flex-row md:items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-semibold text-gray-900">
-                    Motorcycle Showrooms
-                  </h2>
-                  <p className="text-gray-600 mt-1">
-                    {loading ? 'Loading...' : `${pagination.total} showrooms found`}
-                  </p>
-                </div>
-                
-                {/* Mobile Filter Toggle */}
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="md:hidden mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"
-                >
-                  <FiFilter />
-                  Filters
-                </button>
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-900">
+                  Motorcycle Showrooms
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  {loading ? 'Loading...' : `${pagination.total} showrooms found`}
+                </p>
               </div>
             </div>
 
@@ -407,12 +315,23 @@ export default function ShowroomsPage() {
                       <div key={showroom.id} className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
                         <Link href={`/showrooms/${showroom.slug}`}>
                           <div className="aspect-video relative overflow-hidden rounded-t-lg">
+                            {/* Fallback background image */}
+                            <Image
+                              src="/s.avif"
+                              alt="Motorcycle Showroom"
+                              fill
+                              className="object-cover"
+                            />
+                            {/* Main showroom image */}
                             <Image
                               src={showroom.image}
                               alt={showroom.name}
                               fill
                               className="object-cover"
                               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.opacity = '0';
+                              }}
                             />
                             {showroom.featured && (
                               <div className="absolute top-3 left-3">
@@ -438,7 +357,7 @@ export default function ShowroomsPage() {
                           <div className="flex items-center gap-3 mb-3">
                             <div className="w-10 h-10 relative">
                               <Image
-                                src={showroom.brand.logo}
+                                src={showroom.brand.logo.replace('/brand-images/', '/images/brands/')}
                                 alt={showroom.brand.name}
                                 fill
                                 className="object-contain"

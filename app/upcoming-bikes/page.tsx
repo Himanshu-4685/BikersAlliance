@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FiChevronRight, FiClock, FiTag, FiFilter, FiX } from 'react-icons/fi';
 import { BikeStatus } from '@/types/bike-status';
+import NotificationPopup from '@/components/common/NotificationPopup';
 
 // Types
 interface UpcomingBike {
@@ -25,6 +26,8 @@ export default function UpcomingBikesPage() {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [selectedBike, setSelectedBike] = useState<BikeStatus | null>(null);
 
   // Fetch bikes from API
   useEffect(() => {
@@ -84,6 +87,12 @@ export default function UpcomingBikesPage() {
   };
 
   const hasActiveFilters = selectedBrand || selectedCategory;
+
+  // Handle notification popup
+  const handleNotifyClick = (bike: BikeStatus) => {
+    setSelectedBike(bike);
+    setIsPopupOpen(true);
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -269,7 +278,10 @@ export default function UpcomingBikesPage() {
                       </div>
 
                       {/* CTA Button */}
-                      <button className="w-full px-4 py-2 text-sm text-center text-primary transition-colors border border-primary rounded-md hover:bg-primary hover:text-white">
+                      <button 
+                        onClick={() => handleNotifyClick(bike)}
+                        className="w-full px-4 py-2 text-sm text-center text-primary transition-colors border border-primary rounded-md hover:bg-primary hover:text-white"
+                      >
                         Get Notified When Launched
                       </button>
                     </div>
@@ -297,6 +309,21 @@ export default function UpcomingBikesPage() {
           </div>
         </div>
       </div>
+      
+      {/* Notification Popup */}
+      {selectedBike && (
+        <NotificationPopup
+          isOpen={isPopupOpen}
+          onClose={() => setIsPopupOpen(false)}
+          bikeData={{
+            id: selectedBike.variant.slug,
+            name: selectedBike.variant.name,
+            expectedPrice: selectedBike.priceRange,
+            expectedLaunch: selectedBike.expectedLaunch,
+            image: selectedBike.variant.images?.[0]?.url
+          }}
+        />
+      )}
     </div>
   );
 }

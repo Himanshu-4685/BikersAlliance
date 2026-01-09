@@ -26,8 +26,7 @@ export async function GET(request: Request) {
       `)
       .ilike('specs.body_type', '%scooter%')
       .not('on_road_price', 'is', null)
-      .order('on_road_price', { ascending: true })
-      .limit(12);
+      .order('on_road_price', { ascending: true });
 
     if (scootersError) {
       console.error('Scooters query error:', scootersError);

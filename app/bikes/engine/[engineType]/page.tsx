@@ -385,7 +385,7 @@ export default function EngineTypeFilterPage() {
                         
                         <div className="flex space-x-2">
                           <Link
-                            href={`/bikes/${bike.slug}`}
+                            href={`/bikes/${bike.id}`}
                             className="flex-1 px-4 py-2 bg-primary text-white text-center rounded-md hover:bg-primary-600 transition-colors"
                           >
                             View Details

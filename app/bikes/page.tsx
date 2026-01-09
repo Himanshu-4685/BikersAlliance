@@ -412,7 +412,7 @@ export default function BikesPage() {
                   {bikes.map((bike) => (
                     <Link 
                       key={bike.id} 
-                      href={`/bikes/${bike.slug}`} 
+                      href={`/bikes/${bike.id}`} 
                       className="overflow-hidden transition-shadow bg-white border rounded-lg hover:shadow-md"
                     >
                       {/* Bike Image */}

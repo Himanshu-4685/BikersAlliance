@@ -56,7 +56,7 @@ const formatBikeData = (dbBike: BikeFromDB): Bike => {
   return {
     id: dbBike.variant_id,
     name: dbBike.variant_name,
-    slug: dbBike.variant_url,
+    slug: dbBike.variant_id,
     image: dbBike.image_url || '/demo.avif',
     price: dbBike.on_road_price?.toLocaleString('en-IN') || 'N/A',
     specs: {

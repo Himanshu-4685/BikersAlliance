@@ -21,11 +21,11 @@ const navItems = [
     dropdownItems: [
       { label: 'Best Bikes', href: '/bikes/best', hasSubDropdown: true, 
         subItems: [
-          { label: 'Royal Enfield Hunter 350', href: '/bikes/royal-enfield-hunter-350' },
-          { label: 'Royal Enfield Continental GT 650', href: '/bikes/royal-enfield-continental-gt-650' },
-          { label: 'Royal Enfield Classic 350', href: '/bikes/royal-enfield-classic-350' },
-          { label: 'Hero Splendor Plus', href: '/bikes/hero-splendor-plus' },
-          { label: 'TVS Raider', href: '/bikes/tvs-raider' },
+          { label: 'Royal Enfield Hunter 350', href: '/bikes/386' },
+          { label: 'Royal Enfield Continental GT 650', href: '/bikes/413' },
+          { label: 'Royal Enfield Classic 350', href: '/bikes/420' },
+          { label: 'Hero Splendor Plus', href: '/bikes/182' },
+          { label: 'TVS Raider', href: '/bikes/484' },
           { label: 'All Best Bikes', href: '/bikes/best' },
         ]
       },
@@ -53,12 +53,11 @@ const navItems = [
     dropdownItems: [
       { label: 'Best Scooters', href: '/scooters/best', hasSubDropdown: true,
         subItems: [
-          { label: 'Honda Activa 6G', href: '/scooters/honda-activa-6g' },
-          { label: 'Yulu Wynn', href: '/scooters/yulu-wynn' },
-          { label: 'Suzuki Access 125', href: '/scooters/suzuki-access-125' },
-          { label: 'TVS Jupiter', href: '/scooters/tvs-jupiter' },
-          { label: 'TVS iQube', href: '/scooters/tvs-iqube' },
-          { label: 'All Best Scooters', href: '/scooters/best' },
+          { label: 'Honda Activa 6G', href: '/bikes/230' },
+          { label: 'Suzuki Access 125', href: '/bikes/421' },
+          { label: 'TVS Jupiter', href: '/bikes/538' },
+          { label: 'TVS iQube', href: '/bikes/528' },
+          { label: 'All Best Scooters', href: '/bikes/best' },
         ]
       },
       { label: 'Upcoming Scooters', href: '/upcoming-bikes' },
@@ -96,7 +95,7 @@ const navItems = [
     href: '/news',
     hasDropdown: true,
     dropdownItems: [
-      { label: 'News & Top Stories', href: '/news/top-stories' },
+      { label: 'News', href: '/news' },
       { label: 'Videos', href: '/videos' },
       { label: 'Web Stories', href: '/web-stories' },
     ]

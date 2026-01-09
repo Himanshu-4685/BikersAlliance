@@ -328,7 +328,7 @@ export default function ElectricBikesPage() {
 
                   {/* CTA */}
                   <Link
-                    href={`/bikes/${bike.variant_url}`}
+                    href={`/bikes/${bike.variant_id}`}
                     className="block w-full text-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-600 transition-colors font-medium"
                   >
                     View Details

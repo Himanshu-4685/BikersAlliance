@@ -294,17 +294,14 @@ export default function LatestBikesPage() {
                         </div>
                       </div>
 
-                      {/* CTA Buttons */}
-                      <div className="grid grid-cols-2 gap-2">
+                      {/* CTA Button */}
+                      <div>
                         <Link 
-                          href={`/bikes/${bike.variant.slug}`}
-                          className="px-3 py-2 text-sm text-center text-primary border border-primary rounded-md hover:bg-primary hover:text-white transition-colors"
+                          href={`/bikes/${bike.variant.id}`}
+                          className="block px-3 py-2 text-sm text-center text-primary border border-primary rounded-md hover:bg-primary hover:text-white transition-colors"
                         >
                           View Details
                         </Link>
-                        <button className="px-3 py-2 text-sm text-center text-white bg-primary rounded-md hover:bg-primary-dark transition-colors">
-                          Get Quote
-                        </button>
                       </div>
                     </div>
                   </div>

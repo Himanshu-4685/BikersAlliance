@@ -74,9 +74,7 @@ export default function SearchPage() {
   };
 
   const handleBikeClick = (bike: SearchResult) => {
-    const fullName = bike.model_name ? `${bike.model_name} ${bike.variant_name}` : bike.variant_name;
-    const slug = generateSlug(fullName);
-    return `/bikes/${slug}`;
+    return `/bikes/${bike.variant_id}`;
   };
 
   if (loading) {

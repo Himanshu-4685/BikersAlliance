@@ -65,36 +65,7 @@ interface Showroom {
   areaServed?: string[];
 }
 
-// Sample bikes available at showroom
-const sampleBikes = [
-  {
-    id: '1',
-    name: 'Activa 6G',
-    slug: 'honda-activa-6g',
-    price: 76684,
-    image: '/images/bikes/honda-activa-6g.jpg',
-    category: 'Scooter',
-    available: true
-  },
-  {
-    id: '2',
-    name: 'CB Shine',
-    slug: 'honda-cb-shine',
-    price: 72000,
-    image: '/images/bikes/honda-cb-shine.jpg',
-    category: 'Commuter',
-    available: true
-  },
-  {
-    id: '3',
-    name: 'Hornet 2.0',
-    slug: 'honda-hornet-2.0',
-    price: 135000,
-    image: '/images/bikes/honda-hornet.jpg',
-    category: 'Naked',
-    available: false
-  }
-];
+
 
 export default function ShowroomDetailPage() {
   const params = useParams();
@@ -196,15 +167,15 @@ export default function ShowroomDetailPage() {
 
       {/* Hero Section */}
       <section className="relative">
-        <div className="aspect-[21/9] relative overflow-hidden">
+        <div className="aspect-[21/9] relative overflow-hidden bg-gray-200">
           <Image
-            src={showroom.image}
-            alt={showroom.name}
+            src="/s.avif"
+            alt="Motorcycle Showroom"
             fill
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-900/50 to-blue-700/50"></div>
           
           {/* Badges */}
           <div className="absolute top-6 left-6 flex gap-3">
@@ -244,7 +215,7 @@ export default function ShowroomDetailPage() {
               <div className="flex items-start gap-4 mb-6">
                 <div className="w-16 h-16 relative flex-shrink-0">
                   <Image
-                    src={showroom.brand.logo}
+                    src={showroom.brand.logo.replace('/brand-images/', '/images/brands/')}
                     alt={showroom.brand.name}
                     fill
                     className="object-contain"
@@ -308,38 +279,7 @@ export default function ShowroomDetailPage() {
                 )}
               </div>
 
-              {/* Available Bikes */}
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Available Bikes</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {sampleBikes.map((bike) => (
-                    <div key={bike.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
-                      <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 relative">
-                          <Image
-                            src={bike.image}
-                            alt={bike.name}
-                            fill
-                            className="object-cover rounded"
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900">{bike.name}</h3>
-                          <p className="text-sm text-gray-500">{bike.category}</p>
-                          <p className="font-bold text-blue-600">₹{bike.price.toLocaleString()}</p>
-                          <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                            bike.available 
-                              ? 'bg-green-100 text-green-700' 
-                              : 'bg-red-100 text-red-700'
-                          }`}>
-                            {bike.available ? 'Available' : 'Out of Stock'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+
             </div>
           </div>
 
