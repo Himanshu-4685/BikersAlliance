@@ -13,6 +13,7 @@ interface BestScooter {
   on_road_price: number;
   displacement: string;
   city_mileage: string;
+  peak_power?: string;
   image_url?: string | null;
 }
 
@@ -78,7 +79,7 @@ export default function BestScootersPage() {
             specs: {
               engine: scooter.displacement,
               mileage: scooter.city_mileage,
-              power: 'N/A' // Power not available in current data
+              power: scooter.peak_power || 'N/A'
             }
           };
         });

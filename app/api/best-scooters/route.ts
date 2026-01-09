@@ -9,6 +9,7 @@ interface BestScooter {
   on_road_price: number;
   displacement: string;
   city_mileage: string;
+  peak_power?: string;
   image_url?: string | null;
 }
 
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
           models!inner(model_name),
           variant_name,
           on_road_price,
-          specs!inner(displacement, city_mileage, body_type),
+          specs!inner(displacement, city_mileage, body_type, peak_power),
           images(url)
         `)
         .gte('on_road_price', 50000)   // ₹50,000 minimum
@@ -106,6 +107,7 @@ export async function GET(request: NextRequest) {
           on_road_price: scooter.on_road_price || 0,
           displacement: scooter.specs?.displacement || '',
           city_mileage: scooter.specs?.city_mileage || '',
+          peak_power: scooter.specs?.peak_power || '',
           image_url: scooter.images?.[0]?.url || null
         })) || [];
 
