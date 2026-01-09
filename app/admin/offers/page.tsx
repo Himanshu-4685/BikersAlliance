@@ -31,6 +31,7 @@ interface Offer {
   valid_till: string;
   is_active: boolean;
   image_url?: string;
+  features?: string[];
   created_at: string;
 }
 
@@ -49,6 +50,8 @@ export default function AdminOffersPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [editSelectedFile, setEditSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [featuresInput, setFeaturesInput] = useState<string>('');
+  const [editFeaturesInput, setEditFeaturesInput] = useState<string>('');
 
   const uploadImageToSupabase = async (file: File, offerId?: string) => {
     try {
@@ -330,6 +333,7 @@ export default function AdminOffersPage() {
                   });
                   setImagePreview(null);
                   setSelectedFile(null);
+                  setFeaturesInput('');
                   setShowCreateModal(true);
                 }}
                 className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-600 transition-colors flex items-center"
@@ -520,6 +524,7 @@ export default function AdminOffersPage() {
                                   setEditingOffer(offer);
                                   setEditImagePreview(null);
                                   setEditSelectedFile(null);
+                                  setEditFeaturesInput(offer.features ? offer.features.join(', ') : '');
                                   setShowEditModal(true);
                                 }}
                                 className="text-indigo-600 hover:text-indigo-900"
@@ -704,6 +709,20 @@ export default function AdminOffersPage() {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Offer Includes (Features)
+                  </label>
+                  <textarea
+                    value={featuresInput}
+                    onChange={(e) => setFeaturesInput(e.target.value)}
+                    placeholder="Enter features separated by commas (e.g., Free Registration, 2 Year Extended Warranty, Zero Down Payment)"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                    rows={3}
+                  />
+                  <p className="text-sm text-gray-500 mt-1">Separate each feature with a comma</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Offer Image
                   </label>
                   <input
@@ -747,6 +766,7 @@ export default function AdminOffersPage() {
                     setNewOffer({});
                     setImagePreview(null);
                     setSelectedFile(null);
+                    setFeaturesInput('');
                   }}
                   className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
                 >
@@ -761,7 +781,12 @@ export default function AdminOffersPage() {
                       alert('Please fill in all required fields marked with *');
                       return;
                     }
-                    createOffer(newOffer);
+                    // Process features from input
+                    const offerWithFeatures = {
+                      ...newOffer,
+                      features: featuresInput ? featuresInput.split(',').map(f => f.trim()).filter(f => f) : []
+                    };
+                    createOffer(offerWithFeatures);
                   }}
                   disabled={uploading}
                   className="flex-1 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -911,6 +936,20 @@ export default function AdminOffersPage() {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Offer Includes (Features)
+                  </label>
+                  <textarea
+                    value={editFeaturesInput}
+                    onChange={(e) => setEditFeaturesInput(e.target.value)}
+                    placeholder="Enter features separated by commas (e.g., Free Registration, 2 Year Extended Warranty, Zero Down Payment)"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                    rows={3}
+                  />
+                  <p className="text-sm text-gray-500 mt-1">Separate each feature with a comma</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Offer Image
                   </label>
                   <input
@@ -954,13 +993,20 @@ export default function AdminOffersPage() {
                     setEditingOffer(null);
                     setEditImagePreview(null);
                     setEditSelectedFile(null);
+                    setEditFeaturesInput('');
                   }}
                   className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={() => updateOffer(editingOffer)}
+                  onClick={() => {
+                    const offerWithFeatures = {
+                      ...editingOffer,
+                      features: editFeaturesInput ? editFeaturesInput.split(',').map(f => f.trim()).filter(f => f) : []
+                    };
+                    updateOffer(offerWithFeatures);
+                  }}
                   disabled={uploading}
                   className="flex-1 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >

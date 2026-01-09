@@ -14,7 +14,6 @@ import {
   FiFilter,
   FiSearch,
   FiHeart,
-  FiShare2,
   FiInfo,
   FiX,
   FiUser,
@@ -410,18 +409,6 @@ export default function BikeOffersPage() {
                     Get This Offer
                     <FiArrowRight className="ml-2" />
                   </button>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Link
-                      href={`/bikes/${offer.bike_name?.toLowerCase().replace(/\s+/g, '-') || ''}`}
-                      className="text-center border border-primary text-primary py-2 rounded-md hover:bg-primary-50 transition-colors text-sm"
-                    >
-                      View Details
-                    </Link>
-                    <button className="flex items-center justify-center text-gray-600 hover:text-gray-800 py-2 text-sm">
-                      <FiShare2 className="mr-1 w-4 h-4" />
-                      Share
-                    </button>
-                  </div>
                 </div>
 
                 {/* Dealer Info */}
