@@ -5,69 +5,47 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FiTrendingUp, FiMapPin, FiDollarSign, FiDroplet, FiCalendar } from 'react-icons/fi';
 
-// Sample bike data for the tool
-const sampleBikes = [
-  {
-    id: 1,
-    name: 'Hero Splendor Plus',
-    price: '₹74,856',
-    mileage: '70 kmpl',
-    image: '/images/bikes/splendor-plus.jpg'
-  },
-  {
-    id: 2,
-    name: 'Honda Activa 6G',
-    price: '₹76,684',
-    mileage: '60 kmpl',
-    image: '/images/bikes/activa-6g.jpg'
-  },
-  {
-    id: 3,
-    name: 'TVS Raider',
-    price: '₹98,389',
-    mileage: '67 kmpl',
-    image: '/images/bikes/tvs-raider.jpg'
-  },
-  {
-    id: 4,
-    name: 'Royal Enfield Hunter 350',
-    price: '₹1.50 Lakh',
-    mileage: '36 kmpl',
-    image: '/images/bikes/hunter-350.jpg'
-  },
-  {
-    id: 5,
-    name: 'Royal Enfield Classic 350',
-    price: '₹1.93 Lakh',
-    mileage: '35 kmpl',
-    image: '/images/bikes/classic-350.jpg'
-  }
-];
+// Interface for trending bikes from spotlight categories
+interface TrendingBike {
+  variant_id: number;
+  variant_name: string;
+  on_road_price: number;
+  city_mileage: string;
+  image_url: string;
+  brand_name: string;
+  variant_url: string;
+  category: string;
+}
 
-const bestMileageBikes = [
-  { name: 'Hero Splendor Plus', mileage: '70 kmpl', price: '₹74,856' },
-  { name: 'Bajaj Platina 110', mileage: '84 kmpl', price: '₹64,301' },
-  { name: 'Honda SP 125', mileage: '65 kmpl', price: '₹81,567' }
-];
+// This will be fetched dynamically from API
+interface BestMileageBike {
+  variant_id: number;
+  variant_name: string;
+  on_road_price: number;
+  city_mileage: string;
+  image_url: string;
+  brand_name: string;
+  variant_url: string;
+}
 
 const twoWheelerNews = [
   {
     title: 'Top Scooter Choices Available For Rs 1 Lakh in India',
     description: 'There are 16 scooters between Rs 50000-100000 price range available in India. Suzuki Access 125 starts at Rs 50000.',
     date: 'Dec 27, 2024',
-    image: '/images/news/scooter-news.jpg'
+    image: '/images/news/news.avif'
   },
   {
     title: 'QJ Motor SRK 400 And Suzuki GSX-8R Road Tests Slated and More',
     description: 'India has been experiencing noteworthy motorcycle introductions over the past few months and the upcoming year of 2025 too...',
     date: 'Dec 15, 2024',
-    image: '/images/news/qj-motor-news.jpg'
+    image: '/images/news/news.avif'
   },
   {
     title: 'BREAKING: Bajaj Chetak Slashed and MG to Debut Diesel EMI',
     description: 'Bajaj Chetak launched the new electric scooter with improved battery technology and extended range.',
     date: 'Dec 10, 2024',
-    image: '/images/news/bajaj-chetak-news.jpg'
+    image: '/images/news/news.avif'
   }
 ];
 
@@ -88,6 +66,89 @@ export default function BikeFuelCalculatorPage() {
   
   const [fuelCost, setFuelCost] = useState(0);
   const [fuelConsumed, setFuelConsumed] = useState(0);
+  
+  // State for best mileage bikes
+  const [bestMileageBikes, setBestMileageBikes] = useState<BestMileageBike[]>([]);
+  const [loadingBikes, setLoadingBikes] = useState(true);
+  const [bikeError, setBikeError] = useState<string | null>(null);
+  
+  // State for trending bikes from spotlight categories
+  const [trendingBikes, setTrendingBikes] = useState<TrendingBike[]>([]);
+  const [loadingTrendingBikes, setLoadingTrendingBikes] = useState(true);
+  const [trendingBikesError, setTrendingBikesError] = useState<string | null>(null);
+
+  // Fetch best mileage bikes from API
+  useEffect(() => {
+    const fetchBestMileageBikes = async () => {
+      try {
+        setLoadingBikes(true);
+        setBikeError(null);
+        
+        const response = await fetch('/api/bikes/category?category=mileage');
+        const data = await response.json();
+        
+        if (data.success && data.data.bikes) {
+          // Take only the first 3 bikes for display
+          const topBikes = data.data.bikes.slice(0, 3);
+          setBestMileageBikes(topBikes);
+        } else {
+          setBikeError('Failed to load best mileage bikes');
+        }
+      } catch (error) {
+        console.error('Error fetching best mileage bikes:', error);
+        setBikeError('Failed to load best mileage bikes');
+      } finally {
+        setLoadingBikes(false);
+      }
+    };
+
+    fetchBestMileageBikes();
+  }, []);
+
+  // Fetch trending bikes from different spotlight categories
+  useEffect(() => {
+    const fetchTrendingBikes = async () => {
+      try {
+        setLoadingTrendingBikes(true);
+        setTrendingBikesError(null);
+        
+        // Categories to fetch from (same as spotlight)
+        const categories = ['commuter', 'sports', 'cruiser', 'electric'];
+        const allTrendingBikes: TrendingBike[] = [];
+        
+        // Fetch bikes from each category
+        for (const category of categories) {
+          try {
+            const response = await fetch(`/api/bikes/category?category=${category}`);
+            const data = await response.json();
+            
+            if (data.success && data.data.bikes) {
+              // Take 1-2 bikes from each category
+              const categoryBikes = data.data.bikes.slice(0, 1).map((bike: any) => ({
+                ...bike,
+                category: category
+              }));
+              allTrendingBikes.push(...categoryBikes);
+            }
+          } catch (error) {
+            console.error(`Error fetching ${category} bikes:`, error);
+          }
+        }
+        
+        // Shuffle and take first 5 bikes for variety
+        const shuffledBikes = allTrendingBikes.sort(() => Math.random() - 0.5).slice(0, 5);
+        setTrendingBikes(shuffledBikes);
+        
+      } catch (error) {
+        console.error('Error fetching trending bikes:', error);
+        setTrendingBikesError('Failed to load trending bikes');
+      } finally {
+        setLoadingTrendingBikes(false);
+      }
+    };
+
+    fetchTrendingBikes();
+  }, []);
 
   const calculateFuelCost = () => {
     let days = 1;
@@ -276,23 +337,72 @@ export default function BikeFuelCalculatorPage() {
 
                 {/* Best Mileage Bikes */}
                 <div className="bg-white rounded-lg shadow-md p-8 mt-8">
-                  <h2 className="text-2xl font-bold mb-6">Best Mileage Bikes</h2>
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold">Best Mileage Bikes</h2>
+                    <Link 
+                      href="/bikes/mileage/above-60" 
+                      className="text-red-500 hover:text-red-600 text-sm font-medium"
+                    >
+                      View All Mileage Bikes
+                    </Link>
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {bestMileageBikes.map((bike, index) => (
-                      <div key={index} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                        <div className="h-40 bg-gray-200 flex items-center justify-center">
-                          <span className="text-gray-500">Bike Image</span>
+                    {loadingBikes ? (
+                      // Loading skeleton
+                      Array.from({ length: 3 }).map((_, index) => (
+                        <div key={index} className="border border-gray-200 rounded-lg overflow-hidden animate-pulse">
+                          <div className="h-40 bg-gray-200"></div>
+                          <div className="p-4">
+                            <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                            <div className="h-3 bg-gray-200 rounded mb-1 w-2/3"></div>
+                            <div className="h-3 bg-gray-200 rounded mb-3 w-1/2"></div>
+                            <div className="h-8 bg-gray-200 rounded"></div>
+                          </div>
                         </div>
-                        <div className="p-4">
-                          <h3 className="font-semibold text-gray-900 mb-1">{bike.name}</h3>
-                          <p className="text-red-600 font-medium text-sm mb-1">{bike.price}</p>
-                          <p className="text-green-600 font-medium text-sm">{bike.mileage}</p>
-                          <button className="w-full mt-3 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition-colors text-sm">
-                            View September Offers
-                          </button>
-                        </div>
+                      ))
+                    ) : bikeError ? (
+                      <div className="col-span-3 text-center text-red-600 py-8">
+                        {bikeError}
                       </div>
-                    ))}
+                    ) : (
+                      bestMileageBikes.map((bike) => (
+                        <div key={bike.variant_id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                          <div className="h-40 bg-gray-100 flex items-center justify-center">
+                            {bike.image_url && bike.image_url !== '/demo.avif' ? (
+                              <Image 
+                                src={bike.image_url} 
+                                alt={bike.variant_name}
+                                width={200}
+                                height={120}
+                                className="object-contain w-full h-full"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  target.parentElement!.innerHTML = '<span class="text-gray-500 text-sm">Bike Image</span>';
+                                }}
+                              />
+                            ) : (
+                              <span className="text-gray-500">Bike Image</span>
+                            )}
+                          </div>
+                          <div className="p-4">
+                            <h3 className="font-semibold text-gray-900 mb-1 text-sm">{bike.variant_name}</h3>
+                            <p className="text-red-600 font-medium text-sm mb-1">
+                              ₹{bike.on_road_price?.toLocaleString('en-IN') || 'N/A'}
+                            </p>
+                            <p className="text-green-600 font-medium text-sm mb-3">
+                              {bike.city_mileage || 'N/A'}
+                            </p>
+                            <Link 
+                              href={`/bikes/${bike.variant_url || bike.variant_name.toLowerCase().replace(/\s+/g, '-')}`}
+                              className="w-full block text-center bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition-colors text-sm"
+                            >
+                              View Details
+                            </Link>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
 
@@ -302,8 +412,19 @@ export default function BikeFuelCalculatorPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {twoWheelerNews.map((news, index) => (
                       <div key={index} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                        <div className="h-32 bg-gray-200 flex items-center justify-center">
-                          <span className="text-gray-500 text-sm">News Image</span>
+                        <div className="h-32 bg-gray-100 flex items-center justify-center overflow-hidden">
+                          <Image 
+                            src={news.image} 
+                            alt={news.title}
+                            width={300}
+                            height={128}
+                            className="object-cover w-full h-full"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              target.parentElement!.innerHTML = '<span class="text-gray-500 text-sm">News Image</span>';
+                            }}
+                          />
                         </div>
                         <div className="p-4">
                           <h3 className="font-semibold text-gray-900 text-sm mb-2 line-clamp-2">{news.title}</h3>
@@ -322,19 +443,56 @@ export default function BikeFuelCalculatorPage() {
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <h3 className="text-lg font-semibold mb-4">Trending Bikes</h3>
                   <div className="space-y-4">
-                    {sampleBikes.map((bike) => (
-                      <div key={bike.id} className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
-                        <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center mr-3">
-                          <span className="text-xs text-gray-500">IMG</span>
+                    {loadingTrendingBikes ? (
+                      // Loading skeleton
+                      Array.from({ length: 5 }).map((_, index) => (
+                        <div key={index} className="flex items-center p-3 border border-gray-200 rounded-lg animate-pulse">
+                          <div className="w-12 h-12 bg-gray-200 rounded-md mr-3"></div>
+                          <div className="flex-1">
+                            <div className="h-4 bg-gray-200 rounded mb-1 w-3/4"></div>
+                            <div className="h-3 bg-gray-200 rounded mb-1 w-1/2"></div>
+                            <div className="h-3 bg-gray-200 rounded w-1/3"></div>
+                          </div>
                         </div>
-                        <div className="flex-1">
-                          <h4 className="font-medium text-sm text-gray-900">{bike.name}</h4>
-                          <p className="text-xs text-red-600">{bike.price}</p>
-                          <p className="text-xs text-green-600">{bike.mileage}</p>
-                        </div>
+                      ))
+                    ) : trendingBikesError ? (
+                      <div className="text-center text-red-600 py-4 text-sm">
+                        {trendingBikesError}
                       </div>
-                    ))}
-                    <Link href="/bikes" className="block w-full text-red-500 text-sm font-medium hover:text-red-600 text-center py-2">
+                    ) : (
+                      trendingBikes.map((bike) => (
+                        <Link 
+                          key={bike.variant_id} 
+                          href={`/bikes/${bike.variant_url || bike.variant_name.toLowerCase().replace(/\s+/g, '-')}`}
+                          className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center mr-3 overflow-hidden">
+                            {bike.image_url && bike.image_url !== '/demo.avif' ? (
+                              <Image 
+                                src={bike.image_url} 
+                                alt={bike.variant_name}
+                                width={48}
+                                height={48}
+                                className="object-contain w-full h-full"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  target.parentElement!.innerHTML = '<span class="text-xs text-gray-500">IMG</span>';
+                                }}
+                              />
+                            ) : (
+                              <span className="text-xs text-gray-500">IMG</span>
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-medium text-sm text-gray-900 line-clamp-1">{bike.variant_name}</h4>
+                            <p className="text-xs text-red-600">₹{bike.on_road_price?.toLocaleString('en-IN') || 'N/A'}</p>
+                            <p className="text-xs text-green-600">{bike.city_mileage || 'N/A'}</p>
+                          </div>
+                        </Link>
+                      ))
+                    )}
+                    <Link href="/bikes/all" className="block w-full text-red-500 text-sm font-medium hover:text-red-600 text-center py-2">
                       View All Bikes
                     </Link>
                   </div>

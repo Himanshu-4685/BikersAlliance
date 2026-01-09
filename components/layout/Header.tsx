@@ -57,7 +57,7 @@ const navItems = [
           { label: 'Suzuki Access 125', href: '/bikes/421' },
           { label: 'TVS Jupiter', href: '/bikes/538' },
           { label: 'TVS iQube', href: '/bikes/528' },
-          { label: 'All Best Scooters', href: '/bikes/best' },
+          { label: 'All Best Scooters', href: '/scooters/best' },
         ]
       },
       { label: 'Upcoming Scooters', href: '/upcoming-bikes' },
@@ -196,19 +196,7 @@ export default function Header() {
             
             {/* Action Buttons */}
             <div className="flex items-center space-x-3 md:space-x-5">
-              {/* City Selector - matches the second image */}
-              <div className="hidden md:flex items-center text-gray-700">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <select className="text-sm border-none bg-transparent focus:outline-none focus:ring-0">
-                  <option value="jaipur">Jaipur</option>
-                  <option value="delhi">Delhi</option>
-                  <option value="mumbai">Mumbai</option>
-                  <option value="bangalore">Bangalore</option>
-                </select>
-              </div>
+
               
               {/* Mobile Search Button */}
               <button
@@ -218,13 +206,7 @@ export default function Header() {
                 <FiSearch className="w-5 h-5" />
               </button>
               
-              {/* Language Selector - matches the second image */}
-              <div className="hidden md:block">
-                <select className="text-sm border-none bg-transparent focus:outline-none focus:ring-0">
-                  <option value="english">English</option>
-                  <option value="hindi">Hindi</option>
-                </select>
-              </div>
+
               
               {/* Removed wishlist and login buttons from here - moving to lower section */}
               

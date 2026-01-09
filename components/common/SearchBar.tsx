@@ -152,7 +152,7 @@ export default function SearchBar() {
   };
 
   return (
-    <div className="w-full max-w-2xl relative">
+    <div className="w-full relative">
       <form onSubmit={handleSubmit}>
         <div className="relative">
           <input

@@ -19,7 +19,8 @@ const chargingStations = [
     chargingSpeed: '50kW',
     status: 'Available',
     pricing: '₹12/kWh',
-    amenities: ['Parking', 'Restroom', 'Cafe']
+    amenities: ['Parking', 'Restroom', 'Cafe'],
+    coordinates: { lat: 28.6315, lng: 77.2167 }
   },
   {
     id: 2,
@@ -34,7 +35,8 @@ const chargingStations = [
     chargingSpeed: '22kW',
     status: 'Available',
     pricing: '₹10/kWh',
-    amenities: ['Parking', 'Shopping Mall']
+    amenities: ['Parking', 'Shopping Mall'],
+    coordinates: { lat: 19.0544, lng: 72.8266 }
   },
   {
     id: 3,
@@ -49,7 +51,8 @@ const chargingStations = [
     chargingSpeed: '6kW',
     status: 'Occupied',
     pricing: '₹8/kWh',
-    amenities: ['Parking', 'Cafe', 'Security']
+    amenities: ['Parking', 'Cafe', 'Security'],
+    coordinates: { lat: 12.8456, lng: 77.6603 }
   },
   {
     id: 4,
@@ -64,7 +67,8 @@ const chargingStations = [
     chargingSpeed: '15kW',
     status: 'Available',
     pricing: '₹9/kWh',
-    amenities: ['Parking', 'Restroom']
+    amenities: ['Parking', 'Restroom'],
+    coordinates: { lat: 13.0827, lng: 80.2707 }
   },
   {
     id: 5,
@@ -79,7 +83,8 @@ const chargingStations = [
     chargingSpeed: '60kW',
     status: 'Available',
     pricing: '₹15/kWh',
-    amenities: ['Parking', 'Restroom', 'Security', 'Cafe']
+    amenities: ['Parking', 'Restroom', 'Security', 'Cafe'],
+    coordinates: { lat: 17.4399, lng: 78.3908 }
   },
   {
     id: 6,
@@ -94,7 +99,8 @@ const chargingStations = [
     chargingSpeed: '50kW',
     status: 'Available',
     pricing: '₹13/kWh',
-    amenities: ['Parking', 'Security', 'Office Complex']
+    amenities: ['Parking', 'Security', 'Office Complex'],
+    coordinates: { lat: 28.4089, lng: 77.0687 }
   }
 ];
 
@@ -106,6 +112,12 @@ export default function ChargingStationsPage() {
   const [selectedCity, setSelectedCity] = useState('All Cities');
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredStations, setFilteredStations] = useState(chargingStations);
+
+  const openInMaps = (coordinates: { lat: number; lng: number }) => {
+    const { lat, lng } = coordinates;
+    const url = `https://www.google.com/maps?q=${lat},${lng}`;
+    window.open(url, '_blank');
+  };
 
   useEffect(() => {
     let filtered = chargingStations;
@@ -291,7 +303,10 @@ export default function ChargingStationsPage() {
                     </div>
 
                     <div className="mt-4 pt-4 border-t">
-                      <button className="w-full bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors">
+                      <button 
+                        onClick={() => openInMaps(station.coordinates)}
+                        className="w-full bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors"
+                      >
                         Get Directions
                       </button>
                     </div>
