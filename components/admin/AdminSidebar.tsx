@@ -21,12 +21,16 @@ import {
   FiLogOut,
   FiShoppingCart,
   FiUserCheck,
-  FiMapPin
+  FiMapPin,
+  FiPercent,
+  FiPhoneCall
 } from 'react-icons/fi';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: FiHome },
   { name: 'Leads', href: '/admin/leads', icon: FiUserCheck },
+  { name: 'Bike Offers', href: '/admin/offers', icon: FiPercent },
+  { name: 'Offer Leads', href: '/admin/offer-leads', icon: FiPhoneCall },
   { name: 'Brands', href: '/admin/brands', icon: FiTruck },
   { name: 'Models', href: '/admin/models', icon: FiShoppingBag },
   { name: 'Variants', href: '/admin/variants', icon: FiEye },

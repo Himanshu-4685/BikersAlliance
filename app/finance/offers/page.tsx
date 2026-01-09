@@ -9,7 +9,6 @@ import {
   FiCreditCard, 
   FiTrendingDown, 
   FiCalendar,
-  FiMapPin,
   FiClock,
   FiStar,
   FiInfo,
@@ -119,9 +118,6 @@ const discountOffers = [
 
 export default function FinanceOffersPage() {
   const [activeTab, setActiveTab] = useState<'finance' | 'discount'>('finance');
-  const [selectedLocation, setSelectedLocation] = useState('Delhi');
-
-  const locations = ['Delhi', 'Mumbai', 'Bangalore', 'Chennai', 'Hyderabad', 'Pune'];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -154,29 +150,6 @@ export default function FinanceOffersPage() {
       </div>
 
       <div className="container py-8">
-        {/* Location Selector */}
-        <div className="mb-8">
-          <div className="flex items-center mb-4">
-            <FiMapPin className="text-primary mr-2" />
-            <span className="font-medium">Select your location for personalized offers:</span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {locations.map((location) => (
-              <button
-                key={location}
-                onClick={() => setSelectedLocation(location)}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  selectedLocation === location
-                    ? 'bg-primary text-white'
-                    : 'bg-white text-gray-700 border hover:bg-gray-50'
-                }`}
-              >
-                {location}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* Tab Navigation */}
         <div className="mb-8">
           <div className="flex space-x-1 bg-white p-1 rounded-lg inline-flex border">
@@ -210,7 +183,7 @@ export default function FinanceOffersPage() {
           <div>
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                Best Finance Offers in {selectedLocation}
+                Best Finance Offers
               </h2>
               <p className="text-gray-600">
                 Compare and choose from our partner banks and financial institutions

@@ -108,39 +108,39 @@ const benefits = [
   }
 ];
 
-// Featured bikes for finance
+// Featured bikes for finance - Real data from database
 const featuredBikes = [
   {
     id: 1,
-    name: 'Royal Enfield Hunter 350',
-    price: '₹1,50,000',
-    emi: '₹3,200/month',
-    image: '/images/bikes/hunter-350.jpg',
-    href: '/bikes/royal-enfield-hunter-350'
+    name: 'Hero Splendor',
+    price: '₹88,523',
+    emi: '₹1,948/month',
+    image: 'https://csvzysxiuuzcsmpknehi.supabase.co/storage/v1/object/public/Bikeralliance/Image/Variant_image/168.avif',
+    href: '/bikes/hero-splendor'
   },
   {
     id: 2,
-    name: 'TVS Raider',
-    price: '₹98,389',
-    emi: '₹2,100/month',
-    image: '/images/bikes/tvs-raider.jpg',
-    href: '/bikes/tvs-raider'
+    name: 'Bajaj Pulsar',
+    price: '₹1,00,164',
+    emi: '₹2,204/month',
+    image: 'https://csvzysxiuuzcsmpknehi.supabase.co/storage/v1/object/public/Bikeralliance/Image/Variant_image/573.avif',
+    href: '/bikes/bajaj-pulsar'
   },
   {
     id: 3,
-    name: 'Hero Splendor Plus',
-    price: '₹74,856',
-    emi: '₹1,600/month',
-    image: '/images/bikes/splendor-plus.jpg',
-    href: '/bikes/hero-splendor-plus'
+    name: 'TVS Apache',
+    price: '₹1,39,562',
+    emi: '₹3,070/month',
+    image: 'https://csvzysxiuuzcsmpknehi.supabase.co/storage/v1/object/public/Bikeralliance/Image/Variant_image/498.avif',
+    href: '/bikes/tvs-apache'
   },
   {
     id: 4,
-    name: 'Royal Enfield Classic 350',
-    price: '₹1,93,000',
-    emi: '₹4,100/month',
-    image: '/images/bikes/classic-350.jpg',
-    href: '/bikes/royal-enfield-classic-350'
+    name: 'TVS Sport',
+    price: '₹75,016',
+    emi: '₹1,650/month',
+    image: 'https://csvzysxiuuzcsmpknehi.supabase.co/storage/v1/object/public/Bikeralliance/Image/Variant_image/478.avif',
+    href: '/bikes/tvs-sport'
   }
 ];
 
@@ -446,8 +446,14 @@ export default function FinancePage() {
                 className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow group"
               >
                 <div className="aspect-w-16 aspect-h-10 bg-gray-100">
-                  <div className="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                    <span className="text-gray-400 text-sm">Bike Image</span>
+                  <div className="w-full h-48 relative overflow-hidden">
+                    <Image
+                      src={bike.image}
+                      alt={bike.name}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                    />
                   </div>
                 </div>
                 <div className="p-4">

@@ -39,6 +39,47 @@ CREATE TABLE public.admin_audit_log (
   CONSTRAINT admin_audit_log_pkey PRIMARY KEY (id),
   CONSTRAINT admin_audit_log_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES public.admin(id)
 );
+CREATE TABLE public.bike_offer_leads (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  email text NOT NULL,
+  mobile text NOT NULL,
+  offer_id integer,
+  bike_name text NOT NULL,
+  dealer_name text,
+  offer_title text,
+  offer_price numeric,
+  original_price numeric,
+  discount_percent numeric,
+  status text DEFAULT 'new'::text CHECK (status = ANY (ARRAY['new'::text, 'contacted'::text, 'qualified'::text, 'closed'::text])),
+  notes text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT bike_offer_leads_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.bike_offers (
+  id integer NOT NULL DEFAULT nextval('bike_offers_id_seq'::regclass),
+  title text NOT NULL,
+  bike_name text NOT NULL,
+  brand text NOT NULL,
+  image_url text,
+  original_price numeric NOT NULL,
+  offer_price numeric NOT NULL,
+  discount_amount numeric NOT NULL,
+  discount_percent numeric NOT NULL,
+  offer_type text NOT NULL CHECK (offer_type = ANY (ARRAY['Limited Time'::text, 'Festival'::text, 'Exchange'::text, 'Corporate'::text, 'First Time'::text, 'Premium'::text])),
+  valid_till date NOT NULL,
+  location text NOT NULL,
+  dealer_name text NOT NULL,
+  features jsonb DEFAULT '[]'::jsonb,
+  description text,
+  badge text,
+  savings_text text,
+  is_active boolean DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT bike_offers_pkey PRIMARY KEY (id)
+);
 CREATE TABLE public.bookings (
   booking_id integer NOT NULL DEFAULT nextval('bookings_booking_id_seq'::regclass),
   user_id integer,
@@ -264,7 +305,15 @@ CREATE TABLE public.user_orders (
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT user_orders_pkey PRIMARY KEY (id),
+  CONSTRAINT user_orders_variant_id_fkey FOREIGN KEY (variant_id) REFERENCES public.variants(variant_id),
   CONSTRAINT user_orders_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.user_roles (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  role text NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT user_roles_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.users (
   user_id integer NOT NULL DEFAULT nextval('users_user_id_seq'::regclass),

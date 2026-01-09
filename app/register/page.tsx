@@ -122,24 +122,21 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-white">
-      {/* Left section with image - hidden on mobile */}
-      <div className="hidden md:flex md:w-1/2 bg-gray-100 items-center justify-center">
-        <div className="max-w-md p-8">
-          <Image 
-            src="/images/signup-illustration.svg" 
-            alt="Signup" 
-            width={500} 
-            height={500} 
-            className="mx-auto"
-            priority
-          />
-        </div>
+    <div className="min-h-screen relative flex items-center justify-center bg-white">
+      {/* Background image */}
+      <div className="absolute inset-0 z-0">
+        <Image 
+          src="/signup.avif" 
+          alt="Signup Background" 
+          fill
+          className="object-cover opacity-20"
+          priority
+        />
       </div>
 
-      {/* Right section with form */}
-      <div className="flex flex-col w-full md:w-1/2 p-4 md:p-8 lg:p-12">
-        <div className="max-w-md w-full mx-auto">
+      {/* Centered form */}
+      <div className="relative z-10 w-full max-w-md mx-auto p-4 md:p-8">
+        <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold mb-2">Create your account</h1>
             <p className="text-gray-600">Join the Bikers Alliance community</p>

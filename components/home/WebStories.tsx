@@ -1,46 +1,45 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
-// Web Stories Data
-const stories = [
-  {
-    id: 'top-adventure-bikes-under-2-lakhs',
-    title: 'Top Adventure Bikes Under 2 Lakhs',
-    image: '/demo.avif',
-    date: 'May 12, 2023'
-  },
-  {
-    id: 'best-sports-bikes-in-india',
-    title: 'Best Sports Bikes in India',
-    image: '/demo.avif',
-    date: 'May 10, 2023'
-  },
-  {
-    id: 'upcoming-bikes-in-2023',
-    title: 'Upcoming Bikes in 2023',
-    image: '/demo.avif',
-    date: 'May 8, 2023'
-  },
-  {
-    id: 'best-mileage-bikes-in-india',
-    title: 'Best Mileage Bikes in India',
-    image: '/demo.avif',
-    date: 'May 5, 2023'
-  },
-  {
-    id: 'new-electric-bikes-launching-soon',
-    title: 'New Electric Bikes Launching Soon',
-    image: '/demo.avif',
-    date: 'May 3, 2023'
-  }
-];
+interface WebStory {
+  id: string;
+  title: string;
+  slug: string;
+  cover_image_url: string;
+  published_at: string;
+  category: string;
+  featured: boolean;
+}
 
 export default function WebStories() {
   const sliderRef = useRef<HTMLDivElement>(null);
+  const [stories, setStories] = useState<WebStory[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchWebStories();
+  }, []);
+
+  const fetchWebStories = async () => {
+    try {
+      const response = await fetch('/api/web-stories?limit=6&featured=false');
+      const data = await response.json();
+      
+      if (data.success && Array.isArray(data.data)) {
+        setStories(data.data);
+      } else {
+        console.error('Failed to fetch web stories:', data.error);
+      }
+    } catch (error) {
+      console.error('Error fetching web stories:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   
   const scrollLeft = () => {
     if (sliderRef.current) {
@@ -53,6 +52,37 @@ export default function WebStories() {
       sliderRef.current.scrollBy({ left: 300, behavior: 'smooth' });
     }
   };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl text-gray-900" style={{ fontFamily: 'Lato, sans-serif, Arial', fontSize: '23px', fontWeight: 500 }}>
+            <b>Web Stories</b>
+          </h2>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+          <span className="ml-2 text-gray-600">Loading stories...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (stories.length === 0) {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl text-gray-900" style={{ fontFamily: 'Lato, sans-serif, Arial', fontSize: '23px', fontWeight: 500 }}>
+            <b>Web Stories</b>
+          </h2>
+        </div>
+        <div className="text-center py-12">
+          <p className="text-gray-500">No web stories available at the moment.</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
@@ -86,12 +116,12 @@ export default function WebStories() {
         {stories.map((story) => (
           <Link 
             key={story.id}
-            href={`/web-stories/${story.id}`} 
+            href={`/web-stories/${story.slug}`} 
             className="flex-none w-64 overflow-hidden transition-transform rounded-lg snap-start hover:scale-105"
           >
             <div className="relative h-96 bg-gradient-to-b from-black/20 to-black/60">
               <Image
-                src={story.image}
+                src={story.cover_image_url}
                 alt={story.title}
                 fill
                 className="object-cover z-0"
@@ -104,7 +134,13 @@ export default function WebStories() {
                 <h3 className="mb-2 text-lg font-medium text-white">
                   {story.title}
                 </h3>
-                <p className="text-sm text-white/80">{story.date}</p>
+                <p className="text-sm text-white/80">
+                  {new Date(story.published_at).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                  })}
+                </p>
               </div>
             </div>
           </Link>

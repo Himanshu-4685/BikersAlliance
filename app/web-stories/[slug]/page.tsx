@@ -46,29 +46,19 @@ export default async function WebStoryPage({ params }: Props) {
     notFound();
   }
 
-  // Normalize story pages if stored as JSON
+  // Normalize story data to match component interface
   const normalized = {
     id: (story as any).id,
     title: (story as any).title,
-    description: '',
-    coverImage: (story as any).cover_image_url,
-    publishedAt: (story as any).published_at,
-    category: '',
-    pages: Array.isArray((story as any).pages) ? (story as any).pages.map((p: any, i: number) => ({ id: i + 1, image: p.image_url || p.image || '', title: p.title || '', text: p.caption || '' })) : []
+    description: (story as any).description || '',
+    cover_image_url: (story as any).cover_image_url,
+    published_at: (story as any).published_at,
+    category: (story as any).category || 'General',
+    pages: Array.isArray((story as any).pages) ? (story as any).pages : []
   };
 
   return (
     <div className="min-h-screen bg-black">
-      <div className="absolute top-4 left-4 z-50">
-        <Link
-          href="/web-stories"
-          className="inline-flex items-center text-white bg-black bg-opacity-50 hover:bg-opacity-70 px-3 py-2 rounded-lg transition-colors"
-        >
-          <FiChevronLeft className="mr-1" />
-          Back
-        </Link>
-      </div>
-
       <WebStoryViewer story={normalized} />
     </div>
   );
