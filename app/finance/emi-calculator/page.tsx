@@ -1,102 +1,56 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { FiInfo, FiTrendingUp, FiDollarSign } from 'react-icons/fi';
 
-// Popular bikes data for the side section
-const popularBikes = [
-  {
-    id: 1,
-    name: 'Royal Enfield Hunter 350',
-    price: '₹1.50 Lakh',
-    image: '/images/bikes/hunter-350.jpg'
-  },
-  {
-    id: 2,
-    name: 'Hero Splendor Plus',
-    price: '₹74,856',
-    image: '/images/bikes/splendor-plus.jpg'
-  },
-  {
-    id: 3,
-    name: 'TVS Raider',
-    price: '₹98,389',
-    image: '/images/bikes/tvs-raider.jpg'
-  },
-  {
-    id: 4,
-    name: 'Honda Activa 6G',
-    price: '₹76,684',
-    image: '/images/bikes/activa-6g.jpg'
-  },
-  {
-    id: 5,
-    name: 'Royal Enfield Classic 350',
-    price: '₹1.93 Lakh',
-    image: '/images/bikes/classic-350.jpg'
-  }
-];
+// Types
+interface BikeData {
+  id: string;
+  name: string;
+  price: string;
+  slug?: string;
+  image?: string;
+  brand?: string;
+  expectedLaunch?: string;
+}
 
-const topBikes = [
-  {
-    name: 'Royal Enfield Hunter 350',
-    price: '₹1.50 Lakh onwards',
-    image: '/images/bikes/hunter-350.jpg'
-  },
-  {
-    name: 'Royal Enfield Continental GT 650',
-    price: '₹3.19 Lakh onwards',
-    image: '/images/bikes/continental-gt-650.jpg'
-  },
-  {
-    name: 'Royal Enfield Classic 350',
-    price: '₹1.93 Lakh onwards',
-    image: '/images/bikes/classic-350.jpg'
-  }
-];
-
-const upcomingBikes = [
-  {
-    name: 'Bajaj Pulsar NS400',
-    price: '₹2.30 Lakh*',
-    date: '2025 Launch',
-    image: '/images/bikes/pulsar-ns400.jpg'
-  },
-  {
-    name: 'Hero Xpulse 300',
-    price: '₹2.50 Lakh*',
-    date: '2025 Launch',
-    image: '/images/bikes/xpulse-300.jpg'
-  },
-  {
-    name: 'TVS Apache RR 310',
-    price: '₹2.75 Lakh*',
-    date: '2025 Launch',
-    image: '/images/bikes/apache-rr-310.jpg'
-  },
-  {
-    name: 'KTM RC 200',
-    price: '₹2.20 Lakh*',
-    date: '2025 Launch',
-    image: '/images/bikes/ktm-rc-200.jpg'
-  },
-  {
-    name: 'Yamaha R15 V5',
-    price: '₹1.80 Lakh*',
-    date: '2025 Launch',
-    image: '/images/bikes/yamaha-r15-v5.jpg'
-  }
-];
+interface PopularBike {
+  id: number;
+  name: string;
+  price: string;
+  image?: string;
+}
 
 export default function EMICalculatorPage() {
-  const [loanAmount, setLoanAmount] = useState(150000);
-  const [downPayment, setDownPayment] = useState(30000);
+  const searchParams = useSearchParams();
+  
+  // Get parameters from URL
+  const urlBikePrice = searchParams.get('price');
+  const urlEmi = searchParams.get('emi');
+  const urlTenure = searchParams.get('tenure');
+  
+  const [loanAmount, setLoanAmount] = useState(() => {
+    return urlBikePrice ? parseInt(urlBikePrice) : 150000;
+  });
+  const [downPayment, setDownPayment] = useState(() => {
+    const price = urlBikePrice ? parseInt(urlBikePrice) : 150000;
+    return Math.round(price * 0.2); // Default 20% down payment
+  });
   const [interestRate, setInterestRate] = useState(10.5);
-  const [loanTenure, setLoanTenure] = useState(36);
+  const [loanTenure, setLoanTenure] = useState(() => {
+    return urlTenure ? parseInt(urlTenure) : 36;
+  });
   const [emi, setEmi] = useState(0);
   const [totalInterest, setTotalInterest] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
+  
+  // Real data states
+  const [popularBikes, setPopularBikes] = useState<PopularBike[]>([]);
+  const [topBikes, setTopBikes] = useState<BikeData[]>([]);
+  const [upcomingBikes, setUpcomingBikes] = useState<BikeData[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const calculateEMI = () => {
     const principal = loanAmount - downPayment;
@@ -124,6 +78,83 @@ export default function EMICalculatorPage() {
   useEffect(() => {
     calculateEMI();
   }, [loanAmount, downPayment, interestRate, loanTenure]);
+
+  // Fetch real bike data
+  useEffect(() => {
+    const fetchBikeData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch popular bikes (commuter category - affordable bikes)
+        const popularResponse = await fetch('/api/bikes/category?category=commuter');
+        const popularData = await popularResponse.json();
+        
+        if (popularData.success && popularData.data?.bikes) {
+          const formattedPopular = popularData.data.bikes.slice(0, 5).map((bike: any, index: number) => ({
+            id: index + 1,
+            name: bike.variant_name || bike.name,
+            price: bike.on_road_price ? `₹${(bike.on_road_price / 100000).toFixed(2)} Lakh` : 'Price on request',
+            image: bike.image_url || '/demo.avif'
+          }));
+          setPopularBikes(formattedPopular);
+        }
+        
+        // Fetch top bikes (sports/premium category)
+        const topResponse = await fetch('/api/bikes/category?category=sports');
+        const topData = await topResponse.json();
+        
+        if (topData.success && topData.data?.bikes) {
+          const formattedTop = topData.data.bikes.slice(0, 3).map((bike: any) => ({
+            id: bike.variant_id || bike.id,
+            name: bike.variant_name || bike.name,
+            price: bike.on_road_price ? `₹${(bike.on_road_price / 100000).toFixed(2)} Lakh onwards` : 'Price on request',
+            slug: bike.url,
+            image: bike.image_url || '/demo.avif'
+          }));
+          setTopBikes(formattedTop);
+        }
+        
+        // Fetch upcoming bikes
+        const upcomingResponse = await fetch('/api/bike-status?status=upcoming&limit=5');
+        const upcomingData = await upcomingResponse.json();
+        
+        if (upcomingData.success && upcomingData.data) {
+          const formattedUpcoming = upcomingData.data.slice(0, 5).map((bike: any) => ({
+            id: bike.id || bike.variant?.id,
+            name: bike.variant?.name || bike.model?.name || 'Unknown Bike',
+            price: bike.priceRange || 'Price TBA',
+            slug: bike.variant?.slug || `bike-${bike.id}`,
+            image: bike.variant?.images?.[0]?.url || '/demo.avif',
+            brand: bike.brand?.name || 'Unknown',
+            expectedLaunch: bike.expectedLaunch
+          }));
+          setUpcomingBikes(formattedUpcoming);
+        }
+        
+      } catch (error) {
+        console.error('Error fetching bike data:', error);
+        // Fallback to some default data if API fails
+        setPopularBikes([
+          { id: 1, name: 'Hero Splendor Plus', price: '₹0.75 Lakh' },
+          { id: 2, name: 'Honda Activa 6G', price: '₹0.77 Lakh' },
+          { id: 3, name: 'TVS Raider', price: '₹0.98 Lakh' }
+        ]);
+        setTopBikes([
+          { id: '1', name: 'Royal Enfield Hunter 350', price: '₹1.50 Lakh onwards' },
+          { id: '2', name: 'KTM Duke 200', price: '₹1.85 Lakh onwards' }
+        ]);
+        setUpcomingBikes([
+          { id: '1', name: 'Bajaj Pulsar NS400', price: '₹2.30 Lakh*', brand: 'Bajaj', expectedLaunch: '2025-03-15' },
+          { id: '2', name: 'Hero Xpulse 300', price: '₹2.50 Lakh*', brand: 'Hero', expectedLaunch: '2025-04-20' },
+          { id: '3', name: 'TVS Apache RR 310', price: '₹2.75 Lakh*', brand: 'TVS', expectedLaunch: '2025-06-10' }
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchBikeData();
+  }, []);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -347,23 +378,50 @@ export default function EMICalculatorPage() {
 
                 {/* Top 10 Bikes in India */}
                 <div className="bg-white rounded-lg shadow-md p-8 mt-8">
-                  <h2 className="text-2xl font-bold mb-6">Top 10 Bikes in India</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {topBikes.map((bike, index) => (
-                      <div key={index} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                        <div className="h-40 bg-gray-200 flex items-center justify-center">
-                          <span className="text-gray-500">Bike Image</span>
+                  <h2 className="text-2xl font-bold mb-6">Top Bikes in India</h2>
+                  {loading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="border border-gray-200 rounded-lg overflow-hidden">
+                          <div className="h-40 bg-gray-200 animate-pulse"></div>
+                          <div className="p-4">
+                            <div className="h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
+                            <div className="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+                          </div>
                         </div>
-                        <div className="p-4">
-                          <h3 className="font-semibold text-gray-900 mb-1">{bike.name}</h3>
-                          <p className="text-red-600 font-medium">{bike.price}</p>
-                          <button className="w-full mt-3 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition-colors text-sm">
-                            View September Offers
-                          </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {topBikes.map((bike) => (
+                        <div key={bike.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                          <div className="h-40 bg-gray-200 flex items-center justify-center relative">
+                            {bike.image && bike.image !== '/demo.avif' ? (
+                              <Image 
+                                src={bike.image} 
+                                alt={bike.name}
+                                fill
+                                className="object-cover"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                }}
+                              />
+                            ) : (
+                              <span className="text-gray-500">Bike Image</span>
+                            )}
+                          </div>
+                          <div className="p-4">
+                            <h3 className="font-semibold text-gray-900 mb-1">{bike.name}</h3>
+                            <p className="text-red-600 font-medium">{bike.price}</p>
+                            <button className="w-full mt-3 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition-colors text-sm">
+                              Check EMI
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -372,92 +430,114 @@ export default function EMICalculatorPage() {
                 {/* Popular Two Wheelers */}
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <h3 className="text-lg font-semibold mb-4">Popular Two-Wheelers</h3>
-                  <div className="space-y-4">
-                    {popularBikes.map((bike) => (
-                      <div key={bike.id} className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
-                        <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center mr-3">
-                          <span className="text-xs text-gray-500">IMG</span>
+                  {loading ? (
+                    <div className="space-y-4">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <div key={i} className="flex items-center p-3 border border-gray-200 rounded-lg">
+                          <div className="w-12 h-12 bg-gray-200 rounded-md animate-pulse mr-3"></div>
+                          <div className="flex-1">
+                            <div className="h-4 bg-gray-200 rounded animate-pulse mb-1"></div>
+                            <div className="h-3 bg-gray-200 rounded animate-pulse w-16"></div>
+                          </div>
                         </div>
-                        <div className="flex-1">
-                          <h4 className="font-medium text-sm text-gray-900">{bike.name}</h4>
-                          <p className="text-xs text-red-600">{bike.price}</p>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {popularBikes.map((bike) => (
+                        <div key={bike.id} className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                          <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center mr-3">
+                            {bike.image && bike.image !== '/demo.avif' ? (
+                              <div className="relative w-full h-full">
+                                <Image 
+                                  src={bike.image} 
+                                  alt={bike.name}
+                                  fill
+                                  className="object-cover rounded-md"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                  }}
+                                />
+                              </div>
+                            ) : (
+                              <span className="text-xs text-gray-500">IMG</span>
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-medium text-sm text-gray-900">{bike.name}</h4>
+                            <p className="text-xs text-red-600">{bike.price}</p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                    <button className="w-full text-red-500 text-sm font-medium hover:text-red-600">
-                      View All Popular Bikes
-                    </button>
-                  </div>
+                      ))}
+                      <button className="w-full text-red-500 text-sm font-medium hover:text-red-600">
+                        <a href="/bikes/all">View All Popular Bikes</a>
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Upcoming Bikes and Scooters */}
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <h3 className="text-lg font-semibold mb-4">Upcoming Bikes and Scooters</h3>
-                  <div className="space-y-4">
-                    {upcomingBikes.map((bike, index) => (
-                      <div key={index} className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
-                        <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center mr-3">
-                          <span className="text-xs text-gray-500">IMG</span>
+                  {loading ? (
+                    <div className="space-y-4">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <div key={i} className="flex items-center p-3 border border-gray-200 rounded-lg">
+                          <div className="w-12 h-12 bg-gray-200 rounded-md animate-pulse mr-3"></div>
+                          <div className="flex-1">
+                            <div className="h-4 bg-gray-200 rounded animate-pulse mb-1"></div>
+                            <div className="h-3 bg-gray-200 rounded animate-pulse w-16 mb-1"></div>
+                            <div className="h-3 bg-gray-200 rounded animate-pulse w-20"></div>
+                          </div>
                         </div>
-                        <div className="flex-1">
-                          <h4 className="font-medium text-sm text-gray-900">{bike.name}</h4>
-                          <p className="text-xs text-red-600">{bike.price}</p>
-                          <p className="text-xs text-gray-500">{bike.date}</p>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {upcomingBikes.map((bike) => (
+                        <div key={bike.id} className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                          <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center mr-3">
+                            {bike.image && bike.image !== '/demo.avif' ? (
+                              <div className="relative w-full h-full">
+                                <Image 
+                                  src={bike.image} 
+                                  alt={bike.name}
+                                  fill
+                                  className="object-cover rounded-md"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                  }}
+                                />
+                              </div>
+                            ) : (
+                              <span className="text-xs text-gray-500">IMG</span>
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-medium text-sm text-gray-900">{bike.name}</h4>
+                            <p className="text-xs text-red-600">{bike.price}</p>
+                            {bike.expectedLaunch ? (
+                              <p className="text-xs text-gray-500">
+                                Launch: {new Date(bike.expectedLaunch).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}
+                              </p>
+                            ) : (
+                              <p className="text-xs text-gray-500">2025 Launch</p>
+                            )}
+                            {bike.brand && (
+                              <p className="text-xs text-blue-600">{bike.brand}</p>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                    <button className="w-full text-red-500 text-sm font-medium hover:text-red-600">
-                      View All Upcoming Bikes
-                    </button>
-                  </div>
+                      ))}
+                      <button className="w-full text-red-500 text-sm font-medium hover:text-red-600">
+                        <a href="/upcoming-bikes">View All Upcoming Bikes</a>
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Search Two Wheelers by Price */}
-      <div className="bg-white py-12">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-2xl font-bold text-center mb-8">Search Two Wheelers by Price</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                'Under ₹50,000',
-                '₹50,000 - ₹1 Lakh', 
-                '₹1 Lakh - ₹1.5 Lakh',
-                'Above ₹1.5 Lakh'
-              ].map((range, index) => (
-                <button key={index} className="p-4 border border-gray-300 rounded-lg hover:border-red-500 hover:bg-red-50 transition-colors text-center">
-                  <span className="font-medium text-gray-900">{range}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Popular Bike Families */}
-      <div className="bg-gray-50 py-12">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-2xl font-bold text-center mb-8">Popular Bike Families</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[
-                { name: 'Royal Enfield 350', image: '/images/families/re-350.jpg' },
-                { name: 'Honda Activa', image: '/images/families/activa.jpg' },
-                { name: 'Royal Enfield Classic', image: '/images/families/re-classic.jpg' }
-              ].map((family, index) => (
-                <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                  <div className="h-48 bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-500">Family Image</span>
-                  </div>
-                  <div className="p-4 text-center">
-                    <h3 className="font-semibold text-gray-900">{family.name}</h3>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </div>

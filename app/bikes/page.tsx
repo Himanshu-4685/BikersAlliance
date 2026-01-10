@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FiChevronRight, FiFilter, FiX } from 'react-icons/fi';
+import BikeCard from '@/components/bikes/BikeCard';
 
 // Filter components
 import BrandFilter from '@/components/filters/BrandFilter';
@@ -408,95 +409,30 @@ export default function BikesPage() {
             ) : bikes.length > 0 ? (
               <>
                 {/* Bikes grid */}
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {bikes.map((bike) => (
-                    <Link 
-                      key={bike.id} 
-                      href={`/bikes/${bike.id}`} 
-                      className="overflow-hidden transition-shadow bg-white border rounded-lg hover:shadow-md"
-                    >
-                      {/* Bike Image */}
-                      <div className="relative h-48 bg-gray-100">
-                        {bike.image ? (
-                          <Image
-                            src={bike.image}
-                            alt={bike.name}
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                          />
-                        ) : (
-                          <Image
-                            src="/demo.avif"
-                            alt={bike.name}
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                          />
-                        )}
-                      </div>
-                      
-                      <div className="p-4">
-                        {/* Brand */}
-                        <div className="flex items-center mb-1">
-                          {bike.brand.logo ? (
-                            <div className="relative w-6 h-6 mr-2">
-                              <Image
-                                src={bike.brand.logo}
-                                alt={bike.brand.name}
-                                fill
-                                className="object-contain"
-                              />
-                            </div>
-                          ) : null}
-                          <p className="text-sm text-gray-500">{bike.brand.name}</p>
-                        </div>
-                        
-                        {/* Bike Name */}
-                        <h2 className="text-lg font-semibold">{bike.name}</h2>
-                        
-                        {/* Price */}
-                        <div className="mt-2 mb-3">
-                          {bike.price ? (
-                            <p className="text-xl font-bold text-gray-900">₹ {bike.price.toLocaleString('en-IN')}</p>
-                          ) : (
-                            <p className="text-gray-500">Price not available</p>
-                          )}
-                        </div>
-                        
-                        {/* Specs */}
-                        <div className="grid grid-cols-2 gap-2">
-                          {bike.specs.engine && (
-                            <div className="text-sm">
-                              <span className="text-gray-500">Engine: </span>
-                              <span className="font-medium">{bike.specs.engine}</span>
-                            </div>
-                          )}
-                          
-                          {bike.specs.mileage && (
-                            <div className="text-sm">
-                              <span className="text-gray-500">Mileage: </span>
-                              <span className="font-medium">{bike.specs.mileage}</span>
-                            </div>
-                          )}
-                          
-                          {bike.specs.power && (
-                            <div className="text-sm">
-                              <span className="text-gray-500">Power: </span>
-                              <span className="font-medium">{bike.specs.power}</span>
-                            </div>
-                          )}
-                          
-                          {bike.specs.torque && (
-                            <div className="text-sm">
-                              <span className="text-gray-500">Torque: </span>
-                              <span className="font-medium">{bike.specs.torque}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
+                <div className="flex flex-wrap gap-6">
+                  {bikes.map((bike) => {
+                    // Convert bike data to proper format for BikeCard
+                    const bikeData = {
+                      id: bike.id,
+                      name: bike.name,
+                      image: bike.image || '/demo.avif',
+                      price: bike.price ? bike.price.toLocaleString('en-IN') : 'Price not available',
+                      specs: {
+                        engine: bike.specs.engine || 'N/A',
+                        mileage: bike.specs.mileage || 'N/A',
+                        power: bike.specs.power || 'N/A'
+                      }
+                    };
+                    
+                    return (
+                      <BikeCard 
+                        key={bike.id}
+                        bike={bikeData}
+                        viewMode="grid"
+                        showBrand={true}
+                      />
+                    );
+                  })}
                 </div>
                 
                 {/* Pagination */}

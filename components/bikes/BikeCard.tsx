@@ -96,7 +96,7 @@ export default function BikeCard({ bike, viewMode = 'grid', showBrand = false, s
         {/* Bike Info */}
         <div className="p-4">
           <Link href={`/bikes/${bike.id}`} className="block">
-            <h3 className="mb-2 text-lg font-medium text-gray-900 hover:text-primary">
+            <h3 className="mb-2 text-lg font-medium text-gray-900 hover:text-primary line-clamp-2 min-h-[3.5rem]">
               {bike.name}
             </h3>
           </Link>

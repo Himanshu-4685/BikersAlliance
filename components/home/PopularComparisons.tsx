@@ -395,7 +395,7 @@ export default function PopularComparisons() {
                               }}
                             />
                           </div>
-                          <h4 className="mb-1 text-sm font-medium text-center text-gray-900 line-clamp-2">
+                          <h4 className="mb-1 text-sm font-medium text-center text-gray-900 line-clamp-2 min-h-[2.5rem] flex items-center justify-center">
                             {bike.name}
                           </h4>
                           <p className="text-sm text-gray-700">₹ {bike.price.toLocaleString('en-IN')}</p>

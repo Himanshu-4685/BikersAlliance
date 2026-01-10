@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom utilities for consistent card layouts */
+@layer utilities {
+  .min-h-card-title {
+    min-height: 3.5rem;
+  }
+  
+  .card-specs-height {
+    min-height: 5rem;
+  }
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;

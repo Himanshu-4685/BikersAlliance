@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useParams, notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import BikeCard from '@/components/bikes/BikeCard';
+import EMICalculator from '@/components/bikes/EMICalculator';
 import { 
   FiChevronRight, 
   FiTag, 
@@ -559,28 +561,30 @@ export default function ScooterDetailsPage() {
         {similarModels.length > 0 && (
           <div className="mt-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Similar Scooters</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {similarModels.slice(0, 6).map(model => (
-                <Link key={model.id} href={`/scooters/${model.slug}`}>
-                  <div className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                    <div className="aspect-video relative">
-                      <Image
-                        src={model.image}
-                        alt={model.name}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="p-4">
-                      <h3 className="font-semibold text-gray-900 mb-1">{model.name}</h3>
-                      <p className="text-sm text-gray-500 mb-2">{model.brand.name}</p>
-                      <div className="text-lg font-bold text-primary">
-                        {formatPrice(model.price)}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+            <div className="flex flex-wrap gap-6">
+              {similarModels.slice(0, 6).map(model => {
+                // Convert to BikeCard format
+                const bikeData = {
+                  id: model.id,
+                  name: model.name,
+                  image: model.image,
+                  price: formatPrice(model.price).replace('₹ ', ''),
+                  specs: {
+                    engine: 'N/A',
+                    mileage: 'N/A',
+                    power: 'N/A'
+                  }
+                };
+                
+                return (
+                  <BikeCard 
+                    key={model.id}
+                    bike={bikeData}
+                    viewMode="grid"
+                    showBrand={false}
+                  />
+                );
+              })}
             </div>
           </div>
         )}
@@ -599,8 +603,8 @@ export default function ScooterDetailsPage() {
                 <FiX className="w-5 h-5" />
               </button>
             </div>
-            <div className="text-center py-8">
-              <p className="text-gray-500">EMI calculator coming soon!</p>
+            <div className="text-center py-4">
+              <EMICalculator bikePrice={scooter.variants[selectedVariant]?.price || scooter.variants[0]?.price || 0} />
             </div>
           </div>
         </div>

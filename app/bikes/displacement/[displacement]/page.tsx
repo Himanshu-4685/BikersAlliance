@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FiChevronRight, FiFilter, FiX, FiSearch } from 'react-icons/fi';
+import BikeCard from '@/components/bikes/BikeCard';
 
 // Filter components
 import BrandFilter from '@/components/filters/BrandFilter';
@@ -309,76 +310,30 @@ export default function DisplacementFilterPage() {
             ) : (
               <>
                 {/* Bikes Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {bikes.map((bike) => (
-                    <div
-                      key={bike.id}
-                      className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow"
-                    >
-                      <div className="aspect-w-16 aspect-h-12">
-                        {bike.image ? (
-                          <Image
-                            src={bike.image}
-                            alt={bike.name}
-                            width={400}
-                            height={300}
-                            className="w-full h-48 object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-                            <span className="text-gray-400">No Image</span>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-gray-500">{bike.brand.name}</span>
-                          {bike.brand.logo && (
-                            <Image
-                              src={bike.brand.logo}
-                              alt={bike.brand.name}
-                              width={24}
-                              height={24}
-                              className="w-6 h-6 object-contain"
-                            />
-                          )}
-                        </div>
-                        
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
-                          {bike.name}
-                        </h3>
-                        
-                        <div className="text-2xl font-bold text-primary mb-3">
-                          ₹{bike.price?.toLocaleString('en-IN') || 'N/A'}
-                        </div>
-                        
-                        <div className="space-y-1 text-sm text-gray-600 mb-4">
-                          {bike.specs.displacement && (
-                            <div>{bike.specs.displacement}</div>
-                          )}
-                          {bike.specs.engine && (
-                            <div>{bike.specs.engine}</div>
-                          )}
-                          {bike.specs.mileage && (
-                            <div>{bike.specs.mileage}</div>
-                          )}
-                        </div>
-                        
-                        <div className="flex space-x-2">
-                          <Link
-                            href={`/bikes/${bike.id}`}
-                            className="flex-1 px-4 py-2 bg-primary text-white text-center rounded-md hover:bg-primary-600 transition-colors"
-                          >
-                            View Details
-                          </Link>
-                          <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors">
-                            Compare
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                <div className="flex flex-wrap gap-6">
+                  {bikes.map((bike) => {
+                    // Convert to BikeCard format
+                    const bikeData = {
+                      id: bike.id,
+                      name: bike.name,
+                      image: bike.image || '/demo.avif',
+                      price: bike.price ? bike.price.toLocaleString('en-IN') : 'Price not available',
+                      specs: {
+                        engine: bike.specs.engine || bike.specs.displacement || 'N/A',
+                        mileage: bike.specs.mileage || 'N/A',
+                        power: bike.specs.power || 'N/A'
+                      }
+                    };
+                    
+                    return (
+                      <BikeCard 
+                        key={bike.id}
+                        bike={bikeData}
+                        viewMode="grid"
+                        showBrand={true}
+                      />
+                    );
+                  })}
                 </div>
 
                 {/* Pagination */}

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FiInfo } from 'react-icons/fi';
+import Link from 'next/link';
+import { FiInfo, FiExternalLink } from 'react-icons/fi';
 
 // Types
 interface EMICalculatorProps {
@@ -198,6 +199,15 @@ export default function EMICalculator({ bikePrice }: EMICalculatorProps) {
           </div>
         </div>
       </div>
+      
+      {/* Calculate Detailed EMI Button */}
+      <Link 
+        href={`/finance/emi-calculator?price=${bikePrice}&emi=${monthlyEMI}&tenure=${tenure}`}
+        className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors mt-4 flex items-center justify-center"
+      >
+        <FiExternalLink className="w-4 h-4 mr-2" />
+        Calculate Detailed EMI
+      </Link>
       
       <div className="flex items-start mt-3 text-xs text-gray-500">
         <FiInfo className="flex-shrink-0 mr-1 text-gray-400" style={{ marginTop: '2px' }} />

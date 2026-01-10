@@ -34,12 +34,26 @@ export default function Hero() {
   const [selectedModel, setSelectedModel] = useState('');
   const [selectedBudget, setSelectedBudget] = useState('');
   const [selectedType, setSelectedType] = useState('');
+  const [selectedCity, setSelectedCity] = useState('');
   
   // Data state
   const [brands, setBrands] = useState<Brand[]>([]);
   const [models, setModels] = useState<Model[]>([]);
   const [brandsLoading, setBrandsLoading] = useState(false);
   const [modelsLoading, setModelsLoading] = useState(false);
+
+  // Popular cities for used bikes
+  const popularCities = [
+    'mumbai', 'delhi', 'bangalore', 'hyderabad', 'pune', 'chennai',
+    'kolkata', 'ahmedabad', 'jaipur', 'surat', 'lucknow', 'kanpur',
+    'nagpur', 'indore', 'thane', 'bhopal', 'visakhapatnam', 'pimpri-chinchwad',
+    'patna', 'vadodara', 'ghaziabad', 'ludhiana', 'agra', 'nashik',
+    'faridabad', 'meerut', 'rajkot', 'kalyan-dombivali', 'vasai-virar',
+    'varanasi', 'srinagar', 'aurangabad', 'dhanbad', 'amritsar',
+    'navi-mumbai', 'allahabad', 'ranchi', 'howrah', 'coimbatore',
+    'jabalpur', 'gwalior', 'vijayawada', 'jodhpur', 'madurai',
+    'raipur', 'kota', 'guwahati', 'chandigarh', 'solapur'
+  ];
 
   // Fetch brands on component mount
   useEffect(() => {
@@ -176,6 +190,15 @@ export default function Hero() {
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Handle used bike search - navigate to city page
+    if (bikeType === 'used') {
+      if (selectedCity) {
+        router.push(`/used-bikes/${selectedCity}`);
+      }
+      return;
+    }
+
+    // Handle new bike search
     const params = new URLSearchParams();
     
     if (searchBy === 'brand') {
@@ -353,142 +376,177 @@ export default function Hero() {
               </button>
             </div>
 
-            {/* Radio Buttons */}
-            <div className="mb-3">
-              <div className="flex space-x-6">
-                <div className="flex items-center">
-                  <input
-                    id="by-brand"
-                    name="search-by"
-                    type="radio"
-                    checked={searchBy === 'brand'}
-                    onChange={() => setSearchBy('brand')}
-                    className="h-4 w-4 text-[#D02F2F] border-gray-300 focus:ring-[#D02F2F]"
-                  />
-                  <label htmlFor="by-brand" className="ml-2 text-sm text-gray-900">
-                    By Brand
-                  </label>
+            {/* Conditional Content Based on Bike Type */}
+            {bikeType === 'used' ? (
+              /* Used Bike - City Selection Only */
+              <form onSubmit={handleFormSubmit}>
+                <div className="space-y-3">
+                  <div>
+                    <select 
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#D02F2F] focus:border-[#D02F2F] text-gray-500"
+                      value={selectedCity}
+                      onChange={(e) => setSelectedCity(e.target.value)}
+                    >
+                      <option value="">Select City</option>
+                      {popularCities.map((city) => (
+                        <option key={city} value={city}>
+                          {city.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  {/* Search Button */}
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 px-4 bg-[#D02F2F] text-white rounded-md font-medium hover:bg-[#B82929] transition duration-150"
+                    disabled={!selectedCity}
+                  >
+                    Search Used Bikes
+                  </button>
                 </div>
-                <div className="flex items-center">
-                  <input
-                    id="by-budget"
-                    name="search-by"
-                    type="radio"
-                    checked={searchBy === 'budget'}
-                    onChange={() => setSearchBy('budget')}
-                    className="h-4 w-4 text-[#D02F2F] border-gray-300 focus:ring-[#D02F2F]"
-                  />
-                  <label htmlFor="by-budget" className="ml-2 text-sm text-gray-900">
-                    By Budget
-                  </label>
+              </form>
+            ) : (
+              /* New Bike - Original Form */
+              <>
+                {/* Radio Buttons */}
+                <div className="mb-3">
+                  <div className="flex space-x-6">
+                    <div className="flex items-center">
+                      <input
+                        id="by-brand"
+                        name="search-by"
+                        type="radio"
+                        checked={searchBy === 'brand'}
+                        onChange={() => setSearchBy('brand')}
+                        className="h-4 w-4 text-[#D02F2F] border-gray-300 focus:ring-[#D02F2F]"
+                      />
+                      <label htmlFor="by-brand" className="ml-2 text-sm text-gray-900">
+                        By Brand
+                      </label>
+                    </div>
+                    <div className="flex items-center">
+                      <input
+                        id="by-budget"
+                        name="search-by"
+                        type="radio"
+                        checked={searchBy === 'budget'}
+                        onChange={() => setSearchBy('budget')}
+                        className="h-4 w-4 text-[#D02F2F] border-gray-300 focus:ring-[#D02F2F]"
+                      />
+                      <label htmlFor="by-budget" className="ml-2 text-sm text-gray-900">
+                        By Budget
+                      </label>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Form Selects */}
-            <form onSubmit={handleFormSubmit}>
-              <div className="space-y-3">
-                {searchBy === 'brand' ? (
-                  <>
-                    <div>
-                      <select 
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#D02F2F] focus:border-[#D02F2F] text-gray-500"
-                        value={selectedBrand}
-                        onChange={(e) => setSelectedBrand(e.target.value)}
-                        disabled={brandsLoading}
-                      >
-                        <option value="">
-                          {brandsLoading ? 'Loading brands...' : 'Select Brand'}
-                        </option>
-                        {brands.map((brand) => (
-                          <option key={brand.id} value={brand.slug}>
-                            {brand.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                {/* Form Selects */}
+                <form onSubmit={handleFormSubmit}>
+                  <div className="space-y-3">
+                    {searchBy === 'brand' ? (
+                      <>
+                        <div>
+                          <select 
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#D02F2F] focus:border-[#D02F2F] text-gray-500"
+                            value={selectedBrand}
+                            onChange={(e) => setSelectedBrand(e.target.value)}
+                            disabled={brandsLoading}
+                          >
+                            <option value="">
+                              {brandsLoading ? 'Loading brands...' : 'Select Brand'}
+                            </option>
+                            {brands.map((brand) => (
+                              <option key={brand.id} value={brand.slug}>
+                                {brand.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <select 
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#D02F2F] focus:border-[#D02F2F] text-gray-500"
+                            value={selectedModel}
+                            onChange={(e) => setSelectedModel(e.target.value)}
+                            disabled={modelsLoading || !selectedBrand}
+                          >
+                            <option value="">
+                              {modelsLoading ? 'Loading models...' : 
+                               !selectedBrand ? 'Select Brand First' : 
+                               'Select Model'}
+                            </option>
+                            {models.map((model) => (
+                              <option key={model.id} value={model.slug}>
+                                {model.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div>
+                          <select 
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 text-gray-500"
+                            value={selectedBudget}
+                            onChange={(e) => setSelectedBudget(e.target.value)}
+                          >
+                            <option value="">Select Budget</option>
+                            <option value="under-50000">Under ₹50,000</option>
+                            <option value="50000-100000">₹50,000 - ₹1 Lakh</option>
+                            <option value="100000-150000">₹1 Lakh - ₹1.5 Lakh</option>
+                            <option value="above-150000">Above ₹1.5 Lakh</option>
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <select 
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 text-gray-500"
+                            value={selectedType}
+                            onChange={(e) => setSelectedType(e.target.value)}
+                          >
+                            <option value="">Select Type</option>
+                            <option value="commuter">Commuter</option>
+                            <option value="sports">Sports</option>
+                            <option value="cruiser">Cruiser</option>
+                            <option value="adventure">Adventure</option>
+                            <option value="scooter">Scooter</option>
+                            <option value="off-road">Off-Road</option>
+                            <option value="electric">Electric</option>
+                            <option value="moped">Moped</option>
+                            <option value="naked">Naked</option>
+                            <option value="touring">Touring</option>
+                            <option value="street">Street</option>
+                            <option value="roadster">Roadster</option>
+                          </select>
+                        </div>
+                      </>
+                    )}
                     
-                    <div>
-                      <select 
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#D02F2F] focus:border-[#D02F2F] text-gray-500"
-                        value={selectedModel}
-                        onChange={(e) => setSelectedModel(e.target.value)}
-                        disabled={modelsLoading || !selectedBrand}
-                      >
-                        <option value="">
-                          {modelsLoading ? 'Loading models...' : 
-                           !selectedBrand ? 'Select Brand First' : 
-                           'Select Model'}
-                        </option>
-                        {models.map((model) => (
-                          <option key={model.id} value={model.slug}>
-                            {model.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div>
-                      <select 
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 text-gray-500"
-                        value={selectedBudget}
-                        onChange={(e) => setSelectedBudget(e.target.value)}
-                      >
-                        <option value="">Select Budget</option>
-                        <option value="under-50000">Under ₹50,000</option>
-                        <option value="50000-100000">₹50,000 - ₹1 Lakh</option>
-                        <option value="100000-150000">₹1 Lakh - ₹1.5 Lakh</option>
-                        <option value="above-150000">Above ₹1.5 Lakh</option>
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <select 
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 text-gray-500"
-                        value={selectedType}
-                        onChange={(e) => setSelectedType(e.target.value)}
-                      >
-                        <option value="">Select Type</option>
-                        <option value="commuter">Commuter</option>
-                        <option value="sports">Sports</option>
-                        <option value="cruiser">Cruiser</option>
-                        <option value="adventure">Adventure</option>
-                        <option value="scooter">Scooter</option>
-                        <option value="off-road">Off-Road</option>
-                        <option value="electric">Electric</option>
-                        <option value="moped">Moped</option>
-                        <option value="naked">Naked</option>
-                        <option value="touring">Touring</option>
-                        <option value="street">Street</option>
-                        <option value="roadster">Roadster</option>
-                      </select>
-                    </div>
-                  </>
-                )}
-                
-                {/* Search Button */}
-                <button
-                  type="submit"
-                  className="w-full py-2.5 px-4 bg-[#D02F2F] text-white rounded-md font-medium hover:bg-[#B82929] transition duration-150"
-                  disabled={searchBy === 'brand' ? !selectedBrand : (!selectedBudget && !selectedType)}
-                >
-                  Search
-                </button>
-              </div>
-              
-              {/* Advanced Search Link */}
-              <div className="mt-3 text-right">
-                <button
-                  type="button"
-                  onClick={handleAdvancedSearch}
-                  className="text-gray-500 text-sm hover:text-[#D02F2F] bg-transparent border-0 p-0"
-                >
-                  Advanced Search →
-                </button>
-              </div>
-            </form>
+                    {/* Search Button */}
+                    <button
+                      type="submit"
+                      className="w-full py-2.5 px-4 bg-[#D02F2F] text-white rounded-md font-medium hover:bg-[#B82929] transition duration-150"
+                      disabled={searchBy === 'brand' ? !selectedBrand : (!selectedBudget && !selectedType)}
+                    >
+                      Search
+                    </button>
+                  </div>
+                  
+                  {/* Advanced Search Link */}
+                  <div className="mt-3 text-right">
+                    <button
+                      type="button"
+                      onClick={handleAdvancedSearch}
+                      className="text-gray-500 text-sm hover:text-[#D02F2F] bg-transparent border-0 p-0"
+                    >
+                      Advanced Search →
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
           </div>
         </div>
       </div>

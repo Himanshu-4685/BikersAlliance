@@ -144,6 +144,13 @@ export default function DynamicBikeStatus({
     });
   };
 
+  // Helper function to clean power specifications
+  const cleanPowerSpec = (power: string | undefined): string => {
+    if (!power) return 'N/A';
+    // Remove @rpm and any additional formatting, keep just the numeric value and basic unit
+    return power.replace(/\s*@.*$/, '').trim() || 'N/A';
+  };
+
   const handleNotifyClick = (bike: BikeStatus) => {
     setSelectedBike(bike);
     setIsPopupOpen(true);
@@ -311,7 +318,7 @@ export default function DynamicBikeStatus({
                         </div>
                         <div>
                           <div className="font-medium">Power</div>
-                          <div>{bike.variant.specs.peak_power || 'N/A'}</div>
+                          <div>{cleanPowerSpec(bike.variant.specs.peak_power)}</div>
                         </div>
                       </div>
                     )

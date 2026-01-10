@@ -765,7 +765,10 @@ export default function BikeDetailsPage() {
                       </span>
                     </div>
                   </div>
-                  <Link href="/finance/emi-calculator" className="mt-3 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors block text-center">
+                  <Link 
+                    href={`/finance/emi-calculator?price=${bike.variants?.find(v => v.id === bike.id)?.price || bike.variants?.[0]?.price || 0}&tenure=60`}
+                    className="mt-3 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors block text-center"
+                  >
                     Calculate Detailed EMI
                   </Link>
                 </div>

@@ -21,7 +21,7 @@ const formatElectricBikeData = (electricBike: ElectricBike): Bike => {
   };
 
   const formatPower = (power: number) => {
-    return `${power} kW`;
+    return `${power}`;
   };
 
   return {

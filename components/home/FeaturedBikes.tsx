@@ -15,25 +15,12 @@ const truncateText = (text: string, maxLength: number): string => {
   return text.substring(0, maxLength) + '...';
 };
 
-// Helper function to clean and format values that might already contain units
-const cleanAndFormatValue = (value: any, unit: string): string => {
+// Helper function to clean and format values
+const cleanValue = (value: any): string => {
   if (!value) return 'N/A';
-  
   const stringValue = String(value).trim();
-  
-  // If the value already contains the unit, return as is
-  if (stringValue.toLowerCase().includes(unit.toLowerCase())) {
-    return stringValue;
-  }
-  
-  // If it's just a number, add the unit
-  const numericValue = parseFloat(stringValue);
-  if (!isNaN(numericValue)) {
-    return `${numericValue} ${unit}`;
-  }
-  
-  // Fallback: return the value as is
-  return stringValue;
+  // Remove any existing units and formatting, just keep the numeric part and basic unit
+  return stringValue.replace(/\s*@.*$/, '').trim() || 'N/A';
 };
 
 // Function to format database bike data for UI
@@ -49,13 +36,9 @@ const formatBikeData = (dbBike: BikeFromDB): Bike => {
     specs: {
       engine: isElectric 
         ? 'Electric' 
-        : cleanAndFormatValue(dbBike.displacement, 'cc'),
-      mileage: isElectric 
-        ? cleanAndFormatValue(dbBike.city_mileage, 'km')
-        : cleanAndFormatValue(dbBike.city_mileage, 'kmpl'),
-      power: isElectric 
-        ? cleanAndFormatValue(dbBike.peak_power, 'kW')
-        : cleanAndFormatValue(dbBike.peak_power, 'PS'),
+        : cleanValue(dbBike.displacement),
+      mileage: cleanValue(dbBike.city_mileage),
+      power: cleanValue(dbBike.peak_power),
     }
   };
 };

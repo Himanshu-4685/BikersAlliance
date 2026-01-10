@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FiChevronRight, FiFilter, FiX } from 'react-icons/fi';
+import BikeCard from '@/components/bikes/BikeCard';
 
 // Filter components
 import BrandFilter from '@/components/filters/BrandFilter';
@@ -304,72 +305,30 @@ export default function ScootersPage() {
             ) : scooters.length > 0 ? (
               <>
                 {/* Scooters grid */}
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {scooters.map((scooter) => (
-                    <Link 
-                      key={scooter.variant_id} 
-                      href={`/bikes/${scooter.variant_id}`} 
-                      className="overflow-hidden transition-shadow bg-white border rounded-lg hover:shadow-md"
-                    >
-                      {/* Scooter Image */}
-                      <div className="relative h-48 bg-gray-100">
-                        <Image
-                          src={scooter.image_url || '/demo.avif'}
-                          alt={scooter.variant_name}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        />
-                      </div>
-                      
-                      <div className="p-4">
-                        {/* Brand */}
-                        <div className="flex items-center mb-1">
-                          {scooter.brand_logo ? (
-                            <div className="relative w-6 h-6 mr-2">
-                              <Image
-                                src={scooter.brand_logo}
-                                alt={scooter.brand_name}
-                                fill
-                                className="object-contain"
-                              />
-                            </div>
-                          ) : null}
-                          <p className="text-sm text-gray-500">{scooter.brand_name}</p>
-                        </div>
-                        
-                        {/* Scooter Name */}
-                        <h2 className="text-lg font-semibold">{scooter.variant_name}</h2>
-                        
-                        {/* Price */}
-                        <div className="mt-2 text-xl font-bold text-primary">
-                          ₹{scooter.on_road_price.toLocaleString()}
-                        </div>
-                        
-                        {/* Specs */}
-                        <div className="mt-3 grid grid-cols-2 gap-2">
-                          {scooter.displacement && (
-                            <div className="text-sm">
-                              <span className="text-gray-500">Engine: </span>
-                              <span className="font-medium">{scooter.displacement}cc</span>
-                            </div>
-                          )}
-                          {scooter.city_mileage && (
-                            <div className="text-sm">
-                              <span className="text-gray-500">Mileage: </span>
-                              <span className="font-medium">{scooter.city_mileage}</span>
-                            </div>
-                          )}
-                          {scooter.peak_power && (
-                            <div className="text-sm">
-                              <span className="text-gray-500">Power: </span>
-                              <span className="font-medium">{scooter.peak_power}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
+                <div className="flex flex-wrap gap-6">
+                  {scooters.map((scooter) => {
+                    // Convert scooter data to Bike format for BikeCard
+                    const bikeData = {
+                      id: scooter.variant_id,
+                      name: scooter.variant_name,
+                      image: scooter.image_url || '/demo.avif',
+                      price: scooter.on_road_price.toLocaleString(),
+                      specs: {
+                        engine: scooter.displacement || 'N/A',
+                        mileage: scooter.city_mileage || 'N/A',
+                        power: scooter.peak_power || 'N/A'
+                      }
+                    };
+                    
+                    return (
+                      <BikeCard 
+                        key={scooter.variant_id}
+                        bike={bikeData}
+                        viewMode="grid"
+                        showBrand={true}
+                      />
+                    );
+                  })}
                 </div>
 
                 {/* Pagination Info */}

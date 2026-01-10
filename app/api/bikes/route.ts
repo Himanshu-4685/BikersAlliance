@@ -222,25 +222,14 @@ export async function GET(request: Request) {
       throw countError;
     }
 
-    // Helper function to format values with units
-    const cleanAndFormatValue = (value: any, unit: string): string => {
+    // Helper function to clean values
+    const cleanValue = (value: any): string => {
       if (!value) return 'N/A';
       const stringValue = String(value).trim();
       if (!stringValue || stringValue === '0' || stringValue.toLowerCase() === 'n/a') return 'N/A';
       
-      // If the value already contains the unit, return it as is
-      if (stringValue.toLowerCase().includes(unit.toLowerCase())) {
-        return stringValue;
-      }
-      
-      // If it's just a number, add the unit
-      const numericValue = parseFloat(stringValue);
-      if (!isNaN(numericValue)) {
-        return `${numericValue} ${unit}`;
-      }
-      
-      // Fallback: return the value as is
-      return stringValue;
+      // Remove any existing units and formatting, just keep the numeric part and basic unit
+      return stringValue.replace(/\s*@.*$/, '').trim() || 'N/A';
     };
 
     // Helper function to clean duplicate brand/model names
@@ -288,10 +277,10 @@ export async function GET(request: Request) {
           name: variant.models?.model_name || 'Unknown'
         },
         specs: {
-          engine: isElectric ? 'Electric' : cleanAndFormatValue(variant.specs?.displacement, 'cc'),
-          mileage: isElectric ? cleanAndFormatValue(variant.specs?.city_mileage, 'km') : cleanAndFormatValue(variant.specs?.city_mileage, 'kmpl'),
-          power: isElectric ? cleanAndFormatValue(variant.specs?.peak_power, 'kW') : cleanAndFormatValue(variant.specs?.peak_power, 'PS'),
-          displacement: cleanAndFormatValue(variant.specs?.displacement, 'cc'),
+          engine: isElectric ? 'Electric' : cleanValue(variant.specs?.displacement),
+          mileage: cleanValue(variant.specs?.city_mileage),
+          power: cleanValue(variant.specs?.peak_power),
+          displacement: cleanValue(variant.specs?.displacement),
           engineType: variant.specs?.engine_type
         }
       };

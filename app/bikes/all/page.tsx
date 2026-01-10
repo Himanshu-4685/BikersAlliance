@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FiChevronRight, FiFilter, FiX } from 'react-icons/fi';
+import BikeCard from '@/components/bikes/BikeCard';
 
 // Filter components
 import BrandFilter from '@/components/filters/BrandFilter';
@@ -301,68 +302,30 @@ export default function AllBikesPage() {
             ) : bikes.length > 0 ? (
               <>
                 {/* Bikes grid */}
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {bikes.map((bike) => (
-                    <Link 
-                      key={bike.id} 
-                      href={`/bikes/${bike.id}`} 
-                      className="overflow-hidden transition-shadow bg-white border rounded-lg hover:shadow-md"
-                    >
-                      {/* Bike Image */}
-                      <div className="relative h-48 bg-gray-100">
-                        <Image
-                          src={bike.image || '/demo.avif'}
-                          alt={bike.name}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        />
-                      </div>
-                      
-                      <div className="p-4">
-                        {/* Brand */}
-                        <div className="flex items-center mb-1">
-                          {bike.brand.logo ? (
-                            <div className="relative w-6 h-6 mr-2">
-                              <Image
-                                src={bike.brand.logo}
-                                alt={bike.brand.name}
-                                fill
-                                className="object-contain"
-                              />
-                            </div>
-                          ) : null}
-                          <p className="text-sm text-gray-500">{bike.brand.name}</p>
-                        </div>
-                        
-                        {/* Bike Name */}
-                        <h2 className="text-lg font-semibold">{bike.name}</h2>
-                        
-                        {/* Price */}
-                        {bike.price && (
-                          <div className="mt-2 text-xl font-bold text-primary">
-                            ₹{bike.price.toLocaleString()}
-                          </div>
-                        )}
-                        
-                        {/* Specs - Display Engine, Mileage, Power like spotlight section */}
-                        <div className="grid grid-cols-3 gap-2 pt-3 mt-3 text-xs text-gray-500 border-t border-gray-100">
-                          <div>
-                            <div className="font-medium">Engine</div>
-                            <div>{bike.specs?.engine || bike.specs?.displacement || 'N/A'}</div>
-                          </div>
-                          <div>
-                            <div className="font-medium">Mileage</div>
-                            <div>{bike.specs?.mileage || 'N/A'}</div>
-                          </div>
-                          <div>
-                            <div className="font-medium">Power</div>
-                            <div>{bike.specs?.power || 'N/A'}</div>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
+                <div className="flex flex-wrap gap-6">
+                  {bikes.map((bike) => {
+                    // Convert to BikeCard format
+                    const bikeData = {
+                      id: bike.id,
+                      name: bike.name,
+                      image: bike.image || '/demo.avif',
+                      price: bike.price ? bike.price.toLocaleString() : 'Price not available',
+                      specs: {
+                        engine: bike.specs?.engine || bike.specs?.displacement || 'N/A',
+                        mileage: bike.specs?.mileage || 'N/A',
+                        power: bike.specs?.power || 'N/A'
+                      }
+                    };
+                    
+                    return (
+                      <BikeCard 
+                        key={bike.id}
+                        bike={bikeData}
+                        viewMode="grid"
+                        showBrand={true}
+                      />
+                    );
+                  })}
                 </div>
 
                 {/* Pagination */}
