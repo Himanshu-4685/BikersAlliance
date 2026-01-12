@@ -17,7 +17,7 @@ interface WishlistItem {
 interface WishlistContextType {
   wishlistItems: WishlistItem[];
   addToWishlist: (item: Omit<WishlistItem, 'id' | 'created_at'>) => Promise<boolean>;
-  removeFromWishlist: (bikeSlug: string) => Promise<boolean>;
+  removeFromWishlist: (bikeIdOrSlug: string) => Promise<boolean>;
   isInWishlist: (bikeSlug: string) => boolean;
   isLoading: boolean;
   wishlistCount: number;
@@ -152,7 +152,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const removeFromWishlist = async (bikeSlug: string): Promise<boolean> => {
+  const removeFromWishlist = async (bikeIdOrSlug: string): Promise<boolean> => {
     if (!user) {
       return false;
     }
@@ -160,13 +160,15 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     try {
       setIsLoading(true);
 
-      // Find the item to get bike_id for API call
-      const item = wishlistItems.find(item => item.bike_slug === bikeSlug);
+      // Find the item - could be by bike_id or bike_slug
+      const item = wishlistItems.find(item => 
+        item.bike_id === bikeIdOrSlug || item.bike_slug === bikeIdOrSlug
+      );
       
-      console.log('Removing from wishlist:', bikeSlug, item);
+      console.log('Removing from wishlist:', bikeIdOrSlug, item);
       
       // Try to remove from database first
-      const response = await fetch(`/api/wishlist?bike_slug=${bikeSlug}&bike_id=${item?.bike_id || ''}`, {
+      const response = await fetch(`/api/wishlist?bike_slug=${item?.bike_slug || bikeIdOrSlug}&bike_id=${item?.bike_id || bikeIdOrSlug}`, {
         method: 'DELETE'
       });
 
@@ -174,7 +176,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       console.log('Remove from wishlist response:', data);
 
       // Remove from local state regardless of API success (optimistic update)
-      setWishlistItems(prev => prev.filter(item => item.bike_slug !== bikeSlug));
+      setWishlistItems(prev => prev.filter(item => 
+        item.bike_id !== bikeIdOrSlug && item.bike_slug !== bikeIdOrSlug
+      ));
 
       if (!response.ok) {
         console.log('API call failed, but removed from local state');
@@ -186,7 +190,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Error removing from wishlist:', error);
       // Still remove from local state even if API fails
-      setWishlistItems(prev => prev.filter(item => item.bike_slug !== bikeSlug));
+      setWishlistItems(prev => prev.filter(item => 
+        item.bike_id !== bikeIdOrSlug && item.bike_slug !== bikeIdOrSlug
+      ));
       return false;
     } finally {
       setIsLoading(false);

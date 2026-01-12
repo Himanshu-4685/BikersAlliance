@@ -88,9 +88,8 @@ export async function GET(request: NextRequest) {
       const brand = model?.brands;
       const image = fav.images && fav.images.length > 0 ? fav.images[0] : null;
       
-      // Create proper bike slug for routing - use just the variant name as the API expects
-      const bikeSlug = variant?.variant_name?.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-') || 
-        `${brand?.brand_name?.toLowerCase().replace(/\s+/g, '-')}-${model?.model_name?.toLowerCase().replace(/\s+/g, '-')}-${variant?.variant_name?.toLowerCase().replace(/\s+/g, '-')}`.replace(/[^a-z0-9-]/g, '');
+      // Use variant_id as the bike_slug since that's what /api/bikes/[slug] expects
+      const bikeSlug = fav.variant_id.toString();
 
       return {
         id: fav.favourite_id.toString(),

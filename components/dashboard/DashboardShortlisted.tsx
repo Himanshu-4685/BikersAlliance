@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FiHeart, FiTrash2 } from 'react-icons/fi';
 import { useWishlist } from '@/context/WishlistContext';
+import CompareButton from '@/components/common/CompareButton';
 
 export default function DashboardShortlisted() {
   const { wishlistItems, removeFromWishlist, isLoading } = useWishlist();
@@ -21,41 +22,9 @@ export default function DashboardShortlisted() {
     return `₹${price.toLocaleString()}`;
   };
 
-  const cleanSlug = (slug: string) => {
-    // Handle different slug patterns
-    if (!slug) return slug;
-    
-    // If the slug starts with /bikes/, extract the last part (the variant slug)
-    if (slug.startsWith('/bikes/')) {
-      const pathParts = slug.split('/');
-      return pathParts[pathParts.length - 1] || slug;
-    }
-    
-    // For existing complex slugs, try to extract just the variant name
-    // Handle patterns like "ducati-panigale-ducati-panigale-v4-s" where there are duplicates
-    const parts = slug.split('-');
-    
-    if (parts.length > 4) {
-      // Find the first duplicate brand/model name and take everything after it
-      const seen = new Set();
-      let duplicateIndex = -1;
-      
-      for (let i = 0; i < parts.length; i++) {
-        const part = parts[i].toLowerCase();
-        if (seen.has(part) && !part.match(/^(v\d|r|s|pro|plus|bs\d|\d+)$/)) {
-          duplicateIndex = i;
-          break;
-        }
-        seen.add(part);
-      }
-      
-      // If we found duplicates, take everything from the duplicate onwards
-      if (duplicateIndex > 0) {
-        return parts.slice(duplicateIndex).join('-');
-      }
-    }
-    
-    return slug;
+  const getBikeUrl = (item: any) => {
+    // Use bike_id (variant_id) as the URL parameter since that's what /api/bikes/[slug] expects
+    return `/bikes/${item.bike_id}`;
   };
 
   return (
@@ -75,7 +44,7 @@ export default function DashboardShortlisted() {
                 <div className="flex flex-col md:flex-row gap-4">
                   {/* Bike Image */}
                   <div className="flex-shrink-0 w-full md:w-32">
-                    <Link href={`/bikes/${cleanSlug(item.bike_slug)}`}>
+                    <Link href={getBikeUrl(item)}>
                       <div className="relative h-24 md:h-24 overflow-hidden bg-gray-100 rounded-lg">
                         <Image
                           src={item.bike_image_url || '/demo.avif'}
@@ -96,7 +65,7 @@ export default function DashboardShortlisted() {
                   <div className="flex-1">
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <Link href={`/bikes/${cleanSlug(item.bike_slug)}`}>
+                        <Link href={getBikeUrl(item)}>
                           <h3 className="font-semibold text-lg text-gray-900 hover:text-primary transition-colors">
                             {item.bike_name}
                           </h3>
@@ -108,7 +77,7 @@ export default function DashboardShortlisted() {
                   
                       {/* Remove Button */}
                       <button
-                        onClick={() => handleRemoveFromWishlist(item.bike_slug)}
+                        onClick={() => handleRemoveFromWishlist(item.bike_id)}
                         disabled={isLoading}
                         className="flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all duration-200"
                         title="Remove from wishlist"
@@ -134,17 +103,26 @@ export default function DashboardShortlisted() {
                     {/* Action Buttons */}
                     <div className="flex flex-wrap gap-2">
                       <Link 
-                        href={`/bikes/${cleanSlug(item.bike_slug)}`}
+                        href={getBikeUrl(item)}
                         className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary-dark transition-colors"
                       >
                         View Details
                       </Link>
-                      <Link 
-                        href={`/bikes/${cleanSlug(item.bike_slug)}#compare`}
+                      <CompareButton
+                        bike={{
+                          id: item.bike_id,
+                          name: item.bike_name,
+                          slug: item.bike_id, // Using bike_id as slug since that's what the API expects
+                          image: item.bike_image_url || '/demo.avif',
+                          price: item.bike_price || 0,
+                          brand: item.brand_name ? {
+                            name: item.brand_name,
+                            slug: item.brand_name.toLowerCase().replace(/\s+/g, '-')
+                          } : undefined
+                        }}
+                        showText={true}
                         className="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 transition-colors"
-                      >
-                        Compare
-                      </Link>
+                      />
                     </div>
                   </div>
                 </div>

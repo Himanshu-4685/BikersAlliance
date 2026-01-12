@@ -100,18 +100,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get user orders
+    // Get user orders, excluding those that have been booked
     const { data: orders, error } = await supabase
       .from('user_orders')
       .select('*')
       .eq('user_id', user_id)
       .order('created_at', { ascending: false });
-
-    console.log('Database query result:', { 
-      ordersCount: orders?.length || 0, 
-      error: error?.message,
-      user_id
-    });
 
     if (error) {
       console.error('Database error:', error);
@@ -121,9 +115,32 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Filter out orders that have been booked
+    let filteredOrders = orders || [];
+    
+    if (orders && orders.length > 0) {
+      // Get booking data to exclude booked items
+      const { data: bookings } = await supabase
+        .from('bookings')
+        .select('variant_id')
+        .eq('user_id', user_id);
+      
+      const bookedVariantIds = new Set(bookings?.map(booking => booking.variant_id) || []);
+      
+      // Filter out orders that have been booked
+      filteredOrders = orders.filter(order => !bookedVariantIds.has(order.variant_id));
+    }
+
+    console.log('Database query result:', { 
+      totalOrders: orders?.length || 0,
+      filteredOrders: filteredOrders.length,
+      error: (error as any)?.message,
+      user_id
+    });
+
     return NextResponse.json({
       success: true,
-      orders: orders || []
+      orders: filteredOrders
     });
 
   } catch (error) {

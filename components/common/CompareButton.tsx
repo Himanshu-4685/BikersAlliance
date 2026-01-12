@@ -17,9 +17,10 @@ interface CompareButtonProps {
     };
   };
   className?: string;
+  showText?: boolean;
 }
 
-export default function CompareButton({ bike, className = '' }: CompareButtonProps) {
+export default function CompareButton({ bike, className = '', showText = false }: CompareButtonProps) {
   const { addToComparison, removeFromComparison, isInComparison } = useComparison();
   const [isHovered, setIsHovered] = useState(false);
   
@@ -41,7 +42,7 @@ export default function CompareButton({ bike, className = '' }: CompareButtonPro
       onClick={handleCompareClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`flex items-center justify-center p-1.5 rounded-md transition-colors ${
+      className={`flex items-center justify-center gap-2 ${showText ? 'px-4 py-2' : 'p-1.5'} rounded-md transition-colors ${
         inCompare
           ? 'bg-primary text-white'
           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -50,8 +51,13 @@ export default function CompareButton({ bike, className = '' }: CompareButtonPro
       aria-label={inCompare ? 'Remove from comparison' : 'Add to comparison'}
     >
       <FiBarChart2 className="w-4 h-4" />
+      {showText && (
+        <span className="text-sm font-medium">
+          {inCompare ? 'Remove from Compare' : 'Compare'}
+        </span>
+      )}
       
-      {isHovered && (
+      {!showText && isHovered && (
         <span className="absolute bottom-full mb-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
           {inCompare ? 'Remove from compare' : 'Add to compare'}
         </span>

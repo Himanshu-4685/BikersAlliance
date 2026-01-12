@@ -8,7 +8,8 @@ import {
   FiPackage, 
   FiCalendar,
   FiTrash2,
-  FiEye
+  FiEye,
+  FiBookOpen
 } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext.supabase';
 
@@ -30,40 +31,11 @@ export default function DashboardOrders() {
   const [orders, setOrders] = useState<UserOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingOrder, setDeletingOrder] = useState<string | null>(null);
+  const [bookingOrder, setBookingOrder] = useState<string | null>(null);
 
-  const cleanSlug = (slug: string) => {
-    // Handle different slug patterns
-    if (!slug) return slug;
-    
-    // If the slug starts with /bikes/, extract the last part (the variant slug)
-    if (slug.startsWith('/bikes/')) {
-      const pathParts = slug.split('/');
-      return pathParts[pathParts.length - 1] || slug;
-    }
-    
-    // For existing complex slugs, try to extract just the variant name
-    // Handle patterns like "ducati-panigale-ducati-panigale-v4-s" where there are duplicates
-    const parts = slug.split('-');
-    
-    if (parts.length > 4) {
-      // Find the first duplicate brand/model name and take everything after it
-      const seen = new Set();
-      let startIndex = 0;
-      
-      for (let i = 0; i < parts.length; i++) {
-        if (seen.has(parts[i])) {
-          startIndex = i + 1;
-          break;
-        }
-        seen.add(parts[i]);
-      }
-      
-      if (startIndex > 0 && startIndex < parts.length) {
-        return parts.slice(startIndex).join('-');
-      }
-    }
-    
-    return slug;
+  const getBikeUrl = (order: UserOrder) => {
+    // Use variant_id as the URL parameter since that's what /api/bikes/[slug] expects
+    return `/bikes/${order.variant_id}`;
   };
 
   // Fetch user orders
@@ -92,6 +64,43 @@ export default function DashboardOrders() {
 
     fetchOrders();
   }, [user]);
+
+  const handleBookOrder = async (order: UserOrder) => {
+    if (!confirm('Are you sure you want to book this bike?')) return;
+
+    setBookingOrder(order.id);
+    try {
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          user_id: user?.id,
+          variant_id: order.variant_id,
+          bike_name: order.bike_name,
+          variant_name: order.variant_name,
+          brand_name: order.brand_name,
+          price: order.price,
+          image_url: order.image_url
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        alert('Bike booked successfully! You will be contacted soon.');
+      } else {
+        alert('Failed to book bike. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error booking bike:', error);
+      alert('Network error. Please try again.');
+    } finally {
+      setBookingOrder(null);
+    }
+  };
 
   const handleDeleteOrder = async (orderId: string) => {
     if (!confirm('Are you sure you want to remove this order?')) return;
@@ -156,7 +165,7 @@ export default function DashboardOrders() {
                 <div className="flex items-start space-x-4">
                   {/* Bike Image */}
                   <div className="flex-shrink-0 w-20 h-16 bg-gray-200 rounded-lg overflow-hidden">
-                    <Link href={`/bikes/${cleanSlug(order.bike_name.toLowerCase().replace(/\s+/g, '-'))}`}>
+                    <Link href={getBikeUrl(order)}>
                       <Image
                         src={order.image_url || '/demo.avif'}
                         alt={order.bike_name}
@@ -175,7 +184,7 @@ export default function DashboardOrders() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between">
                       <div>
-                        <Link href={`/bikes/${cleanSlug(order.bike_name.toLowerCase().replace(/\s+/g, '-'))}`}>
+                        <Link href={getBikeUrl(order)}>
                           <h3 className="text-lg font-semibold text-gray-900 mb-1 hover:text-primary transition-colors cursor-pointer">
                             {order.bike_name}
                           </h3>
@@ -210,12 +219,21 @@ export default function DashboardOrders() {
                     {/* Actions */}
                     <div className="flex items-center space-x-3 pt-3 border-t">
                       <Link 
-                        href={`/bikes/${cleanSlug(order.bike_name.toLowerCase().replace(/\s+/g, '-'))}`}
+                        href={getBikeUrl(order)}
                         className="flex items-center px-4 py-2 text-sm font-medium text-primary border border-primary rounded-md hover:bg-primary-50 transition-colors"
                       >
                         <FiEye className="w-4 h-4 mr-2" />
                         View Details
                       </Link>
+                      
+                      <button
+                        onClick={() => handleBookOrder(order)}
+                        disabled={bookingOrder === order.id}
+                        className="flex items-center px-4 py-2 text-sm font-medium text-green-600 border border-green-300 rounded-md hover:bg-green-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <FiBookOpen className="w-4 h-4 mr-2" />
+                        {bookingOrder === order.id ? 'Booking...' : 'Book Now'}
+                      </button>
                       
                       <button
                         onClick={() => handleDeleteOrder(order.id)}

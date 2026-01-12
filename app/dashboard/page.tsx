@@ -9,7 +9,8 @@ import {
   FiActivity, 
   FiUser,
   FiLogOut,
-  FiCalendar
+  FiCalendar,
+  FiBookOpen
 } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext.supabase';
 import { useWishlist } from '@/context/WishlistContext';
@@ -17,8 +18,9 @@ import DashboardOrders from '@/components/dashboard/DashboardOrders';
 import DashboardShortlisted from '@/components/dashboard/DashboardShortlisted';
 import DashboardActivity from '@/components/dashboard/DashboardActivity';
 import DashboardProfileSettings from '@/components/dashboard/DashboardProfileSettings';
+import DashboardBookings from '@/components/dashboard/DashboardBookings';
 
-type DashboardSection = 'orders' | 'shortlisted' | 'activity' | 'profile';
+type DashboardSection = 'orders' | 'shortlisted' | 'bookings' | 'activity' | 'profile';
 
 export default function DashboardPage() {
   const { user, isLoading, logout } = useAuth();
@@ -29,7 +31,7 @@ export default function DashboardPage() {
   // Get section from URL params or default to orders
   useEffect(() => {
     const section = searchParams.get('section') as DashboardSection;
-    if (section && ['orders', 'shortlisted', 'activity', 'profile'].includes(section)) {
+    if (section && ['orders', 'shortlisted', 'bookings', 'activity', 'profile'].includes(section)) {
       setActiveSection(section);
     }
   }, [searchParams]);
@@ -78,6 +80,7 @@ export default function DashboardPage() {
   const menuItems = [
     { id: 'orders', label: 'My Orders', icon: FiPackage },
     { id: 'shortlisted', label: 'Shortlisted Vehicles', icon: FiHeart },
+    { id: 'bookings', label: 'My Bookings', icon: FiBookOpen },
     { id: 'activity', label: 'My Activity', icon: FiActivity },
     { id: 'profile', label: 'Profile Settings', icon: FiUser }
   ];
@@ -88,6 +91,8 @@ export default function DashboardPage() {
         return <DashboardOrders />;
       case 'shortlisted':
         return <DashboardShortlisted />;
+      case 'bookings':
+        return <DashboardBookings />;
       case 'activity':
         return <DashboardActivity />;
       case 'profile':

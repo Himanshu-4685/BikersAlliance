@@ -26,6 +26,7 @@ import {
 } from 'react-icons/fi';
 import SimilarBikesSection from '@/components/bikes/SimilarBikesSection';
 import WishlistButton from '@/components/common/WishlistButton';
+import CompareButton from '@/components/common/CompareButton';
 import LeadFormPopup from '@/components/bikes/LeadFormPopup';
 import ReviewsAndRatingsSection from '@/components/bikes/ReviewsAndRatingsSection';
 import DynamicDealersSection from '@/components/bikes/DynamicDealersSection';
@@ -110,6 +111,7 @@ export default function BikeDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
   const [activeTab, setActiveTab] = useState('specs');
+  const [activeSpecTab, setActiveSpecTab] = useState('engine');
 
   const [showEMICalculator, setShowEMICalculator] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -374,18 +376,32 @@ export default function BikeDetailsPage() {
                 </p>
               )}
             </div>
-            <WishlistButton 
-              bike={{
-                id: bike.id,
-                name: bike.name,
-                slug: bike.slug,
-                image: getCurrentVariantImages()?.[0]?.url || bike.images?.[0]?.url,
-                price: bike.variants?.find(v => v.id === bike.id)?.price || bike.variants?.[0]?.price,
-                brand: bike.brand
-              }}
-              variant="button"
-              showText={true}
-            />
+            <div className="flex items-center gap-3">
+              <CompareButton
+                bike={{
+                  id: bike.id,
+                  name: bike.variants?.find(v => v.id === bike.id)?.name || bike.name,
+                  slug: bike.slug,
+                  image: getCurrentVariantImages()?.[0]?.url || bike.images?.[0]?.url || '',
+                  price: bike.variants?.find(v => v.id === bike.id)?.price || bike.variants?.[0]?.price || 0,
+                  brand: bike.brand
+                }}
+                className="px-3 py-2 text-sm font-medium"
+                showText={true}
+              />
+              <WishlistButton 
+                bike={{
+                  id: bike.id,
+                  name: bike.name,
+                  slug: bike.slug,
+                  image: getCurrentVariantImages()?.[0]?.url || bike.images?.[0]?.url,
+                  price: bike.variants?.find(v => v.id === bike.id)?.price || bike.variants?.[0]?.price,
+                  brand: bike.brand
+                }}
+                variant="button"
+                showText={true}
+              />
+            </div>
           </div>
           
           {/* Launch date */}
@@ -496,19 +512,57 @@ export default function BikeDetailsPage() {
                   <div>
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Technical Specifications</h2>
                     
-                    <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-                      {/* Engine Specifications */}
-                      {groupedSpecs.engine && (
+                    {/* Specification Tabs */}
+                    <div className="flex border-b border-gray-200 mb-6">
+                      <button
+                        onClick={() => setActiveSpecTab('engine')}
+                        className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
+                          activeSpecTab === 'engine'
+                            ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
+                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex items-center justify-center gap-2">
+                          <FiSettings className="w-4 h-4" />
+                          Engine
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => setActiveSpecTab('fuel')}
+                        className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
+                          activeSpecTab === 'fuel'
+                            ? 'text-green-600 border-b-2 border-green-600 bg-green-50'
+                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex items-center justify-center gap-2">
+                          <FiBarChart className="w-4 h-4" />
+                          Fuel Efficiency
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => setActiveSpecTab('dimensions')}
+                        className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
+                          activeSpecTab === 'dimensions'
+                            ? 'text-purple-600 border-b-2 border-purple-600 bg-purple-50'
+                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex items-center justify-center gap-2">
+                          <FiInfo className="w-4 h-4" />
+                          Dimensions
+                        </div>
+                      </button>
+                    </div>
+
+                    {/* Specification Content */}
+                    <div className="min-h-[300px]">
+                      {/* Engine Tab Content */}
+                      {activeSpecTab === 'engine' && groupedSpecs.engine && (
                         <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
-                          <div className="flex items-center mb-4">
-                            <div className="p-2 bg-blue-500 rounded-lg">
-                              <FiSettings className="w-5 h-5 text-white" />
-                            </div>
-                            <h3 className="ml-3 text-lg font-semibold text-blue-900">Engine</h3>
-                          </div>
-                          <div className="space-y-3">
+                          <div className="grid gap-4 md:grid-cols-2">
                             {groupedSpecs.engine.map((spec) => (
-                              <div key={spec.name} className="flex justify-between items-center py-2 border-b border-blue-100 last:border-b-0">
+                              <div key={spec.name} className="flex justify-between items-center py-3 px-4 bg-white rounded-lg border border-blue-100">
                                 <span className="text-sm font-medium text-blue-700">{spec.name}</span>
                                 <span className="text-sm font-bold text-blue-900">{spec.value}</span>
                               </div>
@@ -517,18 +571,12 @@ export default function BikeDetailsPage() {
                         </div>
                       )}
 
-                      {/* Mileage Specifications */}
-                      {groupedSpecs.mileage && (
+                      {/* Fuel Efficiency Tab Content */}
+                      {activeSpecTab === 'fuel' && groupedSpecs.mileage && (
                         <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6">
-                          <div className="flex items-center mb-4">
-                            <div className="p-2 bg-green-500 rounded-lg">
-                              <FiBarChart className="w-5 h-5 text-white" />
-                            </div>
-                            <h3 className="ml-3 text-lg font-semibold text-green-900">Fuel Efficiency</h3>
-                          </div>
-                          <div className="space-y-3">
+                          <div className="grid gap-4 md:grid-cols-2">
                             {groupedSpecs.mileage.map((spec) => (
-                              <div key={spec.name} className="flex justify-between items-center py-2 border-b border-green-100 last:border-b-0">
+                              <div key={spec.name} className="flex justify-between items-center py-3 px-4 bg-white rounded-lg border border-green-100">
                                 <span className="text-sm font-medium text-green-700">{spec.name}</span>
                                 <span className="text-sm font-bold text-green-900">{spec.value}</span>
                               </div>
@@ -537,18 +585,12 @@ export default function BikeDetailsPage() {
                         </div>
                       )}
 
-                      {/* Dimensions Specifications */}
-                      {groupedSpecs.dimensions && (
+                      {/* Dimensions Tab Content */}
+                      {activeSpecTab === 'dimensions' && groupedSpecs.dimensions && (
                         <div className="bg-gradient-to-br from-purple-50 to-violet-50 border border-purple-200 rounded-lg p-6">
-                          <div className="flex items-center mb-4">
-                            <div className="p-2 bg-purple-500 rounded-lg">
-                              <FiInfo className="w-5 h-5 text-white" />
-                            </div>
-                            <h3 className="ml-3 text-lg font-semibold text-purple-900">Dimensions</h3>
-                          </div>
-                          <div className="space-y-3">
+                          <div className="grid gap-4 md:grid-cols-2">
                             {groupedSpecs.dimensions.map((spec) => (
-                              <div key={spec.name} className="flex justify-between items-center py-2 border-b border-purple-100 last:border-b-0">
+                              <div key={spec.name} className="flex justify-between items-center py-3 px-4 bg-white rounded-lg border border-purple-100">
                                 <span className="text-sm font-medium text-purple-700">{spec.name}</span>
                                 <span className="text-sm font-bold text-purple-900">{spec.value}</span>
                               </div>
@@ -557,50 +599,59 @@ export default function BikeDetailsPage() {
                         </div>
                       )}
 
-
-
-                      {/* Chassis Specifications */}
-                      {groupedSpecs.chassis && (
-                        <div className="bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-200 rounded-lg p-6">
-                          <div className="flex items-center mb-4">
-                            <div className="p-2 bg-teal-500 rounded-lg">
-                              <FiSettings className="w-5 h-5 text-white" />
-                            </div>
-                            <h3 className="ml-3 text-lg font-semibold text-teal-900">Chassis & Suspension</h3>
-                          </div>
-                          <div className="space-y-3">
-                            {groupedSpecs.chassis.map((spec) => (
-                              <div key={spec.name} className="flex justify-between items-center py-2 border-b border-teal-100 last:border-b-0">
-                                <span className="text-sm font-medium text-teal-700">{spec.name}</span>
-                                <span className="text-sm font-bold text-teal-900">{spec.value}</span>
-                              </div>
-                            ))}
-                          </div>
+                      {/* Show message if no data for selected tab */}
+                      {activeSpecTab === 'engine' && !groupedSpecs.engine && (
+                        <div className="text-center py-8 text-gray-500">
+                          <FiSettings className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                          <p>Engine specifications not available</p>
                         </div>
                       )}
-
-                      {/* All Other Specifications */}
-                      {Object.entries(groupedSpecs).filter(([category]) => 
-                        !['engine', 'mileage', 'dimensions', 'transmission', 'chassis', 'general'].includes(category)
-                      ).map(([category, specs]) => (
-                        <div key={category} className="bg-gradient-to-br from-gray-50 to-slate-50 border border-gray-200 rounded-lg p-6">
-                          <div className="flex items-center mb-4">
-                            <div className="p-2 bg-gray-500 rounded-lg">
-                              <FiTag className="w-5 h-5 text-white" />
-                            </div>
-                            <h3 className="ml-3 text-lg font-semibold text-gray-900 capitalize">{category}</h3>
-                          </div>
-                          <div className="space-y-3">
-                            {specs.map((spec) => (
-                              <div key={spec.name} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
-                                <span className="text-sm font-medium text-gray-700">{spec.name}</span>
-                                <span className="text-sm font-bold text-gray-900">{spec.value}</span>
-                              </div>
-                            ))}
-                          </div>
+                      
+                      {activeSpecTab === 'fuel' && !groupedSpecs.mileage && (
+                        <div className="text-center py-8 text-gray-500">
+                          <FiBarChart className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                          <p>Fuel efficiency data not available</p>
                         </div>
-                      ))}
+                      )}
+                      
+                      {activeSpecTab === 'dimensions' && !groupedSpecs.dimensions && (
+                        <div className="text-center py-8 text-gray-500">
+                          <FiInfo className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                          <p>Dimension specifications not available</p>
+                        </div>
+                      )}
                     </div>
+
+                    {/* Additional Specifications (if any) */}
+                    {Object.entries(groupedSpecs).filter(([category]) => 
+                      !['engine', 'mileage', 'dimensions'].includes(category)
+                    ).length > 0 && (
+                      <div className="mt-8">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Specifications</h3>
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                          {Object.entries(groupedSpecs).filter(([category]) => 
+                            !['engine', 'mileage', 'dimensions'].includes(category)
+                          ).map(([category, specs]) => (
+                            <div key={category} className="bg-gradient-to-br from-gray-50 to-slate-50 border border-gray-200 rounded-lg p-4">
+                              <div className="flex items-center mb-3">
+                                <div className="p-1.5 bg-gray-500 rounded-lg">
+                                  <FiTag className="w-4 h-4 text-white" />
+                                </div>
+                                <h4 className="ml-2 text-sm font-semibold text-gray-900 capitalize">{category}</h4>
+                              </div>
+                              <div className="space-y-2">
+                                {specs.map((spec) => (
+                                  <div key={spec.name} className="flex justify-between items-center py-1 text-xs">
+                                    <span className="text-gray-600">{spec.name}</span>
+                                    <span className="font-medium text-gray-900">{spec.value}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
                 
@@ -649,38 +700,73 @@ export default function BikeDetailsPage() {
               <h2 className="text-lg font-semibold text-gray-900">Price</h2>
               
               {bike.variants && bike.variants.length > 0 ? (
-                <div className="mt-2 space-y-2">
-                  {bike.variants.map((variant, index) => {
-                    const isCurrentVariant = variant.id === bike.id;
+                <div className="mt-2">
+                  {/* Scrollable variants container with max 10 items visible */}
+                  <div 
+                    className="space-y-2 max-h-[400px] overflow-y-auto pr-2"
+                    style={{
+                      scrollbarWidth: 'thin',
+                      scrollbarColor: '#CBD5E0 #F7FAFC'
+                    }}
+                  >
+                    <style jsx>{`
+                      div::-webkit-scrollbar {
+                        width: 6px;
+                      }
+                      div::-webkit-scrollbar-track {
+                        background: #F7FAFC;
+                        border-radius: 3px;
+                      }
+                      div::-webkit-scrollbar-thumb {
+                        background: #CBD5E0;
+                        border-radius: 3px;
+                      }
+                      div::-webkit-scrollbar-thumb:hover {
+                        background: #A0AEC0;
+                      }
+                    `}</style>
                     
-                    return (
-                      <div 
-                        key={variant.id} 
-                        className={`flex justify-between p-3 border rounded-md cursor-pointer transition-all hover:bg-gray-50 ${
-                          isCurrentVariant
-                            ? 'border-primary bg-primary-50 shadow-sm' 
-                            : 'border-gray-200'
-                        }`}
-                        onClick={() => {
-                          // Navigate to the specific variant page using variant ID
-                          if (!isCurrentVariant) {
-                            router.push(`/bikes/${variant.id}`);
-                          }
-                        }}
-                      >
-                        <span className={`font-medium ${
-                          isCurrentVariant ? 'text-primary' : 'text-gray-700'
-                        }`}>
-                          {variant.name}
-                        </span>
-                        <span className={`font-bold ${
-                          isCurrentVariant ? 'text-primary' : 'text-gray-900'
-                        }`}>
-                          ₹ {variant.price.toLocaleString('en-IN')}
-                        </span>
-                      </div>
-                    );
-                  })}
+                    {bike.variants.map((variant, index) => {
+                      const isCurrentVariant = variant.id === bike.id;
+                      
+                      return (
+                        <div 
+                          key={variant.id} 
+                          className={`flex justify-between p-3 border rounded-md cursor-pointer transition-all hover:bg-gray-50 ${
+                            isCurrentVariant
+                              ? 'border-primary bg-primary-50 shadow-sm' 
+                              : 'border-gray-200'
+                          }`}
+                          onClick={() => {
+                            // Navigate to the specific variant page using variant ID
+                            if (!isCurrentVariant) {
+                              router.push(`/bikes/${variant.id}`);
+                            }
+                          }}
+                        >
+                          <span className={`font-medium ${
+                            isCurrentVariant ? 'text-primary' : 'text-gray-700'
+                          }`}>
+                            {variant.name}
+                          </span>
+                          <span className={`font-bold ${
+                            isCurrentVariant ? 'text-primary' : 'text-gray-900'
+                          }`}>
+                            ₹{variant.price.toLocaleString('en-IN')}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Show variant count for better UX */}
+                  {bike.variants.length > 10 && (
+                    <div className="mt-2 text-center">
+                      <p className="text-xs text-gray-500">
+                        {bike.variants.length} variants available • Scroll to view all
+                      </p>
+                    </div>
+                  )}
                   
                   <p className="mt-2 text-xs text-gray-500">
                     *Ex-showroom price. May vary based on location. Click to view details.
@@ -718,6 +804,18 @@ export default function BikeDetailsPage() {
                 >
                   Book Test Ride
                 </button>
+                <CompareButton
+                  bike={{
+                    id: bike.id,
+                    name: bike.variants?.find(v => v.id === bike.id)?.name || bike.name,
+                    slug: bike.slug,
+                    image: getCurrentVariantImages()?.[0]?.url || bike.images?.[0]?.url || '',
+                    price: bike.variants?.find(v => v.id === bike.id)?.price || bike.variants?.[0]?.price || 0,
+                    brand: bike.brand
+                  }}
+                  className="px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 flex items-center justify-center gap-2"
+                  showText={true}
+                />
               </div>
             </div>
             

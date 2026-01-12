@@ -82,7 +82,7 @@ CREATE TABLE public.bike_offers (
 );
 CREATE TABLE public.bookings (
   booking_id integer NOT NULL DEFAULT nextval('bookings_booking_id_seq'::regclass),
-  user_id integer,
+  user_id uuid,
   variant_id integer,
   dealer_id integer,
   booking_date timestamp with time zone,
@@ -91,7 +91,7 @@ CREATE TABLE public.bookings (
   notes text,
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT bookings_pkey PRIMARY KEY (booking_id),
-  CONSTRAINT bookings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(user_id),
+  CONSTRAINT bookings_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
   CONSTRAINT bookings_variant_id_fkey FOREIGN KEY (variant_id) REFERENCES public.variants(variant_id),
   CONSTRAINT bookings_dealer_id_fkey FOREIGN KEY (dealer_id) REFERENCES public.dealers(dealer_id)
 );
