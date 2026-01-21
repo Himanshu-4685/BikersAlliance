@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import VideoPlayer from '@/components/videos/VideoPlayer';
 import RelatedVideos from '@/components/videos/RelatedVideos';
 import Link from 'next/link';
@@ -20,11 +20,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       .limit(1)
       .maybeSingle();
 
-    if (error || !data) return { title: 'Video Not Found' };
+    if (error || !data) return { title: 'Video Maintenance' };
 
     return { title: (data as any).title, description: (data as any).description || '', keywords: [] };
   } catch (err) {
-    return { title: 'Video' };
+    return { title: 'Video Maintenance' };
   }
 }
 
@@ -38,7 +38,7 @@ export default async function VideoPage({ params }: Props) {
     .maybeSingle();
 
   if (error || !video) {
-    notFound();
+    redirect('/videos/maintenance');
   }
 
   const formatDate = (dateString: string) => {

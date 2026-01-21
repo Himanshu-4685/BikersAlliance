@@ -18,6 +18,12 @@ export async function middleware(request: NextRequest) {
   // Auth routes that should redirect to dashboard if already logged in
   const authRoutes = ['/login', '/register', '/forgot-password'];
   
+  // Video routes that need special handling (but not maintenance or API routes)
+  const videoRoutes = ['/videos'];
+  const isVideoRoute = videoRoutes.some(route => pathname.startsWith(route)) && 
+                       !pathname.startsWith('/videos/maintenance') && 
+                       !pathname.startsWith('/api/');
+  
   // Create a Supabase client
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -61,6 +67,27 @@ export async function middleware(request: NextRequest) {
   // Check if user is authenticated
   const { data: { session } } = await supabase.auth.getSession();
 
+  // Handle video routes - check if videos are available
+  if (isVideoRoute) {
+    try {
+      const { data, error } = await (supabase as any)
+        .from('videos')
+        .select('id')
+        .eq('is_published', true)
+        .limit(1);
+      
+      // If no videos found or there's an error, redirect to maintenance page
+      if (error || !data || data.length === 0) {
+        const maintenanceUrl = new URL('/videos/maintenance', request.url);
+        return NextResponse.redirect(maintenanceUrl);
+      }
+    } catch (err) {
+      // On any error, redirect to maintenance page
+      const maintenanceUrl = new URL('/videos/maintenance', request.url);
+      return NextResponse.redirect(maintenanceUrl);
+    }
+  }
+
   // Redirect from protected routes to login if not authenticated
   if (protectedRoutes.some(route => pathname.startsWith(route)) && !session) {
     const redirectUrl = new URL('/login', request.url);
@@ -73,7 +100,7 @@ export async function middleware(request: NextRequest) {
     const redirectUrl = new URL('/dashboard', request.url);
     return NextResponse.redirect(redirectUrl);
   }
-  
+
   // Return the response with updated cookies
   return res;
 }
@@ -83,6 +110,7 @@ export const config = {
     '/dashboard/:path*',
     '/login',
     '/register',
-    '/forgot-password'
+    '/forgot-password',
+    '/videos/:path*'
   ],
 };

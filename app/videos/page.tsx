@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import VideoGrid from '@/components/videos/VideoGrid';
 import HeroSection from '@/components/videos/HeroSection';
 import { createClient } from '@/utils/supabase/server';
@@ -54,6 +55,12 @@ function transformVideoData(videosArray: any[]) {
 
 export default async function VideosPage() {
   const videosRaw = await getVideos();
+  
+  // If no videos exist at all, redirect to maintenance page
+  if (videosRaw.length === 0) {
+    redirect('/videos/maintenance');
+  }
+  
   const allVideos = transformVideoData(videosRaw);
   const featuredVideos = allVideos.filter(video => video.featured).slice(0, 6);
   const recentVideos = allVideos.filter(video => !video.featured).slice(0, 12);

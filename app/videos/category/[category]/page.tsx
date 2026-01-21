@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import VideoGrid from '@/components/videos/VideoGrid';
 import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
@@ -77,10 +77,16 @@ export default async function CategoryVideosPage({ params }: Props) {
   
   // Check if category is valid
   if (!validCategories.includes(category)) {
-    notFound();
+    redirect('/videos/maintenance');
   }
   
   const categoryVideosRaw = await getVideosByCategory(category);
+  
+  // If no videos in this category, redirect to maintenance
+  if (categoryVideosRaw.length === 0) {
+    redirect('/videos/maintenance');
+  }
+  
   const categoryVideos = transformVideoData(categoryVideosRaw);
   const categoryTitle = category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
