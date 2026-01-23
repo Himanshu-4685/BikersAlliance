@@ -210,12 +210,8 @@ export default function Hero() {
         }
       }
       
-      if (selectedModel) {
-        // Find the model name from slug  
-        const model = models.find(m => m.slug === selectedModel);
-        if (model) {
-          params.append('model', model.name);
-        }
+      if (selectedType) {
+        params.append('bodyType', selectedType);
       }
     } else {
       // Budget search
@@ -467,20 +463,22 @@ export default function Hero() {
                         <div>
                           <select 
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#D02F2F] focus:border-[#D02F2F] text-gray-500"
-                            value={selectedModel}
-                            onChange={(e) => setSelectedModel(e.target.value)}
-                            disabled={modelsLoading || !selectedBrand}
+                            value={selectedType}
+                            onChange={(e) => setSelectedType(e.target.value)}
                           >
-                            <option value="">
-                              {modelsLoading ? 'Loading models...' : 
-                               !selectedBrand ? 'Select Brand First' : 
-                               'Select Model'}
-                            </option>
-                            {models.map((model) => (
-                              <option key={model.id} value={model.slug}>
-                                {model.name}
-                              </option>
-                            ))}
+                            <option value="">Select Type</option>
+                            <option value="commuter">Commuter</option>
+                            <option value="sports">Sports</option>
+                            <option value="cruiser">Cruiser</option>
+                            <option value="adventure">Adventure</option>
+                            <option value="scooter">Scooter</option>
+                            <option value="off-road">Off-Road</option>
+                            <option value="electric">Electric</option>
+                            <option value="moped">Moped</option>
+                            <option value="naked">Naked</option>
+                            <option value="touring">Touring</option>
+                            <option value="street">Street</option>
+                            <option value="roadster">Roadster</option>
                           </select>
                         </div>
                       </>
@@ -528,7 +526,7 @@ export default function Hero() {
                     <button
                       type="submit"
                       className="w-full py-2.5 px-4 bg-[#D02F2F] text-white rounded-md font-medium hover:bg-[#B82929] transition duration-150"
-                      disabled={searchBy === 'brand' ? !selectedBrand : (!selectedBudget && !selectedType)}
+                      disabled={searchBy === 'brand' ? (!selectedBrand || !selectedType) : (!selectedBudget && !selectedType)}
                     >
                       Search
                     </button>

@@ -92,11 +92,8 @@ export default async function NewsPage() {
         {/* Featured News */}
         {featuredNews.length > 0 && (
           <section className="mb-12">
-            <div className="flex items-center justify-between mb-6">
+            <div className="mb-6">
               <h2 className="text-3xl font-bold text-gray-900">Featured News</h2>
-              <a href="/news/top-stories" className="text-red-600 hover:text-red-700 font-medium">
-                View All →
-              </a>
             </div>
             <NewsGrid news={featuredNews} />
           </section>

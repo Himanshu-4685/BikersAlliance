@@ -140,6 +140,11 @@ export default function Footer() {
                   Newsletter
                 </Link>
               </li>
+              <li>
+                <Link href="/contact" className="text-sm text-gray-300 hover:text-white">
+                  Contact Us
+                </Link>
+              </li>
             </ul>
           </div>
 
