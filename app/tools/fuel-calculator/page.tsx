@@ -394,7 +394,7 @@ export default function BikeFuelCalculatorPage() {
                               {bike.city_mileage || 'N/A'}
                             </p>
                             <Link 
-                              href={`/bikes/${bike.variant_url || bike.variant_name.toLowerCase().replace(/\s+/g, '-')}`}
+                              href={`/bikes/${bike.variant_id}`}
                               className="w-full block text-center bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition-colors text-sm"
                             >
                               View Details
@@ -463,7 +463,7 @@ export default function BikeFuelCalculatorPage() {
                       trendingBikes.map((bike) => (
                         <Link 
                           key={bike.variant_id} 
-                          href={`/bikes/${bike.variant_url || bike.variant_name.toLowerCase().replace(/\s+/g, '-')}`}
+                          href={`/bikes/${bike.variant_id}`}
                           className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                         >
                           <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center mr-3 overflow-hidden">

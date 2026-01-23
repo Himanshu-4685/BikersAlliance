@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import { FiInfo, FiTrendingUp, FiDollarSign } from 'react-icons/fi';
 
 // Types
@@ -90,8 +91,8 @@ export default function EMICalculatorPage() {
         const popularData = await popularResponse.json();
         
         if (popularData.success && popularData.data?.bikes) {
-          const formattedPopular = popularData.data.bikes.slice(0, 5).map((bike: any, index: number) => ({
-            id: index + 1,
+          const formattedPopular = popularData.data.bikes.slice(0, 5).map((bike: any) => ({
+            id: bike.variant_id || bike.id,
             name: bike.variant_name || bike.name,
             price: bike.on_road_price ? `₹${(bike.on_road_price / 100000).toFixed(2)} Lakh` : 'Price on request',
             image: bike.image_url || '/demo.avif'
@@ -120,10 +121,10 @@ export default function EMICalculatorPage() {
         
         if (upcomingData.success && upcomingData.data) {
           const formattedUpcoming = upcomingData.data.slice(0, 5).map((bike: any) => ({
-            id: bike.id || bike.variant?.id,
+            id: bike.variant?.id || bike.id,
             name: bike.variant?.name || bike.model?.name || 'Unknown Bike',
             price: bike.priceRange || 'Price TBA',
-            slug: bike.variant?.slug || `bike-${bike.id}`,
+            slug: bike.variant?.slug || `bike-${bike.variant?.id || bike.id}`,
             image: bike.variant?.images?.[0]?.url || '/demo.avif',
             brand: bike.brand?.name || 'Unknown',
             expectedLaunch: bike.expectedLaunch
@@ -414,9 +415,12 @@ export default function EMICalculatorPage() {
                           <div className="p-4">
                             <h3 className="font-semibold text-gray-900 mb-1">{bike.name}</h3>
                             <p className="text-red-600 font-medium">{bike.price}</p>
-                            <button className="w-full mt-3 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition-colors text-sm">
+                            <Link 
+                              href={`/bikes/${bike.id}`}
+                              className="block w-full mt-3 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition-colors text-sm text-center"
+                            >
                               Check EMI
-                            </button>
+                            </Link>
                           </div>
                         </div>
                       ))}
@@ -445,7 +449,11 @@ export default function EMICalculatorPage() {
                   ) : (
                     <div className="space-y-4">
                       {popularBikes.map((bike) => (
-                        <div key={bike.id} className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <Link 
+                          key={bike.id} 
+                          href={`/bikes/${bike.id}`}
+                          className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                        >
                           <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center mr-3">
                             {bike.image && bike.image !== '/demo.avif' ? (
                               <div className="relative w-full h-full">
@@ -468,7 +476,7 @@ export default function EMICalculatorPage() {
                             <h4 className="font-medium text-sm text-gray-900">{bike.name}</h4>
                             <p className="text-xs text-red-600">{bike.price}</p>
                           </div>
-                        </div>
+                        </Link>
                       ))}
                       <button className="w-full text-red-500 text-sm font-medium hover:text-red-600">
                         <a href="/bikes/all">View All Popular Bikes</a>
@@ -496,7 +504,11 @@ export default function EMICalculatorPage() {
                   ) : (
                     <div className="space-y-4">
                       {upcomingBikes.map((bike) => (
-                        <div key={bike.id} className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <Link 
+                          key={bike.id} 
+                          href={`/bikes/${bike.id}`}
+                          className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                        >
                           <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center mr-3">
                             {bike.image && bike.image !== '/demo.avif' ? (
                               <div className="relative w-full h-full">
@@ -529,7 +541,7 @@ export default function EMICalculatorPage() {
                               <p className="text-xs text-blue-600">{bike.brand}</p>
                             )}
                           </div>
-                        </div>
+                        </Link>
                       ))}
                       <button className="w-full text-red-500 text-sm font-medium hover:text-red-600">
                         <a href="/upcoming-bikes">View All Upcoming Bikes</a>
