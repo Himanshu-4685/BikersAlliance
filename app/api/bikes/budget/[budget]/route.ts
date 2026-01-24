@@ -28,91 +28,97 @@ export async function GET(
       'under-50k': { 
         min: 0, 
         max: 50000, 
-        label: '₹50K', 
+        label: 'Under ₹50K', 
+        description: 'Under ₹50,000' 
+      },
+      'under-50000': { // Support URL format from homepage
+        min: 0, 
+        max: 50000, 
+        label: 'Under ₹50K', 
         description: 'Under ₹50,000' 
       },
       '50k-70k': { 
         min: 50000, 
         max: 70000, 
-        label: '₹50-70K', 
+        label: '₹50K - ₹70K', 
         description: '₹50,000 - ₹70,000' 
       },
       '50000-70000': { // Support numeric format
         min: 50000, 
         max: 70000, 
-        label: '₹50-70K', 
+        label: '₹50K - ₹70K', 
         description: '₹50,000 - ₹70,000' 
       },
       '70k-1l': { 
         min: 70000, 
         max: 100000, 
-        label: '₹70K-1L', 
+        label: '₹70K - ₹1L', 
         description: '₹70,000 - ₹1 Lakh' 
       },
       '70000-100000': { // Support numeric format
         min: 70000, 
         max: 100000, 
-        label: '₹70K-1L', 
+        label: '₹70K - ₹1L', 
         description: '₹70,000 - ₹1 Lakh' 
       },
       '1l-1.25l': { 
         min: 100000, 
         max: 125000, 
-        label: '₹1-1.25L', 
+        label: '₹1L - ₹1.25L', 
         description: '₹1 Lakh - ₹1.25 Lakh' 
       },
       '100000-125000': { // Support numeric format
         min: 100000, 
         max: 125000, 
-        label: '₹1-1.25L', 
+        label: '₹1L - ₹1.25L', 
         description: '₹1 Lakh - ₹1.25 Lakh' 
       },
       '1.25l-1.5l': { 
         min: 125000, 
         max: 150000, 
-        label: '₹1.25-1.5L', 
+        label: '₹1.25L - ₹1.5L', 
         description: '₹1.25 Lakh - ₹1.5 Lakh' 
       },
       '125000-150000': { // Support numeric format
         min: 125000, 
         max: 150000, 
-        label: '₹1.25-1.5L', 
+        label: '₹1.25L - ₹1.5L', 
         description: '₹1.25 Lakh - ₹1.5 Lakh' 
       },
       '1.5l-2l': { 
         min: 150000, 
         max: 200000, 
-        label: '₹1.5-2L', 
+        label: '₹1.5L - ₹2L', 
         description: '₹1.5 Lakh - ₹2 Lakh' 
       },
       '150000-200000': { // Support numeric format
         min: 150000, 
         max: 200000, 
-        label: '₹1.5-2L', 
+        label: '₹1.5L - ₹2L', 
         description: '₹1.5 Lakh - ₹2 Lakh' 
       },
       '2l-2.5l': { 
         min: 200000, 
         max: 250000, 
-        label: '₹2-2.5L', 
+        label: '₹2L - ₹2.5L', 
         description: '₹2 Lakh - ₹2.5 Lakh' 
       },
       '200000-250000': { // Support numeric format
         min: 200000, 
         max: 250000, 
-        label: '₹2-2.5L', 
+        label: '₹2L - ₹2.5L', 
         description: '₹2 Lakh - ₹2.5 Lakh' 
       },
       'above-2.5l': { 
         min: 250000, 
         max: 10000000, // Very high number for "above"
-        label: '₹2.5L+', 
+        label: 'Above ₹2.5L', 
         description: 'Above ₹2.5 Lakh' 
       },
       'above-250000': { // Support numeric format
         min: 250000, 
         max: 10000000, // Very high number for "above"
-        label: '₹2.5L+', 
+        label: 'Above ₹2.5L', 
         description: 'Above ₹2.5 Lakh' 
       }
     };

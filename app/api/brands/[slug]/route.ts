@@ -145,7 +145,7 @@ export async function GET(
     });
 
     // Get brand statistics
-    const { data: modelCount } = await supabase
+    const { count: modelCount } = await supabase
       .from('models')
       .select('*', { count: 'exact', head: true })
       .eq('brand_id', brand.brand_id);

@@ -94,8 +94,28 @@ export default function BudgetFilterPage() {
       const response = await fetch(`/api/bikes/budget/${budgetSlug}?${params}`);
       
       if (!response.ok) {
-        if (response.status === 404 || response.status === 400) {
-          notFound();
+        if (response.status === 404) {
+          // Handle case where no bikes found in budget range
+          setBikes([]);
+          setBudgetInfo({
+            slug: budgetSlug,
+            label: budgetSlug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            description: 'No bikes available in this budget range',
+            min: 0,
+            max: 0
+          });
+          setPagination({
+            total: 0,
+            page: 1,
+            limit: 12,
+            totalPages: 0
+          });
+          setError(null);
+          return;
+        }
+        if (response.status === 400) {
+          // Handle invalid budget range
+          throw new Error('Invalid budget range. Please try a different budget category.');
         }
         throw new Error('Failed to fetch bikes');
       }
