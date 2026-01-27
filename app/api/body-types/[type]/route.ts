@@ -108,18 +108,28 @@ export async function GET(
       throw error;
     }
 
-    // Get total count for pagination
+    // Get total count for pagination - use same structure as main query
     let countQuery = supabase
       .from('variants')
-      .select('variant_id, specs!inner(body_type)', { count: 'exact', head: true })
+      .select(`
+        variant_id,
+        models!inner(model_name),
+        brands!inner(brand_name),
+        specs!inner(body_type)
+      `, { count: 'exact', head: true })
       .ilike('specs.body_type', `%${bodyTypeName}%`);
 
+    // Apply search filter to count query
     if (search) {
       countQuery = countQuery.or(`variant_name.ilike.%${search}%,models.model_name.ilike.%${search}%,brands.brand_name.ilike.%${search}%`);
     }
+    
+    // Apply brand filter to count query
     if (brand) {
       countQuery = countQuery.eq('brands.brand_name', brand);
     }
+    
+    // Apply price filters to count query
     if (minPrice !== undefined) {
       countQuery = countQuery.gte('on_road_price', minPrice);
     }

@@ -16,6 +16,13 @@ export default function MileageFilter({ minMileage, onChange }: MileageFilterPro
     setLocalMin(minMileage);
   }, [minMileage]);
   
+  // Clear local state when prop is undefined (after clearing filters)
+  useEffect(() => {
+    if (minMileage === undefined) {
+      setLocalMin(undefined);
+    }
+  }, [minMileage]);
+  
   // Handle mileage change
   const handleApply = () => {
     onChange(localMin);
@@ -31,7 +38,20 @@ export default function MileageFilter({ minMileage, onChange }: MileageFilterPro
   
   return (
     <div className="filter-group">
-      <h3 className="mb-3 text-sm font-medium text-gray-700">Mileage</h3>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-medium text-gray-700">Mileage</h3>
+        {localMin && (
+          <button
+            onClick={() => {
+              setLocalMin(undefined);
+              onChange(undefined);
+            }}
+            className="text-xs text-gray-500 hover:text-red-500"
+          >
+            Clear
+          </button>
+        )}
+      </div>
       
       <div className="mb-3">
         <label htmlFor="min-mileage" className="sr-only">

@@ -169,8 +169,8 @@ export default function ShowroomDetailPage() {
       <section className="relative">
         <div className="aspect-[21/9] relative overflow-hidden bg-gray-200">
           <Image
-            src="/s.avif"
-            alt="Motorcycle Showroom"
+            src={showroom.image}
+            alt={`${showroom.name} - ${showroom.brand.name} Showroom`}
             fill
             className="object-cover"
             priority

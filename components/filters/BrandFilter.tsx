@@ -34,7 +34,12 @@ export default function BrandFilter({ selectedBrand, onChange, bodyType }: Brand
         const result = await response.json();
         
         if (result.success) {
-          setBrands(result.data.brands);
+          // Clean brand names to handle any whitespace issues
+          const cleanedBrands = result.data.brands.map((brand: Brand) => ({
+            ...brand,
+            name: brand.name.trim().replace(/[\n\r]/g, '')
+          }));
+          setBrands(cleanedBrands);
         } else {
           console.error('Failed to fetch brands:', result.error);
         }
@@ -50,7 +55,17 @@ export default function BrandFilter({ selectedBrand, onChange, bodyType }: Brand
   
   return (
     <div className="filter-group">
-      <h3 className="mb-3 text-sm font-medium text-gray-700">Brand</h3>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-medium text-gray-700">Brand</h3>
+        {selectedBrand && (
+          <button
+            onClick={() => onChange(null)}
+            className="text-xs text-gray-500 hover:text-red-500"
+          >
+            Clear
+          </button>
+        )}
+      </div>
       
       {loading ? (
         <div className="space-y-2">
@@ -88,8 +103,8 @@ export default function BrandFilter({ selectedBrand, onChange, bodyType }: Brand
                   type="radio"
                   id={`brand-${brand.slug}`}
                   name="brand-filter"
-                  checked={selectedBrand === brand.name}
-                  onChange={() => onChange(selectedBrand === brand.name ? null : brand.name)}
+                  checked={selectedBrand.trim() === brand.name.trim()}
+                  onChange={() => onChange(selectedBrand.trim() === brand.name.trim() ? null : brand.name)}
                   className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                 />
                 <label

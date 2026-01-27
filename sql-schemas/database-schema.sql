@@ -91,9 +91,9 @@ CREATE TABLE public.bookings (
   notes text,
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT bookings_pkey PRIMARY KEY (booking_id),
-  CONSTRAINT bookings_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
   CONSTRAINT bookings_variant_id_fkey FOREIGN KEY (variant_id) REFERENCES public.variants(variant_id),
-  CONSTRAINT bookings_dealer_id_fkey FOREIGN KEY (dealer_id) REFERENCES public.dealers(dealer_id)
+  CONSTRAINT bookings_dealer_id_fkey FOREIGN KEY (dealer_id) REFERENCES public.dealers(dealer_id),
+  CONSTRAINT bookings_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.brands (
   brand_id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -103,6 +103,32 @@ CREATE TABLE public.brands (
   description text,
   created_at timestamp without time zone DEFAULT now(),
   CONSTRAINT brands_pkey PRIMARY KEY (brand_id)
+);
+CREATE TABLE public.charging_stations (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name character varying NOT NULL,
+  slug character varying NOT NULL UNIQUE,
+  location character varying NOT NULL,
+  address text NOT NULL,
+  city character varying NOT NULL,
+  state character varying NOT NULL,
+  phone character varying NOT NULL,
+  email character varying,
+  timing character varying NOT NULL,
+  connector_types jsonb NOT NULL,
+  charging_speed character varying NOT NULL,
+  status character varying DEFAULT 'Available'::character varying CHECK (status::text = ANY (ARRAY['Available'::character varying, 'Occupied'::character varying, 'Maintenance'::character varying, 'Out of Order'::character varying]::text[])),
+  pricing character varying NOT NULL,
+  amenities jsonb,
+  latitude numeric NOT NULL,
+  longitude numeric NOT NULL,
+  description text,
+  operator character varying,
+  capacity integer DEFAULT 1,
+  power_output character varying,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT charging_stations_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.comparisons (
   comparison_id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
@@ -204,6 +230,41 @@ CREATE TABLE public.reviews (
   CONSTRAINT reviews_pkey PRIMARY KEY (review_id),
   CONSTRAINT reviews_variant_id_fkey FOREIGN KEY (variant_id) REFERENCES public.variants(variant_id),
   CONSTRAINT reviews_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(user_id)
+);
+CREATE TABLE public.showrooms (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name character varying NOT NULL,
+  slug character varying NOT NULL UNIQUE,
+  brand_id character varying NOT NULL,
+  brand_name character varying NOT NULL,
+  brand_slug character varying NOT NULL,
+  brand_logo character varying,
+  street character varying NOT NULL,
+  area character varying NOT NULL,
+  city character varying NOT NULL,
+  state character varying NOT NULL,
+  pincode character varying NOT NULL,
+  landmark character varying,
+  phone jsonb NOT NULL,
+  email character varying NOT NULL,
+  website character varying,
+  timings_weekdays character varying NOT NULL,
+  timings_weekends character varying NOT NULL,
+  timings_holidays character varying,
+  services jsonb NOT NULL,
+  image character varying NOT NULL,
+  rating numeric DEFAULT 0.0,
+  reviews integer DEFAULT 0,
+  verified boolean DEFAULT false,
+  featured boolean DEFAULT false,
+  latitude numeric,
+  longitude numeric,
+  description text,
+  established character varying,
+  area_served jsonb,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT showrooms_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.specs (
   variant_id integer NOT NULL,

@@ -75,11 +75,14 @@ export default function BikeTypePage() {
         throw new Error('Failed to fetch bikes');
       }
 
-      const data: BodyTypeBikesApiResponse = await response.json();
+      const data: BodyTypeBikesApiResponse | { data: BodyTypeBikesApiResponse } = await response.json();
       
-      setBikes(data.bikes);
-      setBodyTypeName(data.bodyType.name);
-      setPagination(data.pagination);
+      // Handle wrapped response format
+      const responseData = 'data' in data ? data.data : data;
+      
+      setBikes(responseData.bikes);
+      setBodyTypeName(responseData.bodyType.name);
+      setPagination(responseData.pagination);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -225,9 +228,16 @@ export default function BikeTypePage() {
           <div className="flex-1">
             {/* Sort and View Options */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-              <p className="text-gray-600 mb-4 sm:mb-0">
-                Showing {bikes.length} of {pagination.total} results
-              </p>
+              <div className="mb-4 sm:mb-0">
+                <p className="text-gray-600">
+                  Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
+                  {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
+                  {pagination.total} results
+                </p>
+                <p className="text-sm text-gray-500">
+                  Page {pagination.page} of {pagination.totalPages}
+                </p>
+              </div>
               
               <SortSelector
                 sortBy={sortBy}
@@ -244,41 +254,98 @@ export default function BikeTypePage() {
 
             {/* Pagination */}
             {pagination.totalPages > 1 && (
-              <div className="flex justify-center mt-8">
-                <div className="flex items-center space-x-2">
+              <div className="flex flex-col items-center mt-8 space-y-4">
+                {/* Mobile pagination info */}
+                <div className="text-sm text-gray-600 md:hidden">
+                  Page {pagination.page} of {pagination.totalPages}
+                </div>
+                
+                <div className="flex items-center justify-center space-x-1 overflow-x-auto pb-2">
                   <button
                     onClick={() => handlePageChange(pagination.page - 1)}
                     disabled={pagination.page === 1}
-                    className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                    className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 flex items-center space-x-1 whitespace-nowrap"
                   >
-                    Previous
+                    <span className="hidden sm:inline">Previous</span>
+                    <span className="sm:hidden">Prev</span>
                   </button>
                   
-                  {[...Array(pagination.totalPages)].map((_, i) => {
-                    const page = i + 1;
-                    const isCurrentPage = page === pagination.page;
+                  {/* Smart pagination with ellipsis */}
+                  {(() => {
+                    const current = pagination.page;
+                    const total = pagination.totalPages;
+                    const pages: (number | string)[] = [];
                     
-                    return (
-                      <button
-                        key={page}
-                        onClick={() => handlePageChange(page)}
-                        className={`px-3 py-2 border rounded-lg ${
-                          isCurrentPage
-                            ? 'bg-blue-600 text-white border-blue-600'
-                            : 'border-gray-300 hover:bg-gray-50'
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    );
-                  })}
+                    // For mobile, show fewer pages
+                    const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+                    const maxPages = isMobile ? 5 : 7;
+                    
+                    if (total <= maxPages) {
+                      // Show all pages if within limit
+                      for (let i = 1; i <= total; i++) {
+                        pages.push(i);
+                      }
+                    } else {
+                      // Smart pagination
+                      pages.push(1);
+                      
+                      if (current > 3) {
+                        pages.push('...');
+                      }
+                      
+                      const start = Math.max(2, current - 1);
+                      const end = Math.min(total - 1, current + 1);
+                      
+                      for (let i = start; i <= end; i++) {
+                        if (i !== 1 && i !== total) {
+                          pages.push(i);
+                        }
+                      }
+                      
+                      if (current < total - 2) {
+                        pages.push('...');
+                      }
+                      
+                      if (total > 1) {
+                        pages.push(total);
+                      }
+                    }
+                    
+                    return pages.map((page, index) => {
+                      if (page === '...') {
+                        return (
+                          <span key={`ellipsis-${index}`} className="px-2 py-2 text-gray-500 text-sm">
+                            ...
+                          </span>
+                        );
+                      }
+                      
+                      const pageNum = page as number;
+                      const isCurrentPage = pageNum === current;
+                      
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => handlePageChange(pageNum)}
+                          className={`px-3 py-2 border rounded-lg text-sm ${
+                            isCurrentPage
+                              ? 'bg-blue-600 text-white border-blue-600'
+                              : 'border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    });
+                  })()}
                   
                   <button
                     onClick={() => handlePageChange(pagination.page + 1)}
                     disabled={pagination.page === pagination.totalPages}
-                    className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                    className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 flex items-center space-x-1 whitespace-nowrap"
                   >
-                    Next
+                    <span className="hidden sm:inline">Next</span>
+                    <span className="sm:hidden">Next</span>
                   </button>
                 </div>
               </div>

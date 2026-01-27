@@ -91,6 +91,8 @@ export default function DashboardOrders() {
 
       if (response.ok && result.success) {
         alert('Bike booked successfully! You will be contacted soon.');
+        // Remove the order from the local state since it's been booked
+        setOrders(orders.filter(o => o.id !== order.id));
       } else {
         alert('Failed to book bike. Please try again.');
       }

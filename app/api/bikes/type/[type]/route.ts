@@ -123,7 +123,44 @@ export async function GET(
       throw error;
     }
 
+    // Get total count for pagination using same query structure
+    let countQuery = supabase
+      .from('variants')
+      .select(`
+        variant_id,
+        models!inner(model_name),
+        brands!inner(brand_name),
+        specs!inner(body_type)
+      `, { count: 'exact', head: true })
+      .ilike('specs.body_type', `%${bodyTypeName}%`);
+
+    // Apply same search filter to count query
+    if (search) {
+      countQuery = countQuery.or(`variant_name.ilike.%${search}%,models.model_name.ilike.%${search}%,brands.brand_name.ilike.%${search}%`);
+    }
+    
+    // Apply same brand filter to count query
+    if (brand) {
+      countQuery = countQuery.eq('brands.brand_name', brand);
+    }
+    
+    // Apply same price filters to count query
+    if (minPrice !== undefined) {
+      countQuery = countQuery.gte('on_road_price', minPrice);
+    }
+    if (maxPrice !== undefined) {
+      countQuery = countQuery.lte('on_road_price', maxPrice);
+    }
+
+    const { count: totalCount, error: countError } = await countQuery;
+
+    if (countError) {
+      console.error('Count query error:', countError);
+      throw countError;
+    }
+
     console.log('Variants found:', variants?.length);
+    console.log('Total count:', totalCount);
 
     // Format the response
     const formattedBikes = (variants || []).map((variant: any) => ({
@@ -146,25 +183,22 @@ export async function GET(
       }
     }));
 
-    return NextResponse.json({
+    return successResponse({
       bikes: formattedBikes,
       bodyType: {
         name: displayName,
         slug: bodyType
       },
       pagination: {
-        total: variants?.length || 0,
+        total: totalCount || 0,
         page,
         limit,
-        totalPages: Math.ceil((variants?.length || 0) / limit)
+        totalPages: Math.ceil((totalCount || 0) / limit)
       }
     });
 
   } catch (error) {
     console.error(`Error fetching bikes for body type ${params.type}:`, error);
-    return NextResponse.json(
-      { error: `Failed to fetch bikes for body type: ${params.type}` },
-      { status: 500 }
-    );
+    return errorResponse(`Failed to fetch bikes for body type: ${params.type}`, 500);
   }
 }

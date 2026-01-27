@@ -4,114 +4,121 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { FiMapPin, FiClock, FiPhone, FiSearch, FiFilter } from 'react-icons/fi';
 
-// Sample charging station data
-const chargingStations = [
-  {
-    id: 1,
-    name: 'Shell Recharge Delhi',
-    location: 'Connaught Place, New Delhi',
-    state: 'Delhi',
-    city: 'New Delhi',
-    address: 'Shop No. 12, Connaught Place, New Delhi - 110001',
-    phone: '+91 9876543210',
-    timing: '24 Hours',
-    connectorTypes: ['Type 2', 'CCS', 'CHAdeMO'],
-    chargingSpeed: '50kW',
-    status: 'Available',
-    pricing: '₹12/kWh',
-    amenities: ['Parking', 'Restroom', 'Cafe'],
-    coordinates: { lat: 28.6315, lng: 77.2167 }
-  },
-  {
-    id: 2,
-    name: 'Tata Power EZ Charge',
-    location: 'Bandra West, Mumbai',
-    state: 'Maharashtra',
-    city: 'Mumbai',
-    address: 'Linking Road, Bandra West, Mumbai - 400050',
-    phone: '+91 9876543211',
-    timing: '6 AM - 11 PM',
-    connectorTypes: ['Type 2', 'CCS'],
-    chargingSpeed: '22kW',
-    status: 'Available',
-    pricing: '₹10/kWh',
-    amenities: ['Parking', 'Shopping Mall'],
-    coordinates: { lat: 19.0544, lng: 72.8266 }
-  },
-  {
-    id: 3,
-    name: 'Ather Grid Charging',
-    location: 'Electronic City, Bangalore',
-    state: 'Karnataka',
-    city: 'Bangalore',
-    address: 'Electronic City Phase 1, Bangalore - 560100',
-    phone: '+91 9876543212',
-    timing: '24 Hours',
-    connectorTypes: ['Type 2', 'Ather Connector'],
-    chargingSpeed: '6kW',
-    status: 'Occupied',
-    pricing: '₹8/kWh',
-    amenities: ['Parking', 'Cafe', 'Security'],
-    coordinates: { lat: 12.8456, lng: 77.6603 }
-  },
-  {
-    id: 4,
-    name: 'Hero Electric Station',
-    location: 'Anna Salai, Chennai',
-    state: 'Tamil Nadu',
-    city: 'Chennai',
-    address: 'Anna Salai, Chennai - 600002',
-    phone: '+91 9876543213',
-    timing: '7 AM - 10 PM',
-    connectorTypes: ['Type 2', 'Standard'],
-    chargingSpeed: '15kW',
-    status: 'Available',
-    pricing: '₹9/kWh',
-    amenities: ['Parking', 'Restroom'],
-    coordinates: { lat: 13.0827, lng: 80.2707 }
-  },
-  {
-    id: 5,
-    name: 'BPCL Charge Zone',
-    location: 'Gachibowli, Hyderabad',
-    state: 'Telangana',
-    city: 'Hyderabad',
-    address: 'HITEC City, Gachibowli, Hyderabad - 500032',
-    phone: '+91 9876543214',
-    timing: '24 Hours',
-    connectorTypes: ['Type 2', 'CCS', 'CHAdeMO'],
-    chargingSpeed: '60kW',
-    status: 'Available',
-    pricing: '₹15/kWh',
-    amenities: ['Parking', 'Restroom', 'Security', 'Cafe'],
-    coordinates: { lat: 17.4399, lng: 78.3908 }
-  },
-  {
-    id: 6,
-    name: 'Fortum Charge Drive',
-    location: 'Sector 62, Gurgaon',
-    state: 'Haryana',
-    city: 'Gurgaon',
-    address: 'Cyber City, Sector 62, Gurgaon - 122102',
-    phone: '+91 9876543215',
-    timing: '24 Hours',
-    connectorTypes: ['Type 2', 'CCS'],
-    chargingSpeed: '50kW',
-    status: 'Available',
-    pricing: '₹13/kWh',
-    amenities: ['Parking', 'Security', 'Office Complex'],
-    coordinates: { lat: 28.4089, lng: 77.0687 }
-  }
-];
+// Define types
+interface ChargingStation {
+  id: string;
+  name: string;
+  slug: string;
+  location: string;
+  address: string;
+  city: string;
+  state: string;
+  phone: string;
+  email?: string;
+  timing: string;
+  connectorTypes: string[];
+  chargingSpeed: string;
+  status: 'Available' | 'Occupied' | 'Maintenance' | 'Out of Order';
+  pricing: string;
+  amenities: string[];
+  coordinates: {
+    lat: number;
+    lng: number;
+  };
+  description?: string;
+  operator?: string;
+  capacity?: number;
+  powerOutput?: string;
+}
 
-const states = ['All States', 'Delhi', 'Maharashtra', 'Karnataka', 'Tamil Nadu', 'Telangana', 'Haryana'];
-const cities = ['All Cities', 'New Delhi', 'Mumbai', 'Bangalore', 'Chennai', 'Hyderabad', 'Gurgaon'];
+interface PaginationData {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
+interface FilterData {
+  cities: string[];
+  states: string[];
+  operators: string[];
+  statuses: string[];
+}
+
+interface ApiResponse {
+  data: ChargingStation[];
+  pagination: PaginationData;
+  filters: FilterData;
+}
 
 export default function ChargingStationsPage() {
+  const [stations, setStations] = useState<ChargingStation[]>([]);
+  const [filters, setFilters] = useState<FilterData>({ 
+    cities: [], 
+    states: [], 
+    operators: [], 
+    statuses: [] 
+  });
+  const [pagination, setPagination] = useState<PaginationData>({
+    total: 0,
+    page: 1,
+    limit: 12,
+    totalPages: 0,
+    hasNextPage: false,
+    hasPrevPage: false
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Filter states
   const [selectedState, setSelectedState] = useState('All States');
   const [selectedCity, setSelectedCity] = useState('All Cities');
+  const [selectedStatus, setSelectedStatus] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredStations, setFilteredStations] = useState(chargingStations);
+
+  // Fetch charging stations
+  const fetchStations = async (page = 1) => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      
+      if (searchTerm) params.append('search', searchTerm);
+      if (selectedCity && selectedCity !== 'All Cities') params.append('city', selectedCity);
+      if (selectedState && selectedState !== 'All States') params.append('state', selectedState);
+      if (selectedStatus) params.append('status', selectedStatus);
+      params.append('page', page.toString());
+      params.append('limit', '12');
+
+      const response = await fetch(`/api/charging-stations?${params.toString()}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch charging stations');
+      }
+      
+      const data: ApiResponse = await response.json();
+      setStations(data.data);
+      setPagination(data.pagination);
+      setFilters(data.filters);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching charging stations:', err);
+      setError('Failed to load charging stations. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initial load
+  useEffect(() => {
+    fetchStations();
+  }, []);
+
+  // Handle filter changes
+  useEffect(() => {
+    fetchStations(1);
+  }, [selectedState, selectedCity, selectedStatus, searchTerm]);
 
   const openInMaps = (coordinates: { lat: number; lng: number }) => {
     const { lat, lng } = coordinates;
@@ -119,26 +126,10 @@ export default function ChargingStationsPage() {
     window.open(url, '_blank');
   };
 
-  useEffect(() => {
-    let filtered = chargingStations;
-
-    if (selectedState !== 'All States') {
-      filtered = filtered.filter(station => station.state === selectedState);
-    }
-
-    if (selectedCity !== 'All Cities') {
-      filtered = filtered.filter(station => station.city === selectedCity);
-    }
-
-    if (searchTerm) {
-      filtered = filtered.filter(station => 
-        station.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        station.location.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    setFilteredStations(filtered);
-  }, [selectedState, selectedCity, searchTerm]);
+  // Handle pagination
+  const handlePageChange = (newPage: number) => {
+    fetchStations(newPage);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -205,7 +196,7 @@ export default function ChargingStationsPage() {
                 onChange={(e) => setSelectedState(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
               >
-                {states.map(state => (
+                {filters.states.map((state) => (
                   <option key={state} value={state}>{state}</option>
                 ))}
               </select>
@@ -214,8 +205,18 @@ export default function ChargingStationsPage() {
                 onChange={(e) => setSelectedCity(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
               >
-                {cities.map(city => (
+                {filters.cities.map((city) => (
                   <option key={city} value={city}>{city}</option>
+                ))}
+              </select>
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              >
+                <option value="">All Status</option>
+                {filters.statuses.map((status) => (
+                  <option key={status} value={status}>{status}</option>
                 ))}
               </select>
               <button className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center gap-2">
@@ -233,15 +234,39 @@ export default function ChargingStationsPage() {
           <div className="max-w-6xl mx-auto">
             <div className="flex justify-between items-center mb-8">
               <h3 className="text-2xl font-bold">
-                Electric Charging Stations ({filteredStations.length})
+                Electric Charging Stations ({pagination.total})
               </h3>
               <div className="text-sm text-gray-600">
-                Showing {filteredStations.length} results
+                Showing {stations.length} results
               </div>
             </div>
 
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+                <p className="mt-2 text-gray-600">Loading charging stations...</p>
+              </div>
+            ) : error ? (
+              <div className="text-center py-12">
+                <p className="text-red-600 mb-4">{error}</p>
+                <button 
+                  onClick={() => fetchStations(1)}
+                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                >
+                  Retry
+                </button>
+              </div>
+            ) : stations.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-gray-400 mb-4">
+                  <FiMapPin className="w-16 h-16 mx-auto" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No charging stations found</h3>
+                <p className="text-gray-600">Try adjusting your search criteria or filters.</p>
+              </div>
+            ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredStations.map((station) => (
+              {stations.map((station) => (
                 <div key={station.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-4">
@@ -251,7 +276,11 @@ export default function ChargingStationsPage() {
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                         station.status === 'Available' 
                           ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
+                          : station.status === 'Occupied'
+                          ? 'bg-red-100 text-red-800'
+                          : station.status === 'Maintenance'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-gray-100 text-gray-800'
                       }`}>
                         {station.status}
                       </span>
@@ -292,13 +321,15 @@ export default function ChargingStationsPage() {
                             </span>
                           ))}
                         </div>
-                        <div className="flex flex-wrap gap-1">
-                          {station.amenities.map((amenity, index) => (
-                            <span key={index} className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">
-                              {amenity}
-                            </span>
-                          ))}
-                        </div>
+                        {station.amenities.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {station.amenities.map((amenity, index) => (
+                              <span key={index} className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">
+                                {amenity}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -314,14 +345,53 @@ export default function ChargingStationsPage() {
                 </div>
               ))}
             </div>
+            )}
 
-            {filteredStations.length === 0 && (
-              <div className="text-center py-12">
-                <div className="text-gray-400 mb-4">
-                  <FiMapPin className="w-16 h-16 mx-auto" />
+            {/* Pagination */}
+            {!loading && !error && pagination.totalPages > 1 && (
+              <div className="mt-12 flex justify-center">
+                <div className="flex space-x-1">
+                  <button
+                    onClick={() => handlePageChange(pagination.page - 1)}
+                    disabled={!pagination.hasPrevPage}
+                    className={`px-3 py-2 rounded-md ${
+                      pagination.hasPrevPage
+                        ? 'bg-white border border-gray-300 text-gray-500 hover:bg-gray-50'
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    }`}
+                  >
+                    Previous
+                  </button>
+                  
+                  {[...Array(Math.min(pagination.totalPages, 10))].map((_, i) => {
+                    const pageNumber = i + 1;
+                    return (
+                      <button
+                        key={pageNumber}
+                        onClick={() => handlePageChange(pageNumber)}
+                        className={`px-3 py-2 rounded-md ${
+                          pagination.page === pageNumber
+                            ? 'bg-red-500 text-white'
+                            : 'bg-white border border-gray-300 text-gray-500 hover:bg-gray-50'
+                        }`}
+                      >
+                        {pageNumber}
+                      </button>
+                    );
+                  })}
+                  
+                  <button
+                    onClick={() => handlePageChange(pagination.page + 1)}
+                    disabled={!pagination.hasNextPage}
+                    className={`px-3 py-2 rounded-md ${
+                      pagination.hasNextPage
+                        ? 'bg-white border border-gray-300 text-gray-500 hover:bg-gray-50'
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    }`}
+                  >
+                    Next
+                  </button>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No charging stations found</h3>
-                <p className="text-gray-600">Try adjusting your search criteria or filters.</p>
               </div>
             )}
           </div>

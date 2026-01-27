@@ -22,6 +22,14 @@ export default function PriceFilter({ minPrice, maxPrice, onChange }: PriceFilte
     setLocalMax(maxPrice);
   }, [maxPrice]);
   
+  // Clear local state when both props are undefined (after clearing filters)
+  useEffect(() => {
+    if (minPrice === undefined && maxPrice === undefined) {
+      setLocalMin(undefined);
+      setLocalMax(undefined);
+    }
+  }, [minPrice, maxPrice]);
+  
   // Handle price range change
   const handleApply = () => {
     onChange(localMin, localMax);
@@ -29,7 +37,21 @@ export default function PriceFilter({ minPrice, maxPrice, onChange }: PriceFilte
   
   return (
     <div className="filter-group">
-      <h3 className="mb-3 text-sm font-medium text-gray-700">Price Range</h3>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-medium text-gray-700">Price Range</h3>
+        {(localMin || localMax) && (
+          <button
+            onClick={() => {
+              setLocalMin(undefined);
+              setLocalMax(undefined);
+              onChange(undefined, undefined);
+            }}
+            className="text-xs text-gray-500 hover:text-red-500"
+          >
+            Clear
+          </button>
+        )}
+      </div>
       
       <div className="grid grid-cols-2 gap-2 mb-3">
         <div>

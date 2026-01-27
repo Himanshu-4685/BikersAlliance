@@ -54,7 +54,17 @@ export default function BodyTypeFilter({ selectedBodyType, onChange }: BodyTypeF
   
   return (
     <div className="filter-group">
-      <h3 className="mb-3 text-sm font-medium text-gray-700">Body Type</h3>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-medium text-gray-700">Body Type</h3>
+        {selectedBodyType && (
+          <button
+            onClick={() => onChange(null)}
+            className="text-xs text-gray-500 hover:text-red-500"
+          >
+            Clear
+          </button>
+        )}
+      </div>
       
       <div className="space-y-2">
         {bodyTypes.map((bodyType, index) => (

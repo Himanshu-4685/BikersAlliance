@@ -49,7 +49,17 @@ export default function EngineTypeFilter({ selectedEngineType, onChange }: Engin
 
   return (
     <div className="filter-group">
-      <h3 className="mb-3 text-sm font-medium text-gray-700">Engine Type</h3>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-medium text-gray-700">Engine Type</h3>
+        {selectedEngineType && (
+          <button
+            onClick={() => onChange(null)}
+            className="text-xs text-gray-500 hover:text-red-500"
+          >
+            Clear
+          </button>
+        )}
+      </div>
       
       {loading ? (
         <div className="space-y-2">

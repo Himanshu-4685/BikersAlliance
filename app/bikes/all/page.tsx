@@ -211,28 +211,32 @@ export default function AllBikesPage() {
 
           {/* Filters Sidebar */}
           <div className={`lg:w-64 lg:flex-shrink-0 ${showMobileFilters ? 'block' : 'hidden lg:block'}`}>
-            <div className="bg-white border rounded-lg p-6 lg:sticky lg:top-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">Filters</h2>
-                <div className="flex items-center space-x-2">
-                  {hasActiveFilters && (
+            <div className="bg-white border rounded-lg lg:sticky lg:top-6 lg:max-h-[calc(100vh-8rem)]">
+              <div className="p-6 pb-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold">Filters</h2>
+                  <div className="flex items-center space-x-2">
+                    {hasActiveFilters && (
+                      <button
+                        onClick={clearAllFilters}
+                        className="text-sm text-primary hover:text-primary-600"
+                      >
+                        Clear All
+                      </button>
+                    )}
                     <button
-                      onClick={clearAllFilters}
-                      className="text-sm text-primary hover:text-primary-600"
+                      onClick={() => setShowMobileFilters(false)}
+                      className="lg:hidden"
                     >
-                      Clear All
+                      <FiX className="w-5 h-5" />
                     </button>
-                  )}
-                  <button
-                    onClick={() => setShowMobileFilters(false)}
-                    className="lg:hidden"
-                  >
-                    <FiX className="w-5 h-5" />
-                  </button>
+                  </div>
                 </div>
               </div>
-
-              <div className="space-y-6">
+              
+              {/* Scrollable filters content */}
+              <div className="px-6 pb-6 overflow-y-auto filters-scroll max-h-[calc(100vh-12rem)] lg:max-h-[calc(100vh-16rem)]">
+                <div className="space-y-6">
                 <BrandFilter
                   selectedBrand={currentBrand || ''}
                   onChange={(brand) => updateFilter('brand', brand)}
@@ -247,8 +251,25 @@ export default function AllBikesPage() {
                   minPrice={currentMinPrice ? Number(currentMinPrice) : undefined}
                   maxPrice={currentMaxPrice ? Number(currentMaxPrice) : undefined}
                   onChange={(minPrice, maxPrice) => {
-                    updateFilter('minPrice', minPrice?.toString() || null);
-                    updateFilter('maxPrice', maxPrice?.toString() || null);
+                    const params = new URLSearchParams(searchParams.toString());
+                    
+                    // Update both price filters in a single operation
+                    if (minPrice !== undefined) {
+                      params.set('minPrice', minPrice.toString());
+                    } else {
+                      params.delete('minPrice');
+                    }
+                    
+                    if (maxPrice !== undefined) {
+                      params.set('maxPrice', maxPrice.toString());
+                    } else {
+                      params.delete('maxPrice');
+                    }
+                    
+                    // Reset to page 1 when filters change
+                    params.delete('page');
+                    
+                    router.push(`/bikes/all?${params.toString()}`);
                   }}
                 />
                 
@@ -256,8 +277,25 @@ export default function AllBikesPage() {
                   minDisplacement={currentMinDisplacement ? Number(currentMinDisplacement) : undefined}
                   maxDisplacement={currentMaxDisplacement ? Number(currentMaxDisplacement) : undefined}
                   onChange={(min, max) => {
-                    updateFilter('minDisplacement', min?.toString() || null);
-                    updateFilter('maxDisplacement', max?.toString() || null);
+                    const params = new URLSearchParams(searchParams.toString());
+                    
+                    // Update both displacement filters in a single operation
+                    if (min !== undefined) {
+                      params.set('minDisplacement', min.toString());
+                    } else {
+                      params.delete('minDisplacement');
+                    }
+                    
+                    if (max !== undefined) {
+                      params.set('maxDisplacement', max.toString());
+                    } else {
+                      params.delete('maxDisplacement');
+                    }
+                    
+                    // Reset to page 1 when filters change
+                    params.delete('page');
+                    
+                    router.push(`/bikes/all?${params.toString()}`);
                   }}
                 />
                 
@@ -265,6 +303,7 @@ export default function AllBikesPage() {
                   minMileage={currentMinMileage ? Number(currentMinMileage) : undefined}
                   onChange={(mileage) => updateFilter('minMileage', mileage?.toString() || null)}
                 />
+                </div>
               </div>
             </div>
           </div>
