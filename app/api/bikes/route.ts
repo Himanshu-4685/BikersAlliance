@@ -34,7 +34,7 @@ export async function GET(request: Request) {
     const limit = Number(searchParams.get('limit')) || 12;
     
     // Fetch more data if displacement or mileage filtering is needed (post-processing)
-    const fetchLimit = (hasDisplacementFilter || hasMileageFilter) ? Math.max(limit * 3, 36) : limit;
+    const fetchLimit = (hasDisplacementFilter || hasMileageFilter) ? Math.max(limit * 20, 500) : limit;
     const offset = (page - 1) * limit;
 
     // Initialize Supabase client
@@ -400,12 +400,19 @@ export async function GET(request: Request) {
       const extractDisplacement = (displacementStr: string): number | null => {
         if (!displacementStr) return null;
         
+        // Skip electric vehicles (with power in watts)
+        if (displacementStr.includes('W') || displacementStr.toLowerCase().includes('watt')) {
+          return null;
+        }
+        
         // Remove common units and extra text, extract the first numeric value
         const numMatch = displacementStr.match(/(\d+(?:\.\d+)?)/);
         
         if (numMatch) {
           const value = parseFloat(numMatch[1]);
-          return isNaN(value) ? null : value;
+          if (isNaN(value)) return null;
+          
+          return value;
         }
         
         return null;

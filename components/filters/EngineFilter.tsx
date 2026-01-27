@@ -96,46 +96,46 @@ export default function EngineFilter({ minDisplacement, maxDisplacement, onChang
       <div className="grid grid-cols-2 gap-2 mt-3">
         <button
           onClick={() => {
-            setLocalMin(100);
-            setLocalMax(150);
-            onChange(100, 150);
+            setLocalMin(75);
+            setLocalMax(125);
+            onChange(75, 125);
           }}
           className="px-2 py-1 text-xs text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
         >
-          100cc - 150cc
+          75cc - 125cc
         </button>
         
         <button
           onClick={() => {
-            setLocalMin(150);
+            setLocalMin(125);
             setLocalMax(200);
-            onChange(150, 200);
+            onChange(125, 200);
           }}
           className="px-2 py-1 text-xs text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
         >
-          150cc - 200cc
+          125cc - 200cc
         </button>
         
         <button
           onClick={() => {
             setLocalMin(200);
-            setLocalMax(350);
-            onChange(200, 350);
+            setLocalMax(400);
+            onChange(200, 400);
           }}
           className="px-2 py-1 text-xs text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
         >
-          200cc - 350cc
+          200cc - 400cc
         </button>
         
         <button
           onClick={() => {
-            setLocalMin(350);
+            setLocalMin(400);
             setLocalMax(undefined);
-            onChange(350, undefined);
+            onChange(400, undefined);
           }}
           className="px-2 py-1 text-xs text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
         >
-          Above 350cc
+          Above 400cc
         </button>
       </div>
     </div>
