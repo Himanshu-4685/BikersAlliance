@@ -10,7 +10,11 @@ interface Variant {
   variant_name: string;
 }
 
-export default function SearchBar() {
+interface SearchBarProps {
+  onNavigate?: () => void;
+}
+
+export default function SearchBar({ onNavigate }: SearchBarProps = {}) {
   const router = useRouter();
   const [query, setQuery] = useState<string>("");
   const [results, setResults] = useState<Variant[]>([]);
@@ -67,6 +71,10 @@ export default function SearchBar() {
     router.push(`/bikes/${variant.variant_id}`);
     setQuery("");
     setShowDropdown(false);
+    // Close mobile search overlay if callback is provided
+    if (onNavigate) {
+      onNavigate();
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -90,6 +98,10 @@ export default function SearchBar() {
           if (brandSuggestion) {
             router.push(brandSuggestion.href);
             setShowDropdown(false);
+            // Close mobile search overlay if callback is provided
+            if (onNavigate) {
+              onNavigate();
+            }
             return;
           }
           
@@ -102,6 +114,10 @@ export default function SearchBar() {
           if (partialBrandMatch) {
             router.push(partialBrandMatch.href);
             setShowDropdown(false);
+            // Close mobile search overlay if callback is provided
+            if (onNavigate) {
+              onNavigate();
+            }
             return;
           }
         }
@@ -118,6 +134,10 @@ export default function SearchBar() {
         router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
       }
       setShowDropdown(false);
+      // Close mobile search overlay if callback is provided
+      if (onNavigate) {
+        onNavigate();
+      }
     }
   };
 

@@ -246,7 +246,7 @@ export default function Hero() {
   };
   
   return (
-    <section className="relative h-[500px] bg-gray-50">
+    <section className="relative h-[400px] md:h-[500px] bg-gray-50">
       <div className="container h-full">
         <div className="relative w-full h-full rounded-lg overflow-hidden">
           {/* Hero Background Carousel */}
@@ -320,53 +320,31 @@ export default function Hero() {
             <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-transparent" />
           </div>
           
-          {/* Form Container - Styled exactly as per image */}
-          <div 
-            className="absolute z-100" 
-            style={{
-              left: '90px',
-              top: '54px',
-              width: '348px',
-              height: 'auto',
-              padding: '19px 24px 24px',
-              borderRadius: '16px',
-              boxShadow: '0px 0px 70px 0px rgba(0,0,0,0.1)',
-              backgroundColor: 'white',
-              fontFamily: 'Lato, sans-serif, Arial',
-              fontSize: '13px',
-              lineHeight: '19.5px',
-              fontWeight: 400,
-              position: 'absolute',
-              display: 'block',
-              boxSizing: 'border-box',
-              unicodeBidi: 'isolate'
-            }}
-          >
-            <h2 className="text-2xl font-medium mb-4">Search the right bike</h2>
+          {/* Form Container - Responsive positioning */}
+          <div className="absolute z-10 w-full max-w-xs mx-auto left-1/2 transform -translate-x-1/2 top-8 md:left-24 md:transform-none md:max-w-sm md:top-14 p-4 md:p-6 bg-white rounded-xl md:rounded-2xl shadow-xl">
+            <h2 className="text-xl md:text-2xl font-medium mb-4">Search the right bike</h2>
             
             {/* New/Used Toggle */}
-            <div className="flex mb-4">
+            <div className="flex mb-4 gap-2">
               <button
                 type="button"
                 onClick={() => setBikeType('new')}
-                className={`px-5 py-2.5 text-sm font-medium rounded-md mr-2 ${
+                className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-md transition-colors ${
                   bikeType === 'new'
                     ? 'bg-gray-900 text-white'
                     : 'bg-white text-gray-900 border border-gray-300 hover:bg-gray-50'
                 }`}
-                style={{ minWidth: '110px' }}
               >
                 New Bike
               </button>
               <button
                 type="button"
                 onClick={() => setBikeType('used')}
-                className={`px-5 py-2.5 text-sm font-medium rounded-md ${
+                className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-md transition-colors ${
                   bikeType === 'used'
                     ? 'bg-gray-900 text-white'
                     : 'bg-white text-gray-900 border border-gray-300 hover:bg-gray-50'
                 }`}
-                style={{ minWidth: '110px' }}
               >
                 Used Bike
               </button>

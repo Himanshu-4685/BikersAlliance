@@ -17,6 +17,7 @@ import {
   FiHeart
 } from 'react-icons/fi';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext.supabase';
 
 // Types
 interface UsedBikeDetails {
@@ -50,6 +51,7 @@ interface UsedBikeDetails {
 export default function UsedBikeDetailsPage() {
   const params = useParams();
   const router = useRouter();
+  const { user } = useAuth();
   const [bike, setBike] = useState<UsedBikeDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -78,6 +80,55 @@ export default function UsedBikeDetailsPage() {
       fetchBikeDetails();
     }
   }, [params.id]);
+
+  // Handle contact seller
+  const handleContactSeller = () => {
+    if (!bike) return;
+    
+    // Create a mailto link with pre-filled information
+    const subject = `Inquiry about ${bike.brand} ${bike.model} - ₹${bike.expected_price?.toLocaleString()}`;
+    const body = `Hi ${bike.owner_name},\n\nI am interested in your ${bike.brand} ${bike.model}${bike.variant ? ` ${bike.variant}` : ''} listed for ₹${bike.expected_price?.toLocaleString()}.\n\nDetails:\n- Year: ${bike.year}\n- KM Driven: ${bike.km_driven?.toLocaleString()} km\n- Location: ${bike.city}, ${bike.state}\n\nPlease let me know if it's still available and we can discuss further.\n\nBest regards`;
+    
+    const mailtoLink = `mailto:${bike.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoLink;
+  };
+
+  // Handle share
+  const handleShare = async () => {
+    if (!bike) return;
+
+    const shareData = {
+      title: `${bike.brand} ${bike.model}${bike.variant ? ` ${bike.variant}` : ''} - ₹${bike.expected_price?.toLocaleString()}`,
+      text: `Check out this ${bike.brand} ${bike.model} for sale in ${bike.city}`,
+      url: window.location.href
+    };
+
+    try {
+      // Use Web Share API if available
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback to copying URL to clipboard
+        await navigator.clipboard.writeText(window.location.href);
+        alert('Link copied to clipboard!');
+      }
+    } catch (error) {
+      // Fallback for browsers without clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = window.location.href;
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        alert('Link copied to clipboard!');
+      } catch (err) {
+        console.error('Failed to copy link:', err);
+        alert('Failed to share. Please copy the URL manually.');
+      }
+      document.body.removeChild(textArea);
+    }
+  };
 
   if (loading) {
     return (
@@ -305,21 +356,21 @@ export default function UsedBikeDetailsPage() {
 
               {/* Action Buttons */}
               <div className="mt-6 space-y-3">
-                <button className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+                <button 
+                  onClick={handleContactSeller}
+                  className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                >
                   <FiPhone size={16} />
                   Contact Seller
                 </button>
                 
-                <div className="flex gap-2">
-                  <button className="flex-1 border border-gray-300 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
-                    <FiHeart size={16} />
-                    Save
-                  </button>
-                  <button className="flex-1 border border-gray-300 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
-                    <FiShare2 size={16} />
-                    Share
-                  </button>
-                </div>
+                <button 
+                  onClick={handleShare}
+                  className="w-full border border-gray-300 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                >
+                  <FiShare2 size={16} />
+                  Share
+                </button>
               </div>
             </div>
           </div>

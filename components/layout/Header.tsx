@@ -10,6 +10,7 @@ import { useWishlist } from '@/context/WishlistContext';
 import UserProfile from '@/components/auth/UserProfile';
 import SearchSuggestions from '@/components/common/SearchSuggestions';
 import SearchBar from '@/components/common/SearchBar';
+import MobileSearchButton from '@/components/common/MobileSearchButton';
 import { SearchSuggestion } from '@/utils/api/search';
 
 // Navigation items with dropdowns
@@ -196,32 +197,10 @@ export default function Header() {
             
             {/* Action Buttons */}
             <div className="flex items-center space-x-3 md:space-x-5">
-
-              
-              {/* Mobile Search Button */}
-              <button
-                className="p-1 text-gray-500 transition-colors hover:text-primary md:hidden"
-                aria-label="Search"
-              >
-                <FiSearch className="w-5 h-5" />
-              </button>
-              
-
-              
-              {/* Removed wishlist and login buttons from here - moving to lower section */}
-              
-              {/* Mobile menu button */}
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="inline-flex items-center justify-center p-1 text-gray-500 md:hidden"
-                aria-label="Open main menu"
-              >
-                {mobileMenuOpen ? (
-                  <FiX className="w-6 h-6" />
-                ) : (
-                  <FiMenu className="w-6 h-6" />
-                )}
-              </button>
+              {/* Mobile Search Button with functionality */}
+              <div className="md:hidden">
+                <MobileSearchButton />
+              </div>
             </div>
           </div>
         </div>
@@ -349,7 +328,7 @@ export default function Header() {
             </div>
           </nav>
           
-          {/* Mobile menu button - outside of nav to preserve correct positioning */}
+          {/* Mobile menu button */}
           <div className="md:hidden flex justify-end py-2">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
