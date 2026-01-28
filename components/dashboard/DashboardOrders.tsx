@@ -261,7 +261,7 @@ export default function DashboardOrders() {
               You haven't added any bikes to your orders yet. Start exploring our collection and add bikes you're interested in.
             </p>
             <Link 
-              href="/bikes"
+              href="/bikes/all"
               className="inline-flex items-center px-6 py-3 bg-primary text-white font-medium rounded-md hover:bg-primary-600 transition-colors"
             >
               Browse Bikes

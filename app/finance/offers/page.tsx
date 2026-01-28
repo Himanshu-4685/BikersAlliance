@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import MaintenanceModal from '../../../components/MaintenanceModal';
 import { 
   FiPercent, 
   FiDollarSign, 
@@ -118,6 +119,22 @@ const discountOffers = [
 
 export default function FinanceOffersPage() {
   const [activeTab, setActiveTab] = useState<'finance' | 'discount'>('finance');
+  const [showMaintenance, setShowMaintenance] = useState(false);
+  const [maintenanceType, setMaintenanceType] = useState<'apply' | 'claim'>('apply');
+
+  const handleApplyNow = () => {
+    setMaintenanceType('apply');
+    setShowMaintenance(true);
+  };
+
+  const handleClaimOffer = () => {
+    setMaintenanceType('claim');
+    setShowMaintenance(true);
+  };
+
+  const closeMaintenance = () => {
+    setShowMaintenance(false);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -237,7 +254,10 @@ export default function FinanceOffersPage() {
                     </div>
                   </div>
 
-                  <button className="w-full bg-primary text-white py-3 rounded-md hover:bg-primary-600 transition-colors flex items-center justify-center">
+                  <button 
+                    onClick={handleApplyNow}
+                    className="w-full bg-primary text-white py-3 rounded-md hover:bg-primary-600 transition-colors flex items-center justify-center"
+                  >
                     Apply Now
                     <FiArrowRight className="ml-2" />
                   </button>
@@ -319,7 +339,10 @@ export default function FinanceOffersPage() {
                       </ul>
                     </div>
 
-                    <button className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 rounded-md hover:from-orange-600 hover:to-red-600 transition-all flex items-center justify-center">
+                    <button 
+                      onClick={handleClaimOffer}
+                      className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 rounded-md hover:from-orange-600 hover:to-red-600 transition-all flex items-center justify-center"
+                    >
                       Claim Offer
                       <FiArrowRight className="ml-2" />
                     </button>
@@ -369,6 +392,19 @@ export default function FinanceOffersPage() {
           </div>
         </div>
       </div>
+
+      {/* Maintenance Modal */}
+      {showMaintenance && (
+        <MaintenanceModal
+          onClose={closeMaintenance}
+          title={maintenanceType === 'apply' ? 'Finance Application Under Maintenance' : 'Offer Claiming Under Maintenance'}
+          message={
+            maintenanceType === 'apply' 
+              ? "Our finance application system is currently undergoing maintenance to serve you better. Please try again later or contact our support team for assistance."
+              : "Our offer claiming system is temporarily unavailable. We're working to restore this service quickly. Please check back soon!"
+          }
+        />
+      )}
     </div>
   );
 }
