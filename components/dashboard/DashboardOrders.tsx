@@ -12,6 +12,7 @@ import {
   FiBookOpen
 } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext.supabase';
+import DealerSelectionModal from '@/components/DealerSelectionModal';
 
 interface UserOrder {
   id: string;
@@ -25,6 +26,17 @@ interface UserOrder {
   created_at: string;
 }
 
+interface Dealer {
+  dealer_id: number;
+  name: string;
+  address?: string;
+  city: string;
+  state: string;
+  pincode?: string;
+  phone?: string;
+  email?: string;
+}
+
 export default function DashboardOrders() {
   const { user } = useAuth();
   const router = useRouter();
@@ -32,6 +44,8 @@ export default function DashboardOrders() {
   const [loading, setLoading] = useState(true);
   const [deletingOrder, setDeletingOrder] = useState<string | null>(null);
   const [bookingOrder, setBookingOrder] = useState<string | null>(null);
+  const [showDealerModal, setShowDealerModal] = useState(false);
+  const [selectedOrderForBooking, setSelectedOrderForBooking] = useState<UserOrder | null>(null);
 
   const getBikeUrl = (order: UserOrder) => {
     // Use variant_id as the URL parameter since that's what /api/bikes/[slug] expects
@@ -66,9 +80,15 @@ export default function DashboardOrders() {
   }, [user]);
 
   const handleBookOrder = async (order: UserOrder) => {
-    if (!confirm('Are you sure you want to book this bike?')) return;
+    // Show dealer selection modal instead of directly booking
+    setSelectedOrderForBooking(order);
+    setShowDealerModal(true);
+  };
 
-    setBookingOrder(order.id);
+  const handleDealerSelect = async (dealer: Dealer) => {
+    if (!selectedOrderForBooking || !user) return;
+
+    setBookingOrder(selectedOrderForBooking.id);
     try {
       const response = await fetch('/api/bookings', {
         method: 'POST',
@@ -77,30 +97,32 @@ export default function DashboardOrders() {
         },
         credentials: 'include',
         body: JSON.stringify({
-          user_id: user?.id,
-          variant_id: order.variant_id,
-          bike_name: order.bike_name,
-          variant_name: order.variant_name,
-          brand_name: order.brand_name,
-          price: order.price,
-          image_url: order.image_url
+          user_id: user.id,
+          variant_id: selectedOrderForBooking.variant_id,
+          bike_name: selectedOrderForBooking.bike_name,
+          variant_name: selectedOrderForBooking.variant_name,
+          brand_name: selectedOrderForBooking.brand_name,
+          price: selectedOrderForBooking.price,
+          image_url: selectedOrderForBooking.image_url,
+          dealer_id: dealer.dealer_id
         }),
       });
 
       const result = await response.json();
 
       if (response.ok && result.success) {
-        alert('Bike booked successfully! You will be contacted soon.');
+        alert(`Bike booked successfully with ${dealer.name}! You will be contacted soon.`);
         // Remove the order from the local state since it's been booked
-        setOrders(orders.filter(o => o.id !== order.id));
+        setOrders(orders.filter(o => o.id !== selectedOrderForBooking.id));
       } else {
         alert('Failed to book bike. Please try again.');
       }
     } catch (error) {
       console.error('Error booking bike:', error);
-      alert('Network error. Please try again.');
+      alert('An error occurred while booking. Please try again.');
     } finally {
       setBookingOrder(null);
+      setSelectedOrderForBooking(null);
     }
   };
 
@@ -269,6 +291,17 @@ export default function DashboardOrders() {
           </div>
         )}
       </div>
+
+      {/* Dealer Selection Modal */}
+      <DealerSelectionModal
+        isOpen={showDealerModal}
+        onClose={() => {
+          setShowDealerModal(false);
+          setSelectedOrderForBooking(null);
+        }}
+        onDealerSelect={handleDealerSelect}
+        bikeName={selectedOrderForBooking ? `${selectedOrderForBooking.brand_name} ${selectedOrderForBooking.bike_name} ${selectedOrderForBooking.variant_name}` : ''}
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase-server';
 import { successResponse, errorResponse } from '@/lib/api-response';
+import { sendBookingConfirmationEmail, sendBookingStatusUpdateEmail } from '@/lib/email-booking';
 
 interface BookingRequest {
   user_id: string;
@@ -100,6 +101,14 @@ export async function POST(request: NextRequest) {
               brand_name
             )
           )
+        ),
+        dealers(
+          name,
+          phone,
+          email,
+          address,
+          city,
+          state
         )
       `)
       .eq('booking_id', (booking as any).booking_id)
@@ -107,6 +116,56 @@ export async function POST(request: NextRequest) {
 
     if (detailsError) {
       console.error('Error fetching booking details:', detailsError);
+    }
+
+    // Get user details for email notification
+    let userEmail = '';
+    let userFullName = '';
+    
+    try {
+      const { data: { user: authUser }, error: authUserError } = await supabase.auth.getUser();
+      if (!authUserError && authUser) {
+        userEmail = authUser.email || '';
+        userFullName = authUser.user_metadata?.full_name || 
+                      authUser.user_metadata?.name || 
+                      authUser.email?.split('@')[0] || 'Valued Customer';
+      }
+    } catch (error) {
+      console.error('Error getting user details for email:', error);
+    }
+
+    // Send booking confirmation email
+    if (userEmail) {
+      console.log('📤 Sending booking confirmation email...');
+      const emailData = {
+        booking_id: (booking as any)?.booking_id,
+        user_email: userEmail,
+        user_name: userFullName,
+        brand_name: body.brand_name,
+        model_name: body.bike_name,
+        variant_name: body.variant_name,
+        price: body.price,
+        booking_date: (booking as any)?.booking_date,
+        status: 'pending',
+        dealer_name: (bookingDetails as any)?.dealers?.name || undefined,
+        dealer_phone: (bookingDetails as any)?.dealers?.phone || undefined,
+        dealer_email: (bookingDetails as any)?.dealers?.email || undefined
+      };
+
+      try {
+        const emailSent = await sendBookingConfirmationEmail(emailData);
+        
+        if (!emailSent) {
+          console.log('⚠️ Booking confirmation email failed, but booking was created successfully');
+        } else {
+          console.log('✅ Booking confirmation email sent successfully');
+        }
+      } catch (emailError) {
+        console.error('❌ Error sending booking confirmation email:', emailError);
+        // Don't fail the booking for email errors
+      }
+    } else {
+      console.log('⚠️ Could not send booking confirmation email - user email not available');
     }
 
     return successResponse({
@@ -274,7 +333,7 @@ export async function PUT(request: NextRequest) {
   try {
     const supabase = createServerClient();
     
-    // Verify admin authentication (you might want to add proper admin auth check)
+    // Verify authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       return errorResponse('Not authenticated', 401);
@@ -286,6 +345,43 @@ export async function PUT(request: NextRequest) {
     if (!booking_id) {
       return errorResponse('Booking ID is required', 400);
     }
+
+    // Get current booking details before updating
+    const { data: currentBooking, error: currentBookingError } = await supabase
+      .from('bookings')
+      .select(`
+        booking_id,
+        user_id,
+        variant_id,
+        status,
+        price,
+        booking_date,
+        variants(
+          variant_name,
+          models(
+            model_name,
+            brands(
+              brand_name
+            )
+          )
+        ),
+        dealers(
+          name,
+          phone,
+          email
+        )
+      `)
+      .eq('booking_id', booking_id)
+      .single();
+
+    if (currentBookingError || !currentBooking) {
+      console.error('Error fetching current booking details:', currentBookingError);
+      return errorResponse('Booking not found', 404);
+    }
+
+    // Check if status is actually changing
+    const isStatusChanging = status && (currentBooking as any).status !== status;
+    const oldStatus = (currentBooking as any).status;
 
     const updates: any = {};
     if (status) updates.status = status;
@@ -304,6 +400,62 @@ export async function PUT(request: NextRequest) {
     if (error) {
       console.error('Error updating booking:', error);
       return errorResponse('Failed to update booking', 500);
+    }
+
+    // Send email notification for significant status changes
+    if (isStatusChanging) {
+      try {
+        // Get user details
+        let userData = {
+          email: user.email || '',
+          full_name: user.user_metadata?.full_name || 
+                    user.user_metadata?.name || 
+                    user.email?.split('@')[0] || 'Valued Customer'
+        };
+
+        if (userData.email) {
+          // Send email for significant status changes
+          const shouldSendEmail = (
+            (oldStatus === 'pending' && status === 'confirmed') ||
+            (status === 'completed') ||
+            (status === 'cancelled')
+          );
+
+          if (shouldSendEmail) {
+            console.log(`📤 Sending booking status update email for ${oldStatus} -> ${status}...`);
+            const emailData = {
+              booking_id: (currentBooking as any).booking_id,
+              user_email: userData.email,
+              user_name: userData.full_name,
+              brand_name: (currentBooking as any).variants?.models?.brands?.brand_name || 'Unknown',
+              model_name: (currentBooking as any).variants?.models?.model_name || 'Unknown',
+              variant_name: (currentBooking as any).variants?.variant_name || 'Unknown',
+              price: (currentBooking as any).price || 0,
+              booking_date: (currentBooking as any).booking_date,
+              status: status,
+              dealer_name: (currentBooking as any).dealers?.name || undefined,
+              dealer_phone: (currentBooking as any).dealers?.phone || undefined,
+              dealer_email: (currentBooking as any).dealers?.email || undefined
+            };
+
+            try {
+              const emailSent = await sendBookingStatusUpdateEmail(emailData);
+              
+              if (!emailSent) {
+                console.log('⚠️ Booking status update email failed, but status was updated successfully');
+              } else {
+                console.log('✅ Booking status update email sent successfully');
+              }
+            } catch (emailError) {
+              console.error('❌ Error sending booking status update email:', emailError);
+            }
+          } else {
+            console.log(`ℹ️ Status change ${oldStatus} -> ${status} does not trigger email notification`);
+          }
+        }
+      } catch (emailError) {
+        console.error('Error in email notification process:', emailError);
+      }
     }
 
     return successResponse({ booking });
