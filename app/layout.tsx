@@ -29,7 +29,7 @@ const montserrat = Montserrat({
 
 // Metadata for SEO
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NODE_ENV === 'production' ? 'https://bikersalliance.com' : 'http://localhost:3000'),
+  metadataBase: new URL(process.env.NODE_ENV === 'production' ? 'https://bikersalliance.in' : 'http://localhost:3000'),
   title: {
     default: 'BikersAlliance - Motorcycle Community & Marketplace',
     template: '%s | BikersAlliance'

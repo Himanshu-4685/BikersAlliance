@@ -285,7 +285,7 @@ function createEmailContent(email: string) {
             </div>
             
             <p style="text-align: center; margin: 30px 0;">
-              <a href="https://bikersalliance.netlify.app/" class="btn">
+              <a href="https://bikersalliance.in/" class="btn">
                 <span class="emoji">🏍️</span> Explore BikersAlliance
               </a>
             </p>
@@ -294,13 +294,13 @@ function createEmailContent(email: string) {
             
             <p style="margin-top: 30px;">
               <strong><span class="emoji">📬</span> Subscribe Now to never miss a throttle twist:</strong><br>
-              <a href="https://bikersalliance.netlify.app/" style="color: #1e40af;">Subscribe to Newsletter</a>
+              <a href="https://bikersalliance.in/" style="color: #1e40af;">Subscribe to Newsletter</a>
             </p>
           </div>
           
           <div class="footer">
             <p><strong>Ride Safe,</strong><br>Team BikersAlliance</p>
-            <p><a href="https://bikersalliance.netlify.app/" style="color: #1e40af;">https://bikersalliance.netlify.app/</a></p>
+            <p><a href="https://bikersalliance.in/" style="color: #1e40af;">https://bikersalliance.in/</a></p>
             <p style="font-size: 0.9em; color: #666; margin-top: 20px;">
               You're receiving this email because you subscribed to our newsletter at BikersAlliance.
             </p>
@@ -328,7 +328,7 @@ Subscribe to Newsletter
 
 Ride Safe,
 Team BikersAlliance
-https://bikersalliance.netlify.app/
+https://bikersalliance.in/
     `
   };
 }
