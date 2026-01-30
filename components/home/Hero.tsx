@@ -321,7 +321,7 @@ export default function Hero() {
           </div>
           
           {/* Form Container - Responsive positioning */}
-          <div className="absolute z-10 w-full max-w-xs mx-auto left-1/2 transform -translate-x-1/2 top-8 md:left-24 md:transform-none md:max-w-sm md:top-14 p-4 md:p-6 bg-white rounded-xl md:rounded-2xl shadow-xl">
+          <div className="absolute z-10 w-full max-w-xs mx-auto left-1/2 transform -translate-x-1/2 top-8 md:left-16 md:transform-none md:max-w-sm md:top-14 p-4 md:p-6 bg-white rounded-xl md:rounded-2xl shadow-xl">
             <h2 className="text-xl md:text-2xl font-medium mb-4">Search the right bike</h2>
             
             {/* New/Used Toggle */}

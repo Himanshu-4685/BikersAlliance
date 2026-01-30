@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useComparison } from '@/context/ComparisonContext';
 import { useCompare, ComparisonVariant } from '@/hooks/useCompare';
+import { useAuth } from '@/context/AuthContext.supabase';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FiX, FiPlus, FiArrowLeft, FiChevronDown } from 'react-icons/fi';
+import { FiX, FiPlus, FiArrowLeft, FiChevronDown, FiBookmark, FiCheck } from 'react-icons/fi';
 
 // Types for API responses
 interface Brand {
@@ -46,8 +48,10 @@ interface BikeSlot {
 }
 
 export default function ComparePage() {
-  const { comparisonList, clearComparison, maxComparisons, setMaxComparisons } = useComparison();
+  const searchParams = useSearchParams();
+  const { comparisonList, clearComparison, maxComparisons, setMaxComparisons, syncComparisonList } = useComparison();
   const { compareVariants, loading: compareLoading, error: compareError } = useCompare();
+  const { user, isLoading: authLoading } = useAuth();
   
   // Dynamic number of slots based on maxComparisons
   const initializeSlots = (count: number): BikeSlot[] => {
@@ -64,6 +68,11 @@ export default function ComparePage() {
 
   const [bikeSlots, setBikeSlots] = useState<BikeSlot[]>(initializeSlots(maxComparisons));
   const [comparisonData, setComparisonData] = useState<ComparisonVariant[]>([]);
+
+  // Save comparison states
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Data states
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -121,6 +130,42 @@ export default function ComparePage() {
     initializeFromContext();
   }, [comparisonList]);
 
+  // Handle URL parameters for direct comparison links (from saved comparisons)
+  useEffect(() => {
+    const loadFromURLParams = async () => {
+      const variantsParam = searchParams.get('variants');
+      if (variantsParam && comparisonList.length === 0) {
+        const variantIds = variantsParam.split(',').filter(id => id.trim());
+        if (variantIds.length > 0) {
+          const data = await compareVariants(variantIds);
+          
+          if (data) {
+            setComparisonData(data);
+            
+            // Update slots with data from URL
+            const newSlots = initializeSlots(maxComparisons);
+            data.forEach((variant, index) => {
+              if (index < newSlots.length) {
+                newSlots[index] = {
+                  variant,
+                  selectedBrand: variant.brand_name,
+                  selectedModel: variant.model_name,
+                  selectedVariant: variant.variant_name,
+                  showBrandDropdown: false,
+                  showModelDropdown: false,
+                  showVariantDropdown: false
+                };
+              }
+            });
+            setBikeSlots(newSlots);
+          }
+        }
+      }
+    };
+
+    loadFromURLParams();
+  }, [searchParams]); // Only depend on searchParams
+
   // Fetch comparison data whenever slots change
   useEffect(() => {
     const variantIds = bikeSlots
@@ -137,6 +182,36 @@ export default function ComparePage() {
       setComparisonData([]);
     }
   }, [bikeSlots]);
+
+  // Sync compare page selections with comparison context for the comparison bar
+  useEffect(() => {
+    const selectedBikes = bikeSlots
+      .filter(slot => slot.variant)
+      .map(slot => ({
+        id: slot.variant!.variant_id,
+        name: `${slot.variant!.brand_name} ${slot.variant!.model_name} ${slot.variant!.variant_name}`,
+        slug: slot.variant!.variant_id,
+        image: slot.variant!.image_url || '/demo.avif',
+        price: slot.variant!.on_road_price || 0,
+        brand: {
+          name: slot.variant!.brand_name,
+          slug: slot.variant!.brand_name.toLowerCase()
+        }
+      }));
+
+    // Sync with comparison context for bar display
+    syncComparisonList(selectedBikes);
+  }, [bikeSlots.map(slot => slot.variant?.variant_id).join(',')]); // Only sync when actual variants change
+
+  // Clear comparison list when leaving the compare page
+  useEffect(() => {
+    return () => {
+      // Cleanup function - runs when component unmounts (leaving the page)
+      clearComparison();
+      // Also clear localStorage directly to ensure it's gone
+      localStorage.removeItem('comparisonList');
+    };
+  }, []);
 
   const fetchBrands = async () => {
     try {
@@ -265,6 +340,43 @@ export default function ComparePage() {
     setBikeSlots(newSlots);
   };
 
+  const saveComparison = async () => {
+    if (!user || selectedVariants.length < 2) return;
+
+    setSaveLoading(true);
+    setSaveError(null);
+
+    try {
+      const variantIds = selectedVariants.map(variant => variant.variant_id);
+
+      const response = await fetch('/api/comparisons', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          variantIds,
+          userId: user.id
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSaveSuccess(true);
+        // Auto-hide success message after 3 seconds
+        setTimeout(() => setSaveSuccess(false), 3000);
+      } else {
+        setSaveError(data.error || 'Failed to save comparison');
+      }
+    } catch (error) {
+      console.error('Error saving comparison:', error);
+      setSaveError('Network error. Please try again.');
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
   const selectedVariants = bikeSlots.filter(slot => slot.variant !== null).map(slot => slot.variant!);
 
   return (
@@ -281,36 +393,11 @@ export default function ComparePage() {
               <h1 className="text-3xl font-bold text-gray-900">Compare Bikes</h1>
               <p className="text-gray-600 mt-2">Select up to {maxComparisons} bikes to compare their specifications</p>
             </div>
-            
-            {/* Dynamic comparison count selector */}
-            <div className="flex items-center space-x-2">
-              <label htmlFor="maxComparisons" className="text-sm font-medium text-gray-700">
-                Compare up to:
-              </label>
-              <select
-                id="maxComparisons"
-                value={maxComparisons}
-                onChange={(e) => setMaxComparisons(parseInt(e.target.value))}
-                className="border border-gray-300 rounded-md px-3 py-1 text-sm"
-              >
-                <option value={2}>2 bikes</option>
-                <option value={3}>3 bikes</option>
-                <option value={4}>4 bikes</option>
-                <option value={5}>5 bikes</option>
-                <option value={6}>6 bikes</option>
-              </select>
-            </div>
           </div>
         </div>
 
-        {/* Dynamic Bike Selection Slots */}
-        <div className={`grid gap-6 mb-8 ${
-          maxComparisons === 2 ? 'md:grid-cols-2' :
-          maxComparisons === 3 ? 'md:grid-cols-3' :
-          maxComparisons === 4 ? 'md:grid-cols-4' :
-          maxComparisons === 5 ? 'md:grid-cols-5' :
-          'md:grid-cols-6'
-        }`}>
+        {/* Fixed 4-Slot Bike Selection Grid */}
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
           {bikeSlots.map((slot, index) => (
             <div key={index} className="bg-white rounded-lg shadow-md p-6 relative">
               {slot.variant ? (
@@ -478,9 +565,61 @@ export default function ComparePage() {
         {/* Dynamic Comparison Table */}
         {selectedVariants.length > 0 && (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
               <h2 className="text-xl font-semibold text-gray-900">Detailed Comparison</h2>
+              
+              {/* Save Comparison Section */}
+              {user && selectedVariants.length >= 2 && (
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={saveComparison}
+                    disabled={saveLoading}
+                    className="flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {saveLoading ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    ) : (
+                      <FiBookmark className="w-4 h-4 mr-2" />
+                    )}
+                    {saveLoading ? 'Saving...' : 'Save Comparison'}
+                  </button>
+                </div>
+              )}
             </div>
+
+            {/* Success/Error Messages */}
+            {saveSuccess && (
+              <div className="px-6 py-3 bg-green-50 border-b border-green-200">
+                <div className="flex items-center text-green-800">
+                  <FiCheck className="w-5 h-5 mr-2" />
+                  <span className="text-sm font-medium">Comparison saved successfully!</span>
+                </div>
+              </div>
+            )}
+
+            {saveError && (
+              <div className="px-6 py-3 bg-red-50 border-b border-red-200">
+                <div className="flex items-center text-red-800">
+                  <FiX className="w-5 h-5 mr-2" />
+                  <span className="text-sm font-medium">{saveError}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Login prompt for non-authenticated users */}
+            {!user && !authLoading && selectedVariants.length >= 2 && (
+              <div className="px-6 py-3 bg-blue-50 border-b border-blue-200">
+                <div className="flex items-center justify-between text-blue-800">
+                  <span className="text-sm font-medium">Want to save this comparison for later?</span>
+                  <Link 
+                    href="/login"
+                    className="text-sm bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition-colors"
+                  >
+                    Login to Save
+                  </Link>
+                </div>
+              </div>
+            )}
             
             <div className="overflow-x-auto">
               <table className="w-full">

@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import { createContext, useState, useContext, ReactNode, useEffect, useCallback } from 'react';
 
 interface Bike {
   id: string;
@@ -24,13 +24,14 @@ interface ComparisonContextType {
   isInComparison: (bikeId: string) => boolean;
   canAddMore: () => boolean;
   setMaxComparisons: (max: number) => void;
+  syncComparisonList: (bikes: Bike[]) => void; // Method to sync from compare page
 }
 
 const ComparisonContext = createContext<ComparisonContextType | undefined>(undefined);
 
 export const ComparisonProvider = ({ children }: { children: ReactNode }) => {
   const [comparisonList, setComparisonList] = useState<Bike[]>([]);
-  const [maxComparisons, setMaxComparisonsState] = useState<number>(4); // Default to 4, but can be changed
+  const [maxComparisons, setMaxComparisonsState] = useState<number>(4); // Fixed to 4 to match database
   
   // Load comparison list from localStorage on component mount
   useEffect(() => {
@@ -91,6 +92,8 @@ export const ComparisonProvider = ({ children }: { children: ReactNode }) => {
   
   const clearComparison = () => {
     setComparisonList([]);
+    // Ensure localStorage is cleared immediately
+    localStorage.removeItem('comparisonList');
   };
   
   const isInComparison = (bikeId: string) => {
@@ -102,17 +105,14 @@ export const ComparisonProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const setMaxComparisons = (max: number) => {
-    if (max < 2) max = 2; // Minimum 2 comparisons
-    if (max > 6) max = 6; // Maximum 6 comparisons for UI reasons
-    
-    setMaxComparisonsState(max);
-    
-    // If current list exceeds new max, trim it
-    if (comparisonList.length > max) {
-      setComparisonList(comparisonList.slice(0, max));
-    }
+    // Fixed to 4 to match database schema - don't allow changes
+    return; // Do nothing, always keep at 4
   };
   
+  const syncComparisonList = useCallback((bikes: Bike[]) => {
+    setComparisonList(bikes.slice(0, maxComparisons)); // Ensure we don't exceed max limit
+  }, [maxComparisons]);
+
   return (
     <ComparisonContext.Provider
       value={{
@@ -124,7 +124,8 @@ export const ComparisonProvider = ({ children }: { children: ReactNode }) => {
         clearComparison,
         isInComparison,
         canAddMore,
-        setMaxComparisons
+        setMaxComparisons,
+        syncComparisonList
       }}
     >
       {children}

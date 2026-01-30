@@ -5,7 +5,9 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FiSearch, FiChevronRight, FiStar, FiHeart } from 'react-icons/fi';
-import { generateSlug } from '@/lib/slug-utils';
+import WishlistButton from '@/components/common/WishlistButton';
+import CompareButton from '@/components/common/CompareButton';
+import { generateSlug, generateBrandSlug } from '@/lib/slug-utils';
 
 interface SearchResult {
   variant_id: number;
@@ -199,15 +201,30 @@ export default function SearchPage() {
                       {bike.brand_name && `${bike.brand_name} `}
                       {bike.model_name ? `${bike.model_name} ${bike.variant_name}` : bike.variant_name}
                     </h3>
-                    <button
-                      className="text-gray-400 hover:text-red-500 transition-colors"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        // Add to wishlist functionality
-                      }}
-                    >
-                      <FiHeart className="w-5 h-5" />
-                    </button>
+                    <div className="flex gap-2 ml-3">
+                      <WishlistButton 
+                        bike={{
+                          id: bike.variant_id.toString(),
+                          name: bike.variant_name,
+                          slug: bike.variant_id.toString(),
+                          image: bike.image_url || '/demo.avif',
+                          price: bike.on_road_price || 0,
+                          brand: { name: bike.brand_name || 'Unknown' }
+                        }}
+                        size="sm"
+                      />
+                      <CompareButton 
+                        bike={{
+                          id: bike.variant_id.toString(),
+                          name: bike.variant_name,
+                          slug: bike.variant_id.toString(),
+                          image: bike.image_url || '/demo.avif',
+                          price: bike.on_road_price || 0,
+                          brand: { name: bike.brand_name || 'Unknown', slug: generateBrandSlug(bike.brand_name || 'Unknown') }
+                        }}
+                        className="relative"
+                      />
+                    </div>
                   </div>
 
                   {/* Price */}

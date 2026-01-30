@@ -1,20 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
-import { FiSearch } from 'react-icons/fi';
+import { FiSearch, FiX } from 'react-icons/fi';
 import { createClient } from "@/utils/supabase/client";
+import { generateBrandSlug } from '@/lib/slug-utils';
+import WishlistButton from '@/components/common/WishlistButton';
+import CompareButton from '@/components/common/CompareButton';
 
 interface Variant {
   variant_id: number;
   variant_name: string;
+  on_road_price?: number;
+  brand_name?: string;
 }
 
 interface SearchBarProps {
   onNavigate?: () => void;
 }
 
-export default function SearchBar({ onNavigate }: SearchBarProps = {}) {
+export default function SearchBar({ onNavigate }: SearchBarProps) {
   const router = useRouter();
   const [query, setQuery] = useState<string>("");
   const [results, setResults] = useState<Variant[]>([]);
@@ -38,7 +43,12 @@ export default function SearchBar({ onNavigate }: SearchBarProps = {}) {
         // Use direct query to variants table since that's where the data is
         const { data, error } = await supabase
           .from('variants')
-          .select('variant_id, variant_name')
+          .select(`
+            variant_id, 
+            variant_name, 
+            on_road_price,
+            brands!inner(brand_name)
+          `)
           .ilike('variant_name', `%${query}%`)
           .limit(10);
 
@@ -141,6 +151,12 @@ export default function SearchBar({ onNavigate }: SearchBarProps = {}) {
     }
   };
 
+  const handleClear = () => {
+    setQuery('');
+    setResults([]);
+    setShowDropdown(false);
+  };
+
   const handleFocus = () => {
     if (query.trim().length >= 2 && results.length > 0) {
       setShowDropdown(true);
@@ -158,7 +174,7 @@ export default function SearchBar({ onNavigate }: SearchBarProps = {}) {
   };
 
   // Highlight matching text in results
-  const highlightMatch = (text: string, query: string) => {
+  const highlightMatch = (text: string, query: string): React.ReactNode => {
     if (!query.trim()) return text;
     
     const regex = new RegExp(`(${query})`, 'gi');
@@ -185,12 +201,24 @@ export default function SearchBar({ onNavigate }: SearchBarProps = {}) {
             className="w-full py-2 pl-4 pr-12 text-sm text-gray-900 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
             autoComplete="off"
           />
-          <button
-            type="submit"
-            className="absolute inset-y-0 right-0 flex items-center px-4 hover:text-primary"
-          >
-            <FiSearch className="w-4 h-4 text-gray-500" />
-          </button>
+          {query.trim() ? (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="absolute inset-y-0 right-0 flex items-center px-4 hover:text-red-500 transition-colors"
+              aria-label="Clear search"
+            >
+              <FiX className="w-4 h-4 text-gray-500" />
+            </button>
+          ) : (
+            <button
+              type="submit"
+              className="absolute inset-y-0 right-0 flex items-center px-4 hover:text-primary transition-colors"
+              aria-label="Search"
+            >
+              <FiSearch className="w-4 h-4 text-gray-500" />
+            </button>
+          )}
         </div>
       </form>
         
@@ -207,15 +235,64 @@ export default function SearchBar({ onNavigate }: SearchBarProps = {}) {
           {!loading && results.length > 0 && results.map((variant) => (
             <div
               key={variant.variant_id}
-              className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex justify-between items-center border-b border-gray-100 last:border-b-0 transition-colors"
-              onMouseDown={() => handleSelect(variant)}
+              className="px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
             >
-              <span className="text-sm text-gray-900 font-medium">
-                {highlightMatch(variant.variant_name, query)}
-              </span>
-              <span className="text-xs text-gray-500 capitalize bg-gray-100 px-2 py-1 rounded-full">
-                variant
-              </span>
+              <div className="flex items-center justify-between">
+                <div 
+                  className="flex-1 cursor-pointer"
+                  onMouseDown={() => handleSelect(variant)}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div>
+                      <span className="text-sm text-gray-900 font-medium block">
+                        {highlightMatch(variant.variant_name, query)}
+                      </span>
+                      {variant.brand_name && (
+                        <span className="text-xs text-gray-500">
+                          {variant.brand_name}
+                        </span>
+                      )}
+                      {variant.on_road_price && (
+                        <span className="text-xs text-green-600 font-medium block">
+                          ₹{variant.on_road_price.toLocaleString()} onwards
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2 ml-3">
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <WishlistButton 
+                      bike={{
+                        id: variant.variant_id.toString(),
+                        name: variant.variant_name,
+                        slug: variant.variant_id.toString(),
+                        image: '/demo.avif',
+                        price: variant.on_road_price || 0,
+                        brand: { name: variant.brand_name || 'Unknown' }
+                      }}
+                      size="sm"
+                    />
+                  </div>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <CompareButton 
+                      bike={{
+                        id: variant.variant_id.toString(),
+                        name: variant.variant_name,
+                        slug: variant.variant_id.toString(),
+                        image: '/demo.avif',
+                        price: variant.on_road_price || 0,
+                        brand: { name: variant.brand_name || 'Unknown', slug: generateBrandSlug(variant.brand_name || 'Unknown') }
+                      }}
+                      className="relative"
+                    />
+                  </div>
+                  <span className="text-xs text-gray-500 capitalize bg-gray-100 px-2 py-1 rounded-full ml-1">
+                    variant
+                  </span>
+                </div>
+              </div>
             </div>
           ))}
           

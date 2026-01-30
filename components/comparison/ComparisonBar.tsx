@@ -5,15 +5,52 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FiX, FiBarChart2 } from 'react-icons/fi';
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 export default function ComparisonBar() {
-  const { comparisonList, removeFromComparison, clearComparison } = useComparison();
+  const { comparisonList, removeFromComparison, clearComparison, maxComparisons } = useComparison();
   const [isVisible, setIsVisible] = useState(false);
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+  const pathname = usePathname();
   
-  // Only show comparison bar if there are bikes to compare
+  // Check if we're on compare page
+  const isComparePage = pathname === '/compare';
+  
   useEffect(() => {
-    setIsVisible(comparisonList.length > 0);
-  }, [comparisonList.length]);
+    if (isComparePage) {
+      setIsVisible(true); // Always visible on compare page
+    } else {
+      setIsVisible(comparisonList.length > 0); // Only when bikes selected on other pages
+    }
+  }, [comparisonList.length, isComparePage]);
+
+  // Clear comparison when navigating away from compare page
+  useEffect(() => {
+    if (!isComparePage && comparisonList.length > 0) {
+      // If we're not on compare page but have comparison items, we came from compare page
+      const wasOnComparePage = sessionStorage.getItem('wasOnComparePage');
+      if (wasOnComparePage === 'true') {
+        clearComparison();
+        sessionStorage.removeItem('wasOnComparePage');
+      }
+    }
+    
+    // Track if we're on compare page
+    if (isComparePage) {
+      sessionStorage.setItem('wasOnComparePage', 'true');
+    }
+  }, [pathname, isComparePage, comparisonList.length, clearComparison]);
+
+  const handleImageError = (bikeId: string) => {
+    setImageErrors(prev => ({ ...prev, [bikeId]: true }));
+  };
+
+  const getImageSrc = (bike: any) => {
+    if (imageErrors[bike.id]) {
+      return '/demo.avif';
+    }
+    return bike.image || '/demo.avif';
+  };
   
   if (!isVisible) {
     return null;
@@ -25,7 +62,7 @@ export default function ComparisonBar() {
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <FiBarChart2 className="text-primary w-5 h-5 mr-2" />
-            <span className="text-sm font-medium">Compare Bikes ({comparisonList.length}/4)</span>
+            <span className="text-sm font-medium">Compare Bikes ({comparisonList.length}/{maxComparisons})</span>
           </div>
           
           <div className="flex items-center space-x-4">
@@ -67,12 +104,14 @@ export default function ComparisonBar() {
                     </button>
                     
                     <div className="flex flex-col items-center text-center">
-                      <div className="relative w-12 h-12 mb-1">
+                      <div className="relative w-12 h-12 mb-1 bg-gray-100 rounded overflow-hidden">
                         <Image 
-                          src={bike.image}
+                          src={getImageSrc(bike)}
                           alt={bike.name}
                           fill
                           className="object-contain"
+                          sizes="48px"
+                          onError={() => handleImageError(bike.id)}
                         />
                       </div>
                       <span className="text-xs font-medium line-clamp-1">{bike.name}</span>

@@ -8,6 +8,7 @@ import { FiMail, FiPhone, FiMapPin, FiFacebook, FiTwitter, FiInstagram, FiYoutub
 export default function Footer() {
   const [email, setEmail] = useState('');
   const [isSubscribing, setIsSubscribing] = useState(false);
+  const [showComingSoon, setShowComingSoon] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState<{
     type: 'success' | 'error' | null;
     message: string;
@@ -60,6 +61,10 @@ export default function Footer() {
     }
   };
   
+  const handleSocialMediaClick = () => {
+    setShowComingSoon(true);
+  };
+  
   return (
     <footer className="bg-secondary-500 text-white">
       {/* Main Footer */}
@@ -86,18 +91,34 @@ export default function Footer() {
               comprehensive information on bikes, comparisons, reviews and more.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-300 hover:text-white">
+              <button 
+                onClick={handleSocialMediaClick}
+                className="text-gray-300 hover:text-white transition-colors duration-200"
+                aria-label="Facebook - Coming Soon"
+              >
                 <FiFacebook />
-              </a>
-              <a href="#" className="text-gray-300 hover:text-white">
+              </button>
+              <button 
+                onClick={handleSocialMediaClick}
+                className="text-gray-300 hover:text-white transition-colors duration-200"
+                aria-label="Twitter - Coming Soon"
+              >
                 <FiTwitter />
-              </a>
-              <a href="#" className="text-gray-300 hover:text-white">
+              </button>
+              <button 
+                onClick={handleSocialMediaClick}
+                className="text-gray-300 hover:text-white transition-colors duration-200"
+                aria-label="Instagram - Coming Soon"
+              >
                 <FiInstagram />
-              </a>
-              <a href="#" className="text-gray-300 hover:text-white">
+              </button>
+              <button 
+                onClick={handleSocialMediaClick}
+                className="text-gray-300 hover:text-white transition-colors duration-200"
+                aria-label="YouTube - Coming Soon"
+              >
                 <FiYoutube />
-              </a>
+              </button>
             </div>
           </div>
 
@@ -245,6 +266,29 @@ export default function Footer() {
           </div>
         </div>
       </div>
+      
+      {/* Coming Soon Popup */}
+      {showComingSoon && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 text-center">
+            <div className="mb-4">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FiMail className="w-8 h-8 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Coming Soon!</h3>
+              <p className="text-gray-600 mb-4">
+                We're working on connecting our social media accounts. Stay tuned for updates!
+              </p>
+            </div>
+            <button
+              onClick={() => setShowComingSoon(false)}
+              className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-600 transition-colors duration-200"
+            >
+              Got it!
+            </button>
+          </div>
+        </div>
+      )}
     </footer>
   );
 }

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FiChevronLeft, FiChevronRight, FiClock } from 'react-icons/fi';
 import WishlistButton from '@/components/common/WishlistButton';
+import CompareButton from '@/components/common/CompareButton';
 import NotificationPopup from '@/components/common/NotificationPopup';
 
 // Upcoming Bikes Data
@@ -109,8 +110,8 @@ export default function UpcomingBikes() {
                   <div className="absolute top-0 left-0 px-2 py-1 text-xs font-medium text-white bg-primary">
                     Upcoming
                   </div>
-                  {/* Wishlist Button */}
-                  <div className="absolute top-2 right-2">
+                  {/* Action Buttons */}
+                  <div className="absolute top-2 right-2 flex flex-col gap-1">
                     <WishlistButton 
                       bike={{
                         id: bike.id,
@@ -119,6 +120,18 @@ export default function UpcomingBikes() {
                         image: bike.image
                       }}
                       size="sm" 
+                    />
+                    <CompareButton 
+                      bike={{
+                        id: bike.id,
+                        name: bike.name,
+                        slug: bike.id,
+                        image: bike.image,
+                        price: typeof bike.expectedPrice === 'string' 
+                          ? parseFloat(bike.expectedPrice.split(' - ')[0].replace(/[^0-9.]/g, '')) 
+                          : 0
+                      }}
+                      className="relative"
                     />
                   </div>
                 </div>

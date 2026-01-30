@@ -136,10 +136,14 @@ CREATE TABLE public.comparisons (
   variant_id_1 bigint NOT NULL,
   variant_id_2 bigint NOT NULL,
   created_at timestamp without time zone DEFAULT now(),
+  variant_id_3 bigint,
+  variant_id_4 integer,
   CONSTRAINT comparisons_pkey PRIMARY KEY (comparison_id),
   CONSTRAINT comparisons_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(user_id),
   CONSTRAINT comparisons_variant_id_1_fkey FOREIGN KEY (variant_id_1) REFERENCES public.variants(variant_id),
-  CONSTRAINT comparisons_variant_id_2_fkey FOREIGN KEY (variant_id_2) REFERENCES public.variants(variant_id)
+  CONSTRAINT comparisons_variant_id_2_fkey FOREIGN KEY (variant_id_2) REFERENCES public.variants(variant_id),
+  CONSTRAINT comparisons_variant_id_3_fkey FOREIGN KEY (variant_id_3) REFERENCES public.variants(variant_id),
+  CONSTRAINT comparisons_variant_id_4_fkey FOREIGN KEY (variant_id_4) REFERENCES public.variants(variant_id)
 );
 CREATE TABLE public.dealers (
   dealer_id integer NOT NULL DEFAULT nextval('dealers_dealer_id_seq'::regclass),

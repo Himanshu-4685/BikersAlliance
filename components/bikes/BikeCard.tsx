@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Bike } from '@/types/bike';
 import { FiSettings, FiZap } from 'react-icons/fi';
 import WishlistButton from '@/components/common/WishlistButton';
+import CompareButton from '@/components/common/CompareButton';
 
 interface BikeCardProps {
   bike: Bike;
@@ -26,9 +27,22 @@ export default function BikeCard({ bike, viewMode = 'grid', showBrand = false, s
               height={128}
               className="w-full h-32 object-cover rounded-lg"
             />
-            {/* Wishlist Button for list view */}
-            <div className="absolute top-2 right-2">
+            {/* Action Buttons for list view */}
+            <div className="absolute top-2 right-2 flex flex-col gap-1">
               <WishlistButton bike={bike} size="sm" />
+              <CompareButton 
+                bike={{
+                  id: bike.id,
+                  name: bike.name,
+                  slug: bike.slug || bike.id,
+                  image: bike.image,
+                  price: typeof bike.price === 'string' 
+                    ? parseFloat(bike.price.replace(/[^0-9.]/g, '')) 
+                    : bike.price,
+                  ...((bike as any).brand && { brand: (bike as any).brand })
+                }}
+                className="relative"
+              />
             </div>
           </div>
           <div className="ml-4 flex-1">
@@ -86,9 +100,22 @@ export default function BikeCard({ bike, viewMode = 'grid', showBrand = false, s
                 New Launch
               </div>
             )}
-            {/* Wishlist Button */}
-            <div className="absolute top-2 right-2">
+            {/* Action Buttons */}
+            <div className="absolute top-2 right-2 flex flex-col gap-1">
               <WishlistButton bike={bike} size="sm" />
+              <CompareButton 
+                bike={{
+                  id: bike.id,
+                  name: bike.name,
+                  slug: bike.slug || bike.id,
+                  image: bike.image,
+                  price: typeof bike.price === 'string' 
+                    ? parseFloat(bike.price.replace(/[^0-9.]/g, '')) 
+                    : bike.price,
+                  ...((bike as any).brand && { brand: (bike as any).brand })
+                }}
+                className="relative"
+              />
             </div>
           </div>
         </Link>
