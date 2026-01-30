@@ -41,7 +41,7 @@ export default function Footer() {
       if (response.ok) {
         setSubscriptionStatus({
           type: 'success',
-          message: 'Successfully subscribed! Check your email for a welcome message.'
+          message: data.message || 'Successfully subscribed! Check your email for a welcome message.'
         });
         setEmail('');
       } else {

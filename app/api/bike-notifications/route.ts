@@ -15,7 +15,7 @@ interface NotificationRequest {
 }
 
 // Email service configuration
-const FROM_EMAIL = process.env.FROM_EMAIL || 'onboarding@resend.dev';
+const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@bikersalliance.in'; // Use verified domain
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
 // Initialize Resend if API key is available
@@ -121,16 +121,12 @@ async function sendNotificationEmail(name: string, email: string, bikeData: any)
       try {
         console.log('📤 Sending email via Resend...');
         
-        // For testing: Resend only allows sending to verified email addresses
-        // In production, you would verify your domain first
-        const testEmail = email === 'ghostofficial1322@gmail.com' ? email : 'ghostofficial1322@gmail.com';
-        
         const { data, error } = await resend.emails.send({
           from: `BikersAlliance <${FROM_EMAIL}>`,
-          to: [testEmail],
+          to: [email],
           subject: emailContent.subject,
-          html: emailContent.html.replace(new RegExp(email, 'g'), testEmail).replace(new RegExp(name, 'g'), name),
-          text: emailContent.text.replace(new RegExp(email, 'g'), testEmail).replace(new RegExp(name, 'g'), name),
+          html: emailContent.html,
+          text: emailContent.text,
         });
 
         if (error) {
@@ -139,7 +135,7 @@ async function sendNotificationEmail(name: string, email: string, bikeData: any)
         } else {
           console.log('✅ Notification email sent successfully via Resend!');
           console.log('📧 Email ID:', data?.id);
-          console.log('📬 Note: In testing mode, email sent to ghostofficial1322@gmail.com');
+          console.log('📬 Email sent to:', email);
           return true;
         }
       } catch (resendError) {

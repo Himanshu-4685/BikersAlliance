@@ -8,7 +8,7 @@ interface SubscribeRequest {
 }
 
 // Email service configuration
-const FROM_EMAIL = process.env.FROM_EMAIL || 'onboarding@resend.dev'; // Use Resend's sandbox domain
+const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@bikersalliance.in'; // Use verified domain
 const RESEND_API_KEY = process.env.RESEND_API_KEY; // You can get this from resend.com
 
 // Initialize Resend if API key is available
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     if (existingSubscription) {
       console.log('ℹ️ Email already subscribed:', email);
       return NextResponse.json(
-        { message: 'You are already subscribed to our newsletter!' },
+        { message: 'HEY!!! You are already a subscriber.' },
         { status: 200 }
       );
     }
@@ -136,16 +136,12 @@ async function sendWelcomeEmail(email: string): Promise<boolean> {
       try {
         console.log('📤 Sending email via Resend...');
         
-        // For testing: Resend only allows sending to verified email addresses
-        // In production, you would verify your domain first
-        const testEmail = email === 'ghostofficial1322@gmail.com' ? email : 'ghostofficial1322@gmail.com';
-        
         const { data, error } = await resend.emails.send({
           from: `BikersAlliance <${FROM_EMAIL}>`,
-          to: [testEmail],
+          to: [email],
           subject: emailContent.subject,
-          html: emailContent.html.replace(email, testEmail), // Update email in content
-          text: emailContent.text.replace(email, testEmail),
+          html: emailContent.html,
+          text: emailContent.text,
         });
 
         if (error) {
@@ -154,7 +150,7 @@ async function sendWelcomeEmail(email: string): Promise<boolean> {
         } else {
           console.log('✅ Email sent successfully via Resend!');
           console.log('📧 Email ID:', data?.id);
-          console.log('📬 Note: In testing mode, email sent to ghostofficial1322@gmail.com');
+          console.log('📬 Email sent to:', email);
           return true;
         }
       } catch (resendError) {
