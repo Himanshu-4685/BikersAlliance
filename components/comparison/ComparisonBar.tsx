@@ -24,22 +24,15 @@ export default function ComparisonBar() {
     }
   }, [comparisonList.length, isComparePage]);
 
-  // Clear comparison when navigating away from compare page
+  // Track if we're on compare page for proper state management
   useEffect(() => {
-    if (!isComparePage && comparisonList.length > 0) {
-      // If we're not on compare page but have comparison items, we came from compare page
-      const wasOnComparePage = sessionStorage.getItem('wasOnComparePage');
-      if (wasOnComparePage === 'true') {
-        clearComparison();
-        sessionStorage.removeItem('wasOnComparePage');
-      }
-    }
-    
-    // Track if we're on compare page
     if (isComparePage) {
       sessionStorage.setItem('wasOnComparePage', 'true');
+    } else {
+      // Only clear the session storage when leaving compare page, not the comparison itself
+      sessionStorage.removeItem('wasOnComparePage');
     }
-  }, [pathname, isComparePage, comparisonList.length, clearComparison]);
+  }, [isComparePage]);
 
   const handleImageError = (bikeId: string) => {
     setImageErrors(prev => ({ ...prev, [bikeId]: true }));
@@ -84,8 +77,14 @@ export default function ComparisonBar() {
           </div>
         </div>
         
-        <div className="grid grid-cols-4 gap-4 mt-3">
-          {[...Array(4)].map((_, index) => {
+        <div className={`grid gap-4 mt-3 ${
+          maxComparisons === 2 ? 'grid-cols-2' :
+          maxComparisons === 3 ? 'grid-cols-3' :
+          maxComparisons === 4 ? 'grid-cols-4' :
+          maxComparisons === 5 ? 'grid-cols-5' :
+          'grid-cols-6'
+        }`}>
+          {[...Array(maxComparisons)].map((_, index) => {
             const bike = comparisonList[index];
             
             return (

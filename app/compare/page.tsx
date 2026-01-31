@@ -108,7 +108,7 @@ export default function ComparePage() {
           setComparisonData(data);
           
           // Update slots with comparison data
-          const newSlots = [...bikeSlots];
+          const newSlots = initializeSlots(maxComparisons);
           data.forEach((variant, index) => {
             if (index < newSlots.length) {
               newSlots[index] = {
@@ -124,11 +124,15 @@ export default function ComparePage() {
           });
           setBikeSlots(newSlots);
         }
+      } else {
+        // If comparison list is empty, reset the bike slots
+        setBikeSlots(initializeSlots(maxComparisons));
+        setComparisonData([]);
       }
     };
 
     initializeFromContext();
-  }, [comparisonList]);
+  }, [comparisonList, maxComparisons]);
 
   // Handle URL parameters for direct comparison links (from saved comparisons)
   useEffect(() => {
@@ -202,16 +206,6 @@ export default function ComparePage() {
     // Sync with comparison context for bar display
     syncComparisonList(selectedBikes);
   }, [bikeSlots.map(slot => slot.variant?.variant_id).join(',')]); // Only sync when actual variants change
-
-  // Clear comparison list when leaving the compare page
-  useEffect(() => {
-    return () => {
-      // Cleanup function - runs when component unmounts (leaving the page)
-      clearComparison();
-      // Also clear localStorage directly to ensure it's gone
-      localStorage.removeItem('comparisonList');
-    };
-  }, []);
 
   const fetchBrands = async () => {
     try {
@@ -621,15 +615,15 @@ export default function ComparePage() {
               </div>
             )}
             
-            <div className="overflow-x-auto">
-              <table className="w-full">
+            <div className="overflow-x-auto bg-white rounded-lg shadow">
+              <table className="w-full min-w-full">
                 <thead>
                   <tr className="bg-gray-50">
-                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">
                       Specifications
                     </th>
                     {selectedVariants.map((variant, index) => (
-                      <th key={index} className="px-6 py-4 text-center text-sm font-medium text-gray-500 uppercase tracking-wider">
+                      <th key={index} className="px-6 py-4 text-center text-sm font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">
                         <div className="flex flex-col items-center">
                           <Image
                             src={variant.image_url}
@@ -638,7 +632,7 @@ export default function ComparePage() {
                             height={60}
                             className="rounded mb-2"
                           />
-                          <span className="font-semibold text-gray-900">{variant.variant_name}</span>
+                          <span className="font-semibold text-gray-900 break-words">{variant.variant_name}</span>
                           <span className="text-gray-600 text-xs">{variant.brand_name}</span>
                         </div>
                       </th>
@@ -651,7 +645,19 @@ export default function ComparePage() {
                     { label: 'Displacement', key: 'displacement' },
                     { label: 'Power', key: 'peak_power' },
                     { label: 'Mileage', key: 'city_mileage' },
-                    { label: 'Engine Type', key: 'engine_type' },
+                    { 
+                      label: 'Engine Type', 
+                      key: 'engine_type',
+                      format: (value: any) => {
+                        if (!value || value === 'N/A') return 'N/A';
+                        // Add proper spacing after commas and capitalize first letter
+                        return String(value)
+                          .split(',')
+                          .map(part => part.trim())
+                          .join(', ')
+                          .replace(/^\w/, c => c.toUpperCase());
+                      }
+                    },
                     { label: 'Body Type', key: 'body_type' },
                     { label: 'Average Rating', key: 'averageRating', format: (value: any) => value ? `${value} ⭐` : 'No ratings' },
                     { label: 'Reviews', key: 'reviewCount', format: (value: any) => `${value} reviews` }
@@ -661,11 +667,17 @@ export default function ComparePage() {
                         {spec.label}
                       </td>
                       {selectedVariants.map((variant, bikeIndex) => (
-                        <td key={bikeIndex} className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center">
-                          {spec.format 
-                            ? spec.format(variant[spec.key as keyof ComparisonVariant]) 
-                            : String(variant[spec.key as keyof ComparisonVariant] || 'N/A')
-                          }
+                        <td key={bikeIndex} className={`px-6 py-4 text-sm text-gray-700 text-center ${
+                          spec.key === 'engine_type' 
+                            ? 'whitespace-normal break-words max-w-xs' 
+                            : 'whitespace-nowrap'
+                        }`}>
+                          <div className={spec.key === 'engine_type' ? 'leading-relaxed' : ''}>
+                            {spec.format 
+                              ? spec.format(variant[spec.key as keyof ComparisonVariant]) 
+                              : String(variant[spec.key as keyof ComparisonVariant] || 'N/A')
+                            }
+                          </div>
                         </td>
                       ))}
                     </tr>
