@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
+import { sendBikeSubmissionConfirmation } from '@/lib/sell-bike-email-service';
 
 export async function POST(request: NextRequest) {
   try {
@@ -160,6 +161,30 @@ export async function POST(request: NextRequest) {
 
     if (userError || !userRecord) {
       console.error('Error finding user in users table:', userError);
+      
+      // Send confirmation email even if user tracking fails
+      console.log('📧 Sending confirmation email to bike owner...');
+      const bikeData = {
+        id: data.id,
+        brand,
+        model,
+        variant: variant || '',
+        year: year.toString(),
+        expectedPrice: expectedPrice.toString(),
+        ownerName,
+        email,
+        phone,
+        city: normalizeCity(city),
+        state
+      };
+      
+      try {
+        await sendBikeSubmissionConfirmation(bikeData);
+        console.log('✅ Confirmation email sent successfully');
+      } catch (emailError) {
+        console.error('❌ Failed to send confirmation email:', emailError);
+      }
+      
       // Still return success for the bike listing, but log the tracking error
       return NextResponse.json({
         success: true,
@@ -182,6 +207,30 @@ export async function POST(request: NextRequest) {
       console.error('Error creating user submission tracking:', submissionError);
       // We don't fail the entire request if this fails, but we log it
       // The bike listing was still created successfully
+    }
+
+    // Send confirmation email to the owner
+    console.log('📧 Sending confirmation email to bike owner...');
+    const bikeData = {
+      id: data.id,
+      brand,
+      model,
+      variant: variant || '',
+      year: year.toString(),
+      expectedPrice: expectedPrice.toString(),
+      ownerName,
+      email,
+      phone,
+      city: normalizeCity(city),
+      state
+    };
+    
+    try {
+      await sendBikeSubmissionConfirmation(bikeData);
+      console.log('✅ Confirmation email sent successfully');
+    } catch (emailError) {
+      console.error('❌ Failed to send confirmation email:', emailError);
+      // Don't fail the entire request if email fails
     }
 
     return NextResponse.json({

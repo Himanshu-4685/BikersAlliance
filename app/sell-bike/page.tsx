@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { FiUpload, FiCamera, FiCheck, FiInfo, FiX, FiLoader } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext.supabase';
+import SuccessPopup from '@/components/common/SuccessPopup';
 
 const bikeCategories = [
   'Motorcycle', 'Scooter', 'Sports Bike', 'Cruiser', 'Touring', 'Adventure', 'Electric'
@@ -70,6 +71,8 @@ export default function SellBikePage() {
 
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 4;
+  // State for success popup and form submission
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<any[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -181,7 +184,7 @@ export default function SellBikePage() {
       const result = await response.json();
 
       if (result.success) {
-        setSubmitSuccess(true);
+        setShowSuccessPopup(true);
         // Reset form
         setFormData({
           brand: '',
@@ -717,18 +720,7 @@ export default function SellBikePage() {
         </div>
       )}
 
-      {/* Success Message */}
-      {submitSuccess && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="flex items-start">
-            <FiCheck className="w-5 h-5 text-green-500 mt-0.5 mr-3 flex-shrink-0" />
-            <div className="text-sm text-green-800">
-              <h5 className="font-medium mb-1">Listing Submitted Successfully!</h5>
-              <p>Your bike listing has been submitted for review. We will contact you once it's approved.</p>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Success Message is now handled by popup */}
 
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <div className="flex items-start">
@@ -767,6 +759,7 @@ export default function SellBikePage() {
   }
 
   return (
+    <>
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-red-500 to-red-600 text-white py-16">
@@ -826,15 +819,15 @@ export default function SellBikePage() {
                     ) : (
                       <button
                         type="submit"
-                        disabled={isSubmitting || submitSuccess}
+                        disabled={isSubmitting}
                         onClick={(e) => {
-                          if (isSubmitting || submitSuccess) {
+                          if (isSubmitting) {
                             e.preventDefault();
                             e.stopPropagation();
                           }
                         }}
                         className={`px-8 py-3 rounded-lg font-medium transition-colors ${
-                          isSubmitting || submitSuccess
+                          isSubmitting
                             ? 'bg-gray-400 cursor-not-allowed'
                             : 'bg-red-500 hover:bg-red-600'
                         } text-white`}
@@ -843,11 +836,6 @@ export default function SellBikePage() {
                           <div className="flex items-center">
                             <FiLoader className="w-4 h-4 mr-2 animate-spin" />
                             Submitting...
-                          </div>
-                        ) : submitSuccess ? (
-                          <div className="flex items-center">
-                            <FiCheck className="w-4 h-4 mr-2" />
-                            Submitted
                           </div>
                         ) : (
                           'Submit Listing'
@@ -900,5 +888,15 @@ export default function SellBikePage() {
         </div>
       </div>
     </div>
+
+    {/* Success Popup */}
+    <SuccessPopup
+      isOpen={showSuccessPopup}
+      onClose={() => setShowSuccessPopup(false)}
+      title="Submission Successful!"
+      message="Your bike listing has been submitted successfully and is now under review."
+      subMessage="We'll email you once the listing is approved and goes live on our platform. This usually takes 24-48 hours."
+    />
+    </>
   );
 }
