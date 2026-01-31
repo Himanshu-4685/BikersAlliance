@@ -62,72 +62,46 @@ export default function ScootersPage() {
   const currentMaxDisplacement = searchParams.get('maxDisplacement');
   const currentMinMileage = searchParams.get('minMileage');
   const currentSortBy = searchParams.get('sortBy') || 'price';
+  const currentSortOrder = searchParams.get('sortOrder') || 'asc';
   const currentPage = Number(searchParams.get('page')) || 1;
 
   // Fetch scooters
   const fetchScooters = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/bikes/scooters');
+      // Construct query parameters
+      const params = new URLSearchParams();
+      
+      if (currentBrand) params.append('brand', currentBrand);
+      if (currentMinPrice) params.append('minPrice', currentMinPrice);
+      if (currentMaxPrice) params.append('maxPrice', currentMaxPrice);
+      if (currentMinDisplacement) params.append('minDisplacement', currentMinDisplacement);
+      if (currentMaxDisplacement) params.append('maxDisplacement', currentMaxDisplacement);
+      if (currentMinMileage) params.append('minMileage', currentMinMileage);
+      params.append('sortBy', currentSortBy);
+      params.append('sortOrder', currentSortOrder);
+      params.append('page', currentPage.toString());
+      params.append('limit', '12');
+      
+      const response = await fetch(`/api/bikes/scooters?${params.toString()}`);
       const result = await response.json();
       
       if (result.success && result.data) {
-        let filteredScooters = result.data.bikes || [];
+        setScooters(result.data.bikes || []);
         
-        // Debug: Log available brand names
-        const availableBrands = Array.from(new Set(filteredScooters.map((s: Scooter) => s.brand_name)));
-        console.log('Available scooter brands:', availableBrands);
-        console.log('Current brand filter:', currentBrand);
-        
-        // Apply client-side filters since API might not support all filters
-        if (currentBrand) {
-          filteredScooters = filteredScooters.filter((scooter: Scooter) => {
-            const brandMatch = scooter.brand_name.toLowerCase().trim() === currentBrand.toLowerCase().trim() ||
-                               scooter.brand_name.toLowerCase().includes(currentBrand.toLowerCase());
-            console.log(`Checking ${scooter.brand_name} against ${currentBrand}: ${brandMatch}`);
-            return brandMatch;
+        // Handle pagination properly
+        if (result.data.pagination) {
+          setPagination(result.data.pagination);
+        } else {
+          // Fallback pagination calculation
+          const totalBikes = result.data.bikes?.length || 0;
+          setPagination({
+            total: totalBikes,
+            page: currentPage,
+            limit: 12,
+            totalPages: Math.ceil(totalBikes / 12)
           });
         }
-        
-        if (currentMinPrice) {
-          filteredScooters = filteredScooters.filter((scooter: Scooter) =>
-            scooter.on_road_price >= Number(currentMinPrice)
-          );
-        }
-        
-        if (currentMaxPrice) {
-          filteredScooters = filteredScooters.filter((scooter: Scooter) =>
-            scooter.on_road_price <= Number(currentMaxPrice)
-          );
-        }
-        
-        if (currentMinDisplacement && currentMaxDisplacement) {
-          filteredScooters = filteredScooters.filter((scooter: Scooter) => {
-            const displacement = parseInt(scooter.displacement || '0');
-            return displacement >= Number(currentMinDisplacement) && 
-                   displacement <= Number(currentMaxDisplacement);
-          });
-        }
-        
-        // Sort scooters
-        if (currentSortBy === 'price') {
-          filteredScooters.sort((a: Scooter, b: Scooter) => a.on_road_price - b.on_road_price);
-        } else if (currentSortBy === 'name') {
-          filteredScooters.sort((a: Scooter, b: Scooter) => a.variant_name.localeCompare(b.variant_name));
-        }
-        
-        // Pagination
-        const startIndex = (currentPage - 1) * 12;
-        const endIndex = startIndex + 12;
-        const paginatedScooters = filteredScooters.slice(startIndex, endIndex);
-        
-        setScooters(paginatedScooters);
-        setPagination({
-          total: filteredScooters.length,
-          page: currentPage,
-          limit: 12,
-          totalPages: Math.ceil(filteredScooters.length / 12)
-        });
       }
     } catch (error) {
       console.error('Error fetching scooters:', error);
@@ -139,26 +113,42 @@ export default function ScootersPage() {
   // Fetch scooters on component mount and when filters change
   useEffect(() => {
     fetchScooters();
-  }, [currentBrand, currentMinPrice, currentMaxPrice, 
-      currentMinDisplacement, currentMaxDisplacement, currentMinMileage, 
-      currentSortBy, currentPage]);
+  }, [
+    currentBrand, 
+    currentMinPrice, 
+    currentMaxPrice, 
+    currentMinDisplacement, 
+    currentMaxDisplacement, 
+    currentMinMileage, 
+    currentSortBy, 
+    currentSortOrder, 
+    currentPage
+  ]);
 
   // Update URL with new filter
-  const updateFilter = (key: string, value: string | null) => {
+  const updateFilters = (newParams: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams.toString());
     
-    if (value) {
-      params.set(key, value);
-    } else {
-      params.delete(key);
-    }
+    // Update params
+    Object.entries(newParams).forEach(([key, value]) => {
+      if (value === null) {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+    });
     
     // Reset to page 1 when filters change
-    if (key !== 'page') {
+    if (!('page' in newParams)) {
       params.delete('page');
     }
     
     router.push(`/scooters?${params.toString()}`);
+  };
+
+  // Update individual filter
+  const updateFilter = (key: string, value: string | null) => {
+    updateFilters({ [key]: value });
   };
 
   // Clear all filters
@@ -250,8 +240,10 @@ export default function ScootersPage() {
                   minPrice={currentMinPrice ? Number(currentMinPrice) : undefined}
                   maxPrice={currentMaxPrice ? Number(currentMaxPrice) : undefined}
                   onChange={(minPrice, maxPrice) => {
-                    updateFilter('minPrice', minPrice?.toString() || null);
-                    updateFilter('maxPrice', maxPrice?.toString() || null);
+                    updateFilters({
+                      'minPrice': minPrice?.toString() || null,
+                      'maxPrice': maxPrice?.toString() || null
+                    });
                   }}
                 />
                 
@@ -259,8 +251,10 @@ export default function ScootersPage() {
                   minDisplacement={currentMinDisplacement ? Number(currentMinDisplacement) : undefined}
                   maxDisplacement={currentMaxDisplacement ? Number(currentMaxDisplacement) : undefined}
                   onChange={(min, max) => {
-                    updateFilter('minDisplacement', min?.toString() || null);
-                    updateFilter('maxDisplacement', max?.toString() || null);
+                    updateFilters({
+                      'minDisplacement': min?.toString() || null,
+                      'maxDisplacement': max?.toString() || null
+                    });
                   }}
                 />
                 
@@ -282,8 +276,11 @@ export default function ScootersPage() {
               
               <SortSelector
                 sortBy={currentSortBy}
-                sortOrder="asc"
-                onChange={(sortBy, sortOrder) => updateFilter('sortBy', sortBy)}
+                sortOrder={currentSortOrder}
+                onChange={(sortBy, sortOrder) => updateFilters({ 
+                  'sortBy': sortBy,
+                  'sortOrder': sortOrder 
+                })}
               />
             </div>
 
