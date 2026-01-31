@@ -439,7 +439,7 @@ export default function DashboardActivity() {
                       <div className="flex space-x-2">
                         {bike.status === 'approved' && (
                           <Link
-                            href={`/used-bikes/${bike.id}`}
+                            href={`/used-bikes/details/${bike.id}`}
                             className="px-3 py-1 text-blue-600 border border-blue-600 rounded hover:bg-blue-50"
                           >
                             <FiEye className="w-4 h-4" />

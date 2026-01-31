@@ -49,6 +49,8 @@ export default function BikeOffersPage() {
     mobile: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   // Fetch offers from API
   useEffect(() => {
@@ -149,6 +151,8 @@ export default function BikeOffersPage() {
   const handleCloseModal = () => {
     setShowOfferModal(false);
     setSelectedOffer(null);
+    setShowSuccessMessage(false);
+    setSuccessMessage('');
     setOfferFormData({
       name: '',
       email: '',
@@ -179,8 +183,16 @@ export default function BikeOffersPage() {
       });
 
       if (response.ok) {
-        alert('Your offer request has been submitted successfully! We will contact you soon.');
-        handleCloseModal();
+        const result = await response.json();
+        const message = result.emailSent 
+          ? 'Your offer request has been submitted successfully! Please check your email for confirmation details. We will contact you soon.'
+          : 'Your offer request has been submitted successfully! We will contact you soon.';
+        setSuccessMessage(message);
+        setShowSuccessMessage(true);
+        // Auto-close modal after 3 seconds
+        setTimeout(() => {
+          handleCloseModal();
+        }, 3000);
       } else {
         throw new Error('Failed to submit request');
       }
@@ -493,6 +505,23 @@ export default function BikeOffersPage() {
                   </button>
                 </div>
 
+                {/* Success Message */}
+                {showSuccessMessage && (
+                  <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <div className="flex-shrink-0">
+                        <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                          <span className="text-green-600 text-lg">✅</span>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-green-800 font-medium">Request Submitted Successfully!</p>
+                        <p className="text-green-700 text-sm mt-1">{successMessage}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Selected Offer Info */}
                 {selectedOffer && (
                   <div className="mb-6 p-4 bg-gray-50 rounded-lg">
@@ -512,8 +541,9 @@ export default function BikeOffersPage() {
                   </div>
                 )}
 
-                {/* Form */}
-                <form onSubmit={handleFormSubmit} className="space-y-4">
+                {/* Form - Only show when not showing success message */}
+                {!showSuccessMessage && (
+                  <form onSubmit={handleFormSubmit} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       <FiUser className="inline w-4 h-4 mr-1" />
@@ -582,6 +612,19 @@ export default function BikeOffersPage() {
                     </button>
                   </div>
                 </form>
+                )}
+
+                {/* Close button for success state */}
+                {showSuccessMessage && (
+                  <div className="pt-4">
+                    <button
+                      onClick={handleCloseModal}
+                      className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-semibold"
+                    >
+                      Close
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
