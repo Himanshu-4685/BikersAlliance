@@ -116,7 +116,7 @@ const featuredBikes = [
     price: '₹88,523',
     emi: '₹1,948/month',
     image: 'https://csvzysxiuuzcsmpknehi.supabase.co/storage/v1/object/public/Bikeralliance/Image/Variant_image/168.avif',
-    href: '/bikes/168'
+    href: '/bikes/182'
   },
   {
     id: 2,
@@ -124,7 +124,7 @@ const featuredBikes = [
     price: '₹1,00,164',
     emi: '₹2,204/month',
     image: 'https://csvzysxiuuzcsmpknehi.supabase.co/storage/v1/object/public/Bikeralliance/Image/Variant_image/573.avif',
-    href: '/bikes/573'
+    href: '/bikes/18'
   },
   {
     id: 3,
@@ -132,7 +132,7 @@ const featuredBikes = [
     price: '₹1,39,562',
     emi: '₹3,070/month',
     image: 'https://csvzysxiuuzcsmpknehi.supabase.co/storage/v1/object/public/Bikeralliance/Image/Variant_image/498.avif',
-    href: '/bikes/498'
+    href: '/bikes/512'
   },
   {
     id: 4,
@@ -140,7 +140,7 @@ const featuredBikes = [
     price: '₹75,016',
     emi: '₹1,650/month',
     image: 'https://csvzysxiuuzcsmpknehi.supabase.co/storage/v1/object/public/Bikeralliance/Image/Variant_image/478.avif',
-    href: '/bikes/478'
+    href: '/bikes/493'
   }
 ];
 
