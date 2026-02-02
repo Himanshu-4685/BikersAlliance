@@ -30,6 +30,7 @@ export default function WebStoryViewer({ story }: WebStoryViewerProps) {
   const [progress, setProgress] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [imageError, setImageError] = useState(false);
+  const [showComingSoonModal, setShowComingSoonModal] = useState(false);
 
   // Handle escape key to close
   useEffect(() => {
@@ -235,7 +236,10 @@ export default function WebStoryViewer({ story }: WebStoryViewerProps) {
               </div>
               
               {/* Share Button */}
-              <button className="text-white p-2 rounded-full bg-black/40 hover:bg-black/60 transition-colors shadow-lg">
+              <button 
+                onClick={() => setShowComingSoonModal(true)}
+                className="text-white p-2 rounded-full bg-black/40 hover:bg-black/60 transition-colors shadow-lg"
+              >
                 <FiShare2 size={18} />
               </button>
             </div>
@@ -280,6 +284,40 @@ export default function WebStoryViewer({ story }: WebStoryViewerProps) {
           ))}
         </div>
       </div>
-    </div>
+      {/* Coming Soon Modal */}
+      {showComingSoonModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6 relative">
+            <button
+              onClick={() => setShowComingSoonModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <FiX size={24} />
+            </button>
+            
+            <div className="text-center">
+              <div className="mb-4">
+                <FiShare2 className="w-16 h-16 text-red-600 mx-auto mb-4" />
+              </div>
+              
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                Share Feature Coming Soon!
+              </h3>
+              
+              <p className="text-gray-600 mb-6">
+                We're working on bringing you amazing story sharing capabilities. 
+                This feature will be available in our next update.
+              </p>
+              
+              <button
+                onClick={() => setShowComingSoonModal(false)}
+                className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Got it!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}    </div>
   );
 }

@@ -277,16 +277,26 @@ export default function DynamicDealersSection() {
 
                 {/* Action Buttons */}
                 <div className="flex space-x-2 mt-4">
-                  <button className="flex-1 bg-primary text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-600 flex items-center justify-center space-x-1">
+                  <button 
+                    onClick={() => {
+                      const address = `${dealer.address ? dealer.address + ', ' : ''}${dealer.city}, ${dealer.state}${dealer.pincode ? ' ' + dealer.pincode : ''}`;
+                      const encodedAddress = encodeURIComponent(address);
+                      window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
+                    }}
+                    className="flex-1 bg-primary text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-600 flex items-center justify-center space-x-1 transition-colors"
+                  >
                     <FiNavigation className="w-4 h-4" />
                     <span>Get Directions</span>
                   </button>
                   
                   {dealer.phone && (
-                    <button className="flex-1 border border-primary text-primary px-4 py-2 rounded-lg text-sm hover:bg-primary-50 flex items-center justify-center space-x-1">
+                    <a 
+                      href={`tel:${dealer.phone}`}
+                      className="flex-1 border border-primary text-primary px-4 py-2 rounded-lg text-sm hover:bg-primary-50 flex items-center justify-center space-x-1 transition-colors"
+                    >
                       <FiPhone className="w-4 h-4" />
                       <span>Call Now</span>
-                    </button>
+                    </a>
                   )}
                 </div>
               </div>
