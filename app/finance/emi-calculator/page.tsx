@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FiInfo, FiTrendingUp, FiDollarSign } from 'react-icons/fi';
+import { FiInfo, FiTrendingUp } from 'react-icons/fi';
 
 // Types
 interface BikeData {
@@ -192,7 +192,6 @@ export default function EMICalculatorPage() {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-lg shadow-md p-8">
                   <h2 className="text-2xl font-bold mb-6 flex items-center">
-                    <FiDollarSign className="w-6 h-6 mr-3 text-red-500" />
                     Calculate Your Two Wheeler EMI
                   </h2>
 

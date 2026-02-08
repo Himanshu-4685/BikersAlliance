@@ -6,7 +6,6 @@ import Link from 'next/link';
 import MaintenanceModal from '../../../components/MaintenanceModal';
 import { 
   FiPercent, 
-  FiDollarSign, 
   FiCreditCard, 
   FiTrendingDown, 
   FiCalendar,
@@ -277,7 +276,6 @@ export default function FinanceOffersPage() {
                 href="/finance/emi-calculator"
                 className="inline-flex items-center bg-primary text-white px-6 py-3 rounded-md hover:bg-primary-600 transition-colors"
               >
-                <FiDollarSign className="mr-2" />
                 Calculate EMI
               </Link>
             </div>
