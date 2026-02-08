@@ -30,6 +30,14 @@ export async function POST(request: NextRequest) {
       return errorResponse(error.message, 409);
     }
 
+    // Send welcome email asynchronously (don't wait for it to complete)
+    if (data.user) {
+      sendWelcomeEmail(email, name).catch(error => {
+        console.error('Failed to send welcome email:', error);
+        // Don't fail the registration if email sending fails
+      });
+    }
+
     // Return the user information
     return successResponse({
       user: data.user,
@@ -38,5 +46,27 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Registration error:', error);
     return errorResponse('Registration failed', 500);
+  }
+}
+
+// Helper function to send welcome email
+async function sendWelcomeEmail(email: string, fullName: string): Promise<void> {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/auth/welcome-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, fullName }),
+    });
+
+    if (response.ok) {
+      console.log('✅ Welcome email sent successfully');
+    } else {
+      const error = await response.json();
+      console.error('❌ Failed to send welcome email:', error);
+    }
+  } catch (error) {
+    console.error('❌ Error sending welcome email:', error);
   }
 }

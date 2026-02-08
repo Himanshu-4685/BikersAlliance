@@ -310,7 +310,7 @@ export default function EMICalculatorPage() {
                     {/* Results */}
                     <div className="space-y-6">
                       <div className="bg-red-50 rounded-lg p-6">
-                        <h3 className="text-lg font-semibold text-red-800 mb-4">Monthly EMI</h3>
+                        <h3 className="text-lg font-semibold text-red-800 mb-4">EMI</h3>
                         <div className="text-3xl font-bold text-red-600">
                           {formatCurrency(emi)}
                         </div>

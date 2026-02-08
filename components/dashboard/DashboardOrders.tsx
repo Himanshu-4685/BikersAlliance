@@ -170,6 +170,9 @@ export default function DashboardOrders() {
     );
   }
 
+  // Calculate total sum of all orders
+  const totalAmount = orders.reduce((sum, order) => sum + order.price, 0);
+
   return (
     <div className="bg-white rounded-lg shadow">
       <div className="p-6">
@@ -180,6 +183,14 @@ export default function DashboardOrders() {
               {orders.length} {orders.length === 1 ? 'order' : 'orders'} found
             </p>
           </div>
+          {orders.length > 0 && (
+            <div className="text-right">
+              <p className="text-sm text-gray-500 mb-1">Total Amount</p>
+              <p className="text-2xl font-bold text-primary">
+                ₹{totalAmount.toLocaleString('en-IN')}
+              </p>
+            </div>
+          )}
         </div>
 
         {orders.length > 0 ? (

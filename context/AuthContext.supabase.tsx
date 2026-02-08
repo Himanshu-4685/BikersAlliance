@@ -164,6 +164,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Since email confirmation is disabled, user should be logged in immediately
       if (data.user) {
         setUser(mapUser(data.user));
+        
+        // Send welcome email asynchronously (don't wait for it to complete)
+        sendWelcomeEmail(email, fullName).catch(error => {
+          console.error('Failed to send welcome email:', error);
+          // Don't fail the registration if email sending fails
+        });
+        
         return { success: true };
       }
 
@@ -315,6 +322,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+// Helper function to send welcome email
+async function sendWelcomeEmail(email: string, fullName: string): Promise<void> {
+  try {
+    const response = await fetch('/api/auth/welcome-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, fullName }),
+    });
+
+    if (response.ok) {
+      console.log('✅ Welcome email sent successfully');
+    } else {
+      const error = await response.json();
+      console.error('❌ Failed to send welcome email:', error);
+    }
+  } catch (error) {
+    console.error('❌ Error sending welcome email:', error);
+  }
 }
 
 export function useAuth() {

@@ -173,6 +173,14 @@ export async function POST(request: NextRequest) {
       console.warn('Could not insert into public.users:', publicError);
     }
 
+    // Send welcome email asynchronously (don't wait for it to complete)
+    if (newUser.user && full_name) {
+      sendWelcomeEmail(email, full_name).catch(error => {
+        console.error('Failed to send welcome email:', error);
+        // Don't fail the user creation if email sending fails
+      });
+    }
+
     // Log the admin action
     try {
       await supabase
@@ -211,5 +219,27 @@ export async function POST(request: NextRequest) {
       error: 'Internal server error',
       details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
+  }
+}
+
+// Helper function to send welcome email
+async function sendWelcomeEmail(email: string, fullName: string): Promise<void> {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/auth/welcome-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, fullName }),
+    });
+
+    if (response.ok) {
+      console.log('✅ Welcome email sent successfully to admin-created user');
+    } else {
+      const error = await response.json();
+      console.error('❌ Failed to send welcome email:', error);
+    }
+  } catch (error) {
+    console.error('❌ Error sending welcome email:', error);
   }
 }

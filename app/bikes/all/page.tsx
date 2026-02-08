@@ -74,6 +74,7 @@ export default function AllBikesPage() {
   const currentMaxDisplacement = searchParams.get('maxDisplacement');
   const currentMinMileage = searchParams.get('minMileage');
   const currentSortBy = searchParams.get('sortBy') || 'price';
+  const currentSortOrder = searchParams.get('sortOrder') || 'asc';
   const currentPage = Number(searchParams.get('page')) || 1;
 
   // Fetch bikes with filters
@@ -91,6 +92,7 @@ export default function AllBikesPage() {
       if (currentMaxDisplacement) params.append('maxDisplacement', currentMaxDisplacement);
       if (currentMinMileage) params.append('minMileage', currentMinMileage);
       params.append('sortBy', currentSortBy);
+      params.append('sortOrder', currentSortOrder);
       params.append('page', currentPage.toString());
       params.append('limit', '12');
       
@@ -120,7 +122,7 @@ export default function AllBikesPage() {
     fetchBikes();
   }, [currentBrand, currentBodyType, currentMinPrice, currentMaxPrice, 
       currentMinDisplacement, currentMaxDisplacement, currentMinMileage, 
-      currentSortBy, currentPage]);
+      currentSortBy, currentSortOrder, currentPage]);
 
   // Update URL with new filter
   const updateFilter = (key: string, value: string | null) => {
@@ -143,6 +145,15 @@ export default function AllBikesPage() {
   // Clear all filters
   const clearAllFilters = () => {
     router.push('/bikes/all');
+  };
+
+  // Handle sort changes
+  const handleSortChange = (sortBy: string, sortOrder: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('sortBy', sortBy);
+    params.set('sortOrder', sortOrder);
+    params.delete('page'); // Reset to page 1 when sort changes
+    router.push(`/bikes/all?${params.toString()}`);
   };
 
   // Handle pagination
@@ -318,8 +329,8 @@ export default function AllBikesPage() {
               
               <SortSelector
                 sortBy={currentSortBy}
-                sortOrder="asc"
-                onChange={(sortBy, sortOrder) => updateFilter('sortBy', sortBy)}
+                sortOrder={currentSortOrder}
+                onChange={handleSortChange}
               />
             </div>
 
