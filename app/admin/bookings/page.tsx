@@ -136,7 +136,17 @@ export default function AdminBookingsPage() {
       label: 'Vehicle',
       render: (booking: Booking) => {
         if (booking.variant_name) {
-          return `${booking.brand_name || ''} ${booking.model_name || ''} ${booking.variant_name}`.trim();
+          // Check if variant_name already contains brand name to avoid duplication
+          const variantName = booking.variant_name;
+          const brandName = booking.brand_name || '';
+          
+          // If variant already starts with brand name, just return variant name
+          if (variantName.toLowerCase().startsWith(brandName.toLowerCase())) {
+            return variantName;
+          }
+          
+          // Otherwise, construct the full name
+          return `${brandName} ${booking.model_name || ''} ${variantName}`.trim();
         }
         return '-';
       }

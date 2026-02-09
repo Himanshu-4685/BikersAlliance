@@ -152,11 +152,13 @@ export default function DashboardBookings() {
                     <div className="flex items-start justify-between">
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                          {booking.brand_name} {booking.model_name}
+                          {booking.variant_name}
                         </h3>
-                        <p className="text-gray-600 mb-2">
-                          <span className="font-medium">{booking.variant_name}</span>
-                        </p>
+                        {booking.brand_name && (
+                          <p className="text-gray-600 mb-2">
+                            <span className="font-medium">{booking.brand_name}</span>
+                          </p>
+                        )}
                         <div className="flex items-center text-sm text-gray-500 mb-2">
                           <FiCalendar className="w-4 h-4 mr-1" />
                           Booked on {new Date(booking.created_at).toLocaleDateString('en-IN', {
