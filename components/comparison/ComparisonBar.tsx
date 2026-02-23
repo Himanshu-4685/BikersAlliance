@@ -117,9 +117,7 @@ export default function ComparisonBar() {
                       <span className="text-xs text-gray-500">₹{bike.price.toLocaleString('en-IN')}</span>
                     </div>
                   </>
-                ) : (
-                  <span className="text-xs text-gray-400">Add bike to compare</span>
-                )}
+                ) : null}
               </div>
             );
           })}
